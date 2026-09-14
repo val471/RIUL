@@ -1,0 +1,14 @@
+#frameWork web
+Flask==3.1.2
+#ORM
+Flask-SQLAlchemy== 3.1.1
+#JWT JSON WEB TOKEN
+Flask-JWT-Extended==4.7.1
+#Validación y serialización de datos
+Marshmallow==4.0.1
+#Dirver para conección Python - MYSQL
+PyMySQL == 1.1.1
+#Para servidor WSGI
+gunicorn==23.0.0
+#Contraseña
+Werkzeug== 3.1.3
