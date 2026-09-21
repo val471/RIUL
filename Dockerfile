@@ -1,35 +1,29 @@
 #Imagen de base
-From Python:3.12-slim
+FROM python:3.12-slim
 
-# variables de entorno
+# Variables de entorno
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-#Logs
-ENV PYTHONNUNBUFFERED=1
-
-#Directorio de trabajo
-
+# Directorio de trabajo
 WORKDIR /app
 
-#Dependencias del sistema
-
+# Dependencias del sistema
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc \
     && rm -rf /var/lib/apt/lists/*
 
-#Dependecias de Python
+# Dependencias de Python
 COPY requirements.txt .
 
-#instalamos la dependencia 
-
+# Instalamos las dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-#Codigo de la aplicación
+# Código de la aplicación
 COPY . .
 
-#Puerto 
-
+# Puerto
 EXPOSE 5000
 
-#Gunicorn exect app en flask
-CMD [ "Gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "run:app" ]
+# Gunicorn ejecuta la aplicación Flask
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "run:app"]
