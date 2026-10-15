@@ -13,18 +13,22 @@ def create_app() :
         __name__,
         static_folder="static",
         template_folder="templates"
+        
+        
     )
 
 #Cargamos las configuraciones
 
 #
-    app.config.from_objetc(config)
+    app.config.from_object(config)
 
 #inicializamos la bd con app
     db.init_app(app)
 #inicializamos JWT
     JWTManager(app)
-#Registramos las rutas
+# Registramos las rutas web
+    from app.routes.web import web
+    app.register_blueprint(web)
 
 #API auth
 

@@ -1,1 +1,48 @@
-#no debe generar cambios al inyectarle codigo, todos los javascript, partials
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}RIUL - Sistema de Investigación{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <header class="encabezado">
+        <a href="/" class="logo">RIUL</a>
+
+        <nav class="menu">
+            <a href="/">Inicio</a>
+            <a href="/semilleros">Semilleros</a>
+            <a href="/proyectos">Proyectos</a>
+            <a href="/eventos">Eventos</a>
+            <a href="/contacto">Contacto</a>
+        </nav>
+
+        <div class="acciones-menu">
+            <a href="/iniciar-sesion" class="boton boton-secundario">
+                Iniciar sesión
+            </a>
+
+            <a href="/registro" class="boton boton-principal">
+                Registrarse
+            </a>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="pie-pagina">
+        <h2>¿Quieres hacer parte de RIUL?</h2>
+        <p>Únete a nuestra comunidad de investigación universitaria.</p>
+        <a href="/registro" class="boton boton-blanco">Crear una cuenta</a>
+        <p class="copyright">RIUL - Sistema de Investigación</p>
+    </footer>
+
+</body>
+</html>

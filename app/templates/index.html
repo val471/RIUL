@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - RIUL{% endblock %}
+
+{% block content %}
+
+<section class="bienvenida">
+    <div class="contenido-bienvenida">
+        <p class="etiqueta">Investigación universitaria</p>
+
+        <h1>Sistema de Investigación RIUL</h1>
+
+        <p>
+            Conectamos investigadores, semilleros y proyectos
+            para impulsar la innovación y el conocimiento.
+        </p>
+
+        <div class="acciones-bienvenida">
+            <a href="/semilleros" class="boton boton-blanco">
+                Explorar semilleros
+            </a>
+
+            <a href="/proyectos" class="boton boton-transparente">
+                Ver proyectos
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="estadisticas">
+    <article class="estadistica">
+        <h2>245+</h2>
+        <p>Investigadores</p>
+    </article>
+
+    <article class="estadistica">
+        <h2>38</h2>
+        <p>Semilleros</p>
+    </article>
+
+    <article class="estadistica">
+        <h2>120+</h2>
+        <p>Proyectos</p>
+    </article>
+</section>
+
+<section class="seccion">
+    <div class="titulo-seccion">
+        <p class="etiqueta-roja">COMUNIDAD ACADÉMICA</p>
+        <h2>Grupos de investigación</h2>
+        <p>Conoce los semilleros que hacen parte de RIUL.</p>
+    </div>
+
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <h3>Inteligencia Artificial</h3>
+            <p>Facultad de Ingeniería</p>
+            <a href="/semilleros" class="enlace">Ver detalles →</a>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Energías Renovables</h3>
+            <p>Facultad de Ingeniería</p>
+            <a href="/semilleros" class="enlace">Ver detalles →</a>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Investigación en Salud</h3>
+            <p>Facultad de Ciencias de la Salud</p>
+            <a href="/semilleros" class="enlace">Ver detalles →</a>
+        </article>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="titulo-seccion">
+        <p class="etiqueta-roja">INVESTIGACIÓN ACTIVA</p>
+        <h2>Proyectos recientes</h2>
+        <p>Descubre algunas iniciativas de investigación.</p>
+    </div>
+
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <h3>IA aplicada a la educación</h3>
+            <p>Innovación y tecnología educativa.</p>
+            <span class="estado estado-activo">Activo</span>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Biodiversidad urbana</h3>
+            <p>Sostenibilidad y medioambiente.</p>
+            <span class="estado estado-activo">Activo</span>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Derechos digitales</h3>
+            <p>Investigación y transformación jurídica.</p>
+            <span class="estado estado-revision">En revisión</span>
+        </article>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="titulo-seccion">
+        <p class="etiqueta-roja">AGENDA ACADÉMICA</p>
+        <h2>Próximos eventos</h2>
+        <p>Participa en las actividades de investigación.</p>
+    </div>
+
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <h3>Congreso Nacional de Investigación</h3>
+            <p>Encuentro académico para investigadores.</p>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Taller de Metodología Científica</h3>
+            <p>Herramientas y métodos para investigar.</p>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Feria de Semilleros</h3>
+            <p>Conoce nuevos proyectos universitarios.</p>
+        </article>
+    </div>
+</section>
+
+{% endblock %}

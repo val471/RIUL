@@ -1,0 +1,298 @@
+
+/* Configuración general */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: #f7f8fa;
+    color: #202124;
+    font-family: Arial, sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* Encabezado */
+.encabezado {
+    background-color: #ffffff;
+    min-height: 75px;
+    padding: 15px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.logo {
+    color: #c8102e;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.menu a {
+    color: #333333;
+    font-size: 14px;
+}
+
+.menu a:hover,
+.enlace:hover {
+    color: #a50d25;
+}
+
+.acciones-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Botones */
+.boton {
+    display: inline-block;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.boton-principal {
+    background-color: #c8102e;
+    color: #ffffff;
+    border: 1px solid #c8102e;
+}
+
+.boton-principal:hover {
+    background-color: #a50d25;
+}
+
+.boton-secundario {
+    background-color: #ffffff;
+    color: #c8102e;
+    border: 1px solid #c8102e;
+}
+
+.boton-blanco {
+    background-color: #ffffff;
+    color: #c8102e;
+    border: 1px solid #ffffff;
+}
+
+.boton-transparente {
+    color: #ffffff;
+    background-color: transparent;
+    border: 1px solid #ffffff;
+}
+
+/* Bienvenida */
+.bienvenida {
+    background-color: #c8102e;
+    color: #ffffff;
+    padding: 75px 8%;
+}
+
+.contenido-bienvenida {
+    max-width: 700px;
+}
+
+.etiqueta {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.bienvenida h1 {
+    font-size: 42px;
+    margin: 18px 0;
+}
+
+.bienvenida p {
+    line-height: 1.7;
+}
+
+.acciones-bienvenida {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 25px;
+}
+
+/* Estadísticas */
+.estadisticas {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px 5%;
+}
+
+.estadistica {
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 22px;
+    text-align: center;
+}
+
+.estadistica h2 {
+    color: #c8102e;
+    font-size: 30px;
+    margin: 0 0 8px;
+}
+
+.estadistica p {
+    color: #666666;
+    margin: 0;
+}
+
+/* Secciones */
+.seccion {
+    padding: 35px 5%;
+}
+
+.titulo-seccion {
+    margin-bottom: 25px;
+}
+
+.titulo-seccion h2 {
+    font-size: 26px;
+    margin: 8px 0;
+}
+
+.titulo-seccion > p:last-child {
+    color: #666666;
+}
+
+.etiqueta-roja {
+    color: #c8102e;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Tarjetas */
+.contenedor-tarjetas {
+    display: flex;
+    gap: 20px;
+}
+
+.tarjeta {
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.tarjeta h3 {
+    font-size: 18px;
+    margin-top: 0;
+}
+
+.tarjeta p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.enlace {
+    color: #c8102e;
+    font-size: 14px;
+}
+
+.estado {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.estado-activo {
+    background-color: #e5f6ec;
+    color: #16834a;
+}
+
+.estado-revision {
+    background-color: #fff3d6;
+    color: #996500;
+}
+
+/* Pie de página */
+.pie-pagina {
+    background-color: #b30d29;
+    color: #ffffff;
+    padding: 45px 20px;
+    text-align: center;
+}
+
+.pie-pagina p {
+    line-height: 1.6;
+}
+
+.copyright {
+    margin-top: 30px;
+    font-size: 12px;
+}
+
+/* Adaptación a pantallas pequeñas */
+@media (max-width: 900px) {
+    .encabezado {
+        flex-wrap: wrap;
+    }
+
+    .menu {
+        flex-wrap: wrap;
+    }
+
+    .contenedor-tarjetas {
+        flex-wrap: wrap;
+    }
+
+    .tarjeta {
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 600px) {
+    .encabezado {
+        flex-direction: column;
+    }
+
+    .menu {
+        justify-content: center;
+    }
+
+    .acciones-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bienvenida {
+        padding: 45px 6%;
+    }
+
+    .bienvenida h1 {
+        font-size: 32px;
+    }
+
+    .estadisticas {
+        flex-direction: column;
+    }
+
+    .contenedor-tarjetas {
+        flex-direction: column;
+    }
+
+    .tarjeta {
+        min-width: 0;
+    }
+}

@@ -1,0 +1,34 @@
+
+{% extends "base.html" %}
+
+{% block title %}Proyectos | RIUL{% endblock %}
+
+{% block content %}
+<section class="seccion">
+    <div class="titulo-seccion">
+        <p class="etiqueta-roja">INVESTIGACIÓN ACTIVA</p>
+        <h1>Proyectos de investigación</h1>
+        <p>Conoce iniciativas académicas y sus avances.</p>
+    </div>
+
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <h3>IA aplicada a la educación</h3>
+            <p>Innovación y tecnología educativa.</p>
+            <span class="estado estado-activo">Activo</span>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Biodiversidad urbana</h3>
+            <p>Sostenibilidad y medioambiente.</p>
+            <span class="estado estado-activo">Activo</span>
+        </article>
+
+        <article class="tarjeta">
+            <h3>Derechos digitales</h3>
+            <p>Investigación y transformación jurídica.</p>
+            <span class="estado estado-revision">En revisión</span>
+        </article>
+    </div>
+</section>
+{% endblock %}
