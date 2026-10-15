@@ -10,8 +10,8 @@ services:
       - "5000:5000"
 
     environment:
-      DATABASE_URL: mysql+pymysql://inventory_user:inventory_password@db:3306/inventory_db
-      JWT_SECRET_KEY: suero-clave-secret
+      DATABASE_URL: mysql+pymysql://riul_app:RIUL_AAA@db:3306/riul_db
+      JWT_SECRET_KEY: suero-AAA
 
     depends_on:
       db:
@@ -25,13 +25,13 @@ services:
     container_name: RIUL_mysql
 
     environment:
-      MYSQL_DATABASE: inventory_db
-      MYSQL_USER: inventory_user
-      MYSQL_PASSWORD: inventory_password
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: riul_db
+      MYSQL_USER: riul_app
+      MYSQL_PASSWORD: RIUL_AAA
+      MYSQL_ROOT_PASSWORD: RIULRoot_AAA
 
     ports:
-      - "3306:3306"
+      - "3307:3306"
 
     volumes:
       - mysql_data:/var/lib/mysql
@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pRIULRoot_AAA"]
       interval: 5s
       timeout: 5s
       retries: 20
