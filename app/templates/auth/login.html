@@ -1,0 +1,70 @@
+
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | RIUL{% endblock %}
+
+{% block content %}
+<section class="auth-pagina">
+    <div class="auth-tarjeta">
+        <a href="{{ url_for('web.inicio') }}" class="auth-logo">RIUL</a>
+
+        <span class="etiqueta-seccion">PLATAFORMA DE INVESTIGACIÓN</span>
+        <h1>¡Bienvenido de nuevo!</h1>
+        <p class="auth-descripcion">
+            Inicia sesión para acceder a tu espacio de investigación.
+        </p>
+
+        <form id="formLogin">
+            <div class="auth-campo">
+                <label for="correoLogin">Correo institucional</label>
+                <input
+                    type="email"
+                    id="correoLogin"
+                    name="correo"
+                    placeholder="nombre@unilibre.edu.co"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="auth-campo">
+                <label for="contrasenaLogin">Contraseña</label>
+                <input
+                    type="password"
+                    id="contrasenaLogin"
+                    name="contrasena"
+                    placeholder="Ingresa tu contraseña"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="auth-boton">
+                Iniciar sesión
+            </button>
+
+            <p id="mensajeLogin" class="auth-mensaje" role="status"></p>
+        </form>
+
+        <div class="auth-separador"></div>
+
+        <p class="auth-pie">
+            ¿Todavía no tienes una cuenta?
+            <a href="{{ url_for('web.registro') }}">Regístrate aquí</a>
+        </p>
+
+        <a href="{{ url_for('web.inicio') }}" class="auth-volver">
+            ← Volver al inicio
+        </a>
+    </div>
+</section>
+
+<script>
+document.getElementById("formLogin").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    document.getElementById("mensajeLogin").textContent =
+        "La autenticación estará disponible cuando conectemos la base de datos corregida.";
+});
+</script>
+{% endblock %}

@@ -1,31 +1,138 @@
-
+```html
 {% extends "base.html" %}
 
-{% block title %}Eventos | RIUL{% endblock %}
+{% block title %}Eventos de investigación | RIUL{% endblock %}
 
 {% block content %}
-<section class="seccion">
-    <div class="titulo-seccion">
-        <p class="etiqueta-roja">AGENDA ACADÉMICA</p>
+<section class="seccion-publica">
+    <div class="encabezado-seccion">
+        <span class="etiqueta-seccion">AGENDA ACADÉMICA</span>
         <h1>Eventos de investigación</h1>
-        <p>Encuentra actividades para aprender, compartir y colaborar.</p>
+        <p>
+            Explora encuentros académicos, jornadas de investigación,
+            conferencias y actividades para compartir conocimientos.
+        </p>
     </div>
 
-    <div class="contenedor-tarjetas">
-        <article class="tarjeta">
-            <h3>Congreso Nacional de Investigación</h3>
-            <p>Encuentro académico para investigadores.</p>
+    <div class="busqueda-seccion">
+        <input
+            type="search"
+            id="buscarEvento"
+            placeholder="Buscar eventos por nombre o descripción..."
+            aria-label="Buscar eventos"
+        >
+
+        <select id="filtroTipo" aria-label="Filtrar eventos por tipo">
+            <option value="">Todos los tipos</option>
+            <option value="Conferencia">Conferencias</option>
+            <option value="Taller">Talleres</option>
+            <option value="Encuentro">Encuentros</option>
+        </select>
+    </div>
+
+    <div class="rejilla-tarjetas" id="listaEventos">
+        <article class="tarjeta-publica" data-tipo="Conferencia">
+            <div class="icono-tarjeta">🎤</div>
+            <span class="estado-tarjeta">Conferencia</span>
+            <h2>Encuentro de investigación universitaria</h2>
+            <p>
+                Espacio demostrativo para presentar resultados, compartir
+                experiencias y conocer nuevas líneas de investigación.
+            </p>
+            <p class="dato-tarjeta"><strong>Tipo:</strong> Conferencia</p>
+            <button class="boton-secundario" type="button"
+                onclick="verDetalleEvento('Encuentro de investigación universitaria',
+                'Evento demostrativo para compartir experiencias y resultados de investigación.')">
+                Ver detalles
+            </button>
         </article>
 
-        <article class="tarjeta">
-            <h3>Taller de Metodología Científica</h3>
-            <p>Herramientas y métodos para investigar.</p>
+        <article class="tarjeta-publica" data-tipo="Taller">
+            <div class="icono-tarjeta">🧑‍💻</div>
+            <span class="estado-tarjeta">Taller</span>
+            <h2>Taller de herramientas investigativas</h2>
+            <p>
+                Actividad demostrativa para fortalecer habilidades de
+                búsqueda, análisis y organización de información académica.
+            </p>
+            <p class="dato-tarjeta"><strong>Tipo:</strong> Taller</p>
+            <button class="boton-secundario" type="button"
+                onclick="verDetalleEvento('Taller de herramientas investigativas',
+                'Actividad demostrativa de formación en herramientas para investigar.')">
+                Ver detalles
+            </button>
         </article>
 
-        <article class="tarjeta">
-            <h3>Feria de Semilleros</h3>
-            <p>Un espacio para conocer proyectos universitarios.</p>
+        <article class="tarjeta-publica" data-tipo="Encuentro">
+            <div class="icono-tarjeta">🤝</div>
+            <span class="estado-tarjeta">Encuentro</span>
+            <h2>Intercambio de experiencias científicas</h2>
+            <p>
+                Encuentro demostrativo para promover la colaboración entre
+                estudiantes, docentes y grupos de investigación.
+            </p>
+            <p class="dato-tarjeta"><strong>Tipo:</strong> Encuentro</p>
+            <button class="boton-secundario" type="button"
+                onclick="verDetalleEvento('Intercambio de experiencias científicas',
+                'Encuentro demostrativo para fomentar la colaboración académica.')">
+                Ver detalles
+            </button>
         </article>
+    </div>
+
+    <p id="sinEventos" hidden>
+        No se encontraron eventos con esos criterios.
+    </p>
+
+    <div id="modalEvento" class="modal-detalle" hidden>
+        <div class="contenido-modal">
+            <button class="cerrar-modal" type="button"
+                onclick="cerrarDetalleEvento()" aria-label="Cerrar">×</button>
+            <h2 id="tituloEvento"></h2>
+            <p id="descripcionEvento"></p>
+            <button class="boton-principal" type="button"
+                onclick="cerrarDetalleEvento()">Cerrar</button>
+        </div>
     </div>
 </section>
+
+<script>
+function verDetalleEvento(titulo, descripcion) {
+    document.getElementById("tituloEvento").textContent = titulo;
+    document.getElementById("descripcionEvento").textContent = descripcion;
+    document.getElementById("modalEvento").hidden = false;
+}
+
+function cerrarDetalleEvento() {
+    document.getElementById("modalEvento").hidden = true;
+}
+
+function filtrarEventos() {
+    const texto = document.getElementById("buscarEvento")
+        .value.toLowerCase().trim();
+    const tipo = document.getElementById("filtroTipo").value;
+    const tarjetas = document.querySelectorAll(
+        "#listaEventos .tarjeta-publica"
+    );
+
+    let visibles = 0;
+
+    tarjetas.forEach(tarjeta => {
+        const coincideTexto = tarjeta.textContent.toLowerCase().includes(texto);
+        const coincideTipo = !tipo || tarjeta.dataset.tipo === tipo;
+        const mostrar = coincideTexto && coincideTipo;
+
+        tarjeta.hidden = !mostrar;
+        if (mostrar) visibles++;
+    });
+
+    document.getElementById("sinEventos").hidden = visibles > 0;
+}
+
+document.getElementById("buscarEvento")
+    .addEventListener("input", filtrarEventos);
+
+document.getElementById("filtroTipo")
+    .addEventListener("change", filtrarEventos);
+</script>
 {% endblock %}

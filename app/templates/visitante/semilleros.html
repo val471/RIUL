@@ -1,34 +1,134 @@
 
 {% extends "base.html" %}
 
-{% block title %}Semilleros | RIUL{% endblock %}
+{% block title %}Semilleros de investigación | RIUL{% endblock %}
 
 {% block content %}
-<section class="seccion">
-    <div class="titulo-seccion">
-        <p class="etiqueta-roja">COMUNIDAD ACADÉMICA</p>
+<section class="seccion-publica">
+    <div class="encabezado-seccion">
+        <span class="etiqueta-seccion">INVESTIGACIÓN UNIVERSITARIA</span>
         <h1>Semilleros de investigación</h1>
-        <p>Explora las comunidades académicas y sus líneas de investigación.</p>
+        <p>
+            Explora los espacios académicos donde estudiantes y docentes
+            desarrollan ideas, conocimientos y proyectos de investigación.
+        </p>
     </div>
 
-    <div class="contenedor-tarjetas">
-        <article class="tarjeta">
-            <h3>Inteligencia Artificial</h3>
-            <p>Facultad de Ingeniería</p>
-            <p>Investigación en tecnologías inteligentes e innovación.</p>
+    <div class="busqueda-seccion">
+        <input
+            type="search"
+            id="buscarSemillero"
+            placeholder="Buscar por nombre o área de investigación..."
+            aria-label="Buscar semilleros"
+        >
+        <select id="filtroArea" aria-label="Filtrar por área">
+            <option value="">Todas las áreas</option>
+            <option value="ingenieria">Ingeniería</option>
+            <option value="sociales">Ciencias sociales</option>
+            <option value="salud">Ciencias de la salud</option>
+        </select>
+    </div>
+
+    <div class="rejilla-tarjetas" id="listaSemilleros">
+        <article class="tarjeta-publica" data-area="ingenieria">
+            <div class="icono-tarjeta">🔬</div>
+            <span class="estado-tarjeta">Contenido</span>
+            <h2>Innovación y Tecnología</h2>
+            <p>
+                Espacio de ejemplo dedicado a la exploración de soluciones
+                tecnológicas y al desarrollo de ideas innovadoras.
+            </p>
+            <p class="dato-tarjeta"><strong>Área:</strong> Ingeniería</p>
+            <button type="button" class="boton-secundario"
+                onclick="mostrarDetalle('Innovación y Tecnología',
+                'Contenido demostrativo para la sección de semilleros de RIUL.')">
+                Ver detalles
+            </button>
         </article>
 
-        <article class="tarjeta">
-            <h3>Energías Renovables</h3>
-            <p>Facultad de Ingeniería</p>
-            <p>Soluciones sostenibles para el aprovechamiento energético.</p>
+        <article class="tarjeta-publica" data-area="sociales">
+            <div class="icono-tarjeta">📚</div>
+            <span class="estado-tarjeta">Contenido</span>
+            <h2>Sociedad y Conocimiento</h2>
+            <p>
+                Espacio de ejemplo para investigar problemáticas sociales
+                y proponer alternativas basadas en el conocimiento.
+            </p>
+            <p class="dato-tarjeta"><strong>Área:</strong> Ciencias sociales</p>
+            <button type="button" class="boton-secundario"
+                onclick="mostrarDetalle('Sociedad y Conocimiento',
+                'Contenido demostrativo para la sección de semilleros de RIUL.')">
+                Ver detalles
+            </button>
         </article>
 
-        <article class="tarjeta">
-            <h3>Investigación en Salud</h3>
-            <p>Facultad de Ciencias de la Salud</p>
-            <p>Estudios orientados al bienestar y la calidad de vida.</p>
+        <article class="tarjeta-publica" data-area="salud">
+            <div class="icono-tarjeta">🧬</div>
+            <span class="estado-tarjeta">Contenido</span>
+            <h2>Ciencia y Bienestar</h2>
+            <p>
+                Espacio de ejemplo para el estudio de temas relacionados
+                con la salud, el bienestar y la calidad de vida.
+            </p>
+            <p class="dato-tarjeta"><strong>Área:</strong> Ciencias de la salud</p>
+            <button type="button" class="boton-secundario"
+                onclick="mostrarDetalle('Ciencia y Bienestar',
+                'Contenido demostrativo para la sección de semilleros de RIUL.')">
+                Ver detalles
+            </button>
         </article>
+    </div>
+
+    <p id="sinResultados" hidden>
+        No se encontraron semilleros con esos criterios.
+    </p>
+
+    <div id="detalleSemillero" class="modal-detalle" hidden>
+        <div class="contenido-modal">
+            <button type="button" class="cerrar-modal"
+                onclick="cerrarDetalle()" aria-label="Cerrar">×</button>
+            <h2 id="tituloDetalle"></h2>
+            <p id="textoDetalle"></p>
+            <button type="button" class="boton-principal"
+                onclick="cerrarDetalle()">Cerrar</button>
+        </div>
     </div>
 </section>
+
+<script>
+function mostrarDetalle(titulo, texto) {
+    document.getElementById("tituloDetalle").textContent = titulo;
+    document.getElementById("textoDetalle").textContent = texto;
+    document.getElementById("detalleSemillero").hidden = false;
+}
+
+function cerrarDetalle() {
+    document.getElementById("detalleSemillero").hidden = true;
+}
+
+function filtrarSemilleros() {
+    const texto = document.getElementById("buscarSemillero")
+        .value.toLowerCase().trim();
+    const area = document.getElementById("filtroArea").value;
+    const tarjetas = document.querySelectorAll("#listaSemilleros .tarjeta-publica");
+    let visibles = 0;
+
+    tarjetas.forEach(tarjeta => {
+        const coincideTexto = tarjeta.textContent.toLowerCase().includes(texto);
+        const coincideArea = !area || tarjeta.dataset.area === area;
+        const mostrar = coincideTexto && coincideArea;
+
+        tarjeta.hidden = !mostrar;
+        if (mostrar) visibles++;
+    });
+
+    document.getElementById("sinResultados").hidden = visibles > 0;
+}
+
+document.getElementById("buscarSemillero")
+    .addEventListener("input", filtrarSemilleros);
+document.getElementById("filtroArea")
+    .addEventListener("change", filtrarSemilleros);
+</script>
 {% endblock %}
+
