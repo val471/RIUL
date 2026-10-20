@@ -1,70 +1,180 @@
 
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | RIUL</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="auth-pagina">
 
-{% block title %}Iniciar sesión | RIUL{% endblock %}
+        <section class="auth-lateral">
+            <a href="/" class="logo" style="color:white;">RIUL</a>
 
-{% block content %}
-<section class="auth-pagina">
-    <div class="auth-tarjeta">
-        <a href="{{ url_for('web.inicio') }}" class="auth-logo">RIUL</a>
+            <p class="etiqueta-roja" style="color:white;">
+                Red de Investigación Universidad Libre
+            </p>
 
-        <span class="etiqueta-seccion">PLATAFORMA DE INVESTIGACIÓN</span>
-        <h1>¡Bienvenido de nuevo!</h1>
-        <p class="auth-descripcion">
-            Inicia sesión para acceder a tu espacio de investigación.
-        </p>
+            <h1>La investigación conecta nuestras ideas.</h1>
 
-        <form id="formLogin">
-            <div class="auth-campo">
-                <label for="correoLogin">Correo institucional</label>
-                <input
-                    type="email"
-                    id="correoLogin"
-                    name="correo"
-                    placeholder="nombre@unilibre.edu.co"
-                    autocomplete="username"
-                    required
-                >
+            <p>
+                Ingresa a RIUL para consultar proyectos, participar en
+                semilleros y contribuir a la investigación universitaria.
+            </p>
+
+            <p>
+                <strong>Investigar, compartir y crecer.</strong>
+            </p>
+        </section>
+
+        <section class="auth-contenedor">
+            <div class="auth-tarjeta">
+                <a href="/" class="logo">RIUL</a>
+
+                <h2>Bienvenido de nuevo</h2>
+                <p>Ingresa tus credenciales para continuar.</p>
+
+                <form id="formularioLogin">
+                    <div class="auth-campo">
+                        <label for="correo">Correo electrónico</label>
+                        <input
+                            id="correo"
+                            name="correo"
+                            type="email"
+                            placeholder="usuario@riul.demo"
+                            autocomplete="username"
+                            required>
+                    </div>
+
+                    <div class="auth-campo">
+                        <label for="contrasena">Contraseña</label>
+                        <input
+                            id="contrasena"
+                            name="contrasena"
+                            type="password"
+                            placeholder="Ingresa tu contraseña"
+                            autocomplete="current-password"
+                            required>
+                    </div>
+
+                    <button class="auth-boton" type="submit">
+                        Iniciar sesión
+                    </button>
+
+                    <p id="mensajeLogin" class="mensaje-demo" hidden></p>
+                </form>
+
+                <div class="demo-cuentas">
+                    <h3>Accesos de demostración</h3>
+                    <p>
+                        Pulsa un perfil para rellenar automáticamente
+                        el correo y la contraseña.
+                    </p>
+
+                    <button class="demo-cuenta" type="button"
+                            data-rol="administrador"
+                            data-correo="admin@riul.demo"
+                            data-clave="Admin123!">
+                        <span>
+                            <strong>Administrador</strong>
+                            <small>Gestión general de RIUL</small>
+                        </span>
+                        <span>Usar cuenta →</span>
+                    </button>
+
+                    <button class="demo-cuenta" type="button"
+                            data-rol="estudiante"
+                            data-correo="estudiante@riul.demo"
+                            data-clave="Estudiante123!">
+                        <span>
+                            <strong>Estudiante</strong>
+                            <small>Proyectos, logros y semilleros</small>
+                        </span>
+                        <span>Usar cuenta →</span>
+                    </button>
+
+                    <button class="demo-cuenta" type="button"
+                            data-rol="docente"
+                            data-correo="docente@riul.demo"
+                            data-clave="Docente123!">
+                        <span>
+                            <strong>Docente</strong>
+                            <small>Proyectos e integrantes</small>
+                        </span>
+                        <span>Usar cuenta →</span>
+                    </button>
+                </div>
+
+                <p style="margin-top:22px; text-align:center;">
+                    ¿No tienes cuenta?
+                    <a href="/registro">Crear cuenta</a>
+                </p>
+
+                <p style="font-size:12px; color:#69717D;">
+                    Las cuentas mostradas son de demostración y no
+                    corresponden a usuarios almacenados en MySQL.
+                </p>
             </div>
+        </section>
 
-            <div class="auth-campo">
-                <label for="contrasenaLogin">Contraseña</label>
-                <input
-                    type="password"
-                    id="contrasenaLogin"
-                    name="contrasena"
-                    placeholder="Ingresa tu contraseña"
-                    autocomplete="current-password"
-                    required
-                >
-            </div>
+    </main>
 
-            <button type="submit" class="auth-boton">
-                Iniciar sesión
-            </button>
+    <script>
+        const formulario = document.getElementById("formularioLogin");
+        const campoCorreo = document.getElementById("correo");
+        const campoClave = document.getElementById("contrasena");
+        const mensaje = document.getElementById("mensajeLogin");
 
-            <p id="mensajeLogin" class="auth-mensaje" role="status"></p>
-        </form>
+        document.querySelectorAll(".demo-cuenta").forEach((boton) => {
+            boton.addEventListener("click", () => {
+                campoCorreo.value = boton.dataset.correo;
+                campoClave.value = boton.dataset.clave;
 
-        <div class="auth-separador"></div>
+                mensaje.hidden = false;
+                mensaje.textContent =
+                    "Cuenta de " + boton.dataset.rol +
+                    " cargada. Pulsa «Iniciar sesión» para continuar.";
+            });
+        });
 
-        <p class="auth-pie">
-            ¿Todavía no tienes una cuenta?
-            <a href="{{ url_for('web.registro') }}">Regístrate aquí</a>
-        </p>
+        formulario.addEventListener("submit", (evento) => {
+            evento.preventDefault();
 
-        <a href="{{ url_for('web.inicio') }}" class="auth-volver">
-            ← Volver al inicio
-        </a>
-    </div>
-</section>
+            const correo = campoCorreo.value.trim().toLowerCase();
+            const clave = campoClave.value;
 
-<script>
-document.getElementById("formLogin").addEventListener("submit", function(event) {
-    event.preventDefault();
+            const cuentasDemo = {
+                "admin@riul.demo": {
+                    clave: "Admin123!",
+                    destino: "/administrador"
+                },
+                "estudiante@riul.demo": {
+                    clave: "Estudiante123!",
+                    destino: "/estudiante"
+                },
+                "docente@riul.demo": {
+                    clave: "Docente123!",
+                    destino: "/docente"
+                }
+            };
 
-    document.getElementById("mensajeLogin").textContent =
-        "La autenticación estará disponible cuando conectemos la base de datos corregida.";
-});
-</script>
-{% endblock %}
+            const cuenta = cuentasDemo[correo];
+
+            if (cuenta && cuenta.clave === clave) {
+                mensaje.hidden = false;
+                mensaje.textContent = "Acceso de demostración correcto.";
+
+                window.location.href = cuenta.destino;
+            } else {
+                mensaje.hidden = false;
+                mensaje.textContent =
+                    "Las credenciales no coinciden con las cuentas de prueba. " +
+                    "Usa uno de los tres botones de demostración.";
+            }
+        });
+    </script>
+</body>
+</html>
