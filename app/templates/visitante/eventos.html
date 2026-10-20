@@ -1,138 +1,61 @@
-```html
+
 {% extends "base.html" %}
 
-{% block title %}Eventos de investigación | RIUL{% endblock %}
+{% block title %}Eventos | RIUL{% endblock %}
 
 {% block content %}
 <section class="seccion-publica">
     <div class="encabezado-seccion">
-        <span class="etiqueta-seccion">AGENDA ACADÉMICA</span>
+        <span class="etiqueta-roja">AGENDA ACADÉMICA</span>
         <h1>Eventos de investigación</h1>
-        <p>
-            Explora encuentros académicos, jornadas de investigación,
-            conferencias y actividades para compartir conocimientos.
-        </p>
+        <p>Conoce encuentros, jornadas, conferencias y actividades que impulsan el intercambio de conocimiento.</p>
     </div>
 
-    <div class="busqueda-seccion">
-        <input
-            type="search"
-            id="buscarEvento"
-            placeholder="Buscar eventos por nombre o descripción..."
-            aria-label="Buscar eventos"
-        >
-
-        <select id="filtroTipo" aria-label="Filtrar eventos por tipo">
-            <option value="">Todos los tipos</option>
-            <option value="Conferencia">Conferencias</option>
-            <option value="Taller">Talleres</option>
-            <option value="Encuentro">Encuentros</option>
+    <form class="busqueda-seccion" method="GET">
+        <input type="search" name="buscar" placeholder="Buscar eventos..." value="{{ request.args.get('buscar', '') }}">
+        <select name="tipo">
+            <option value="">Todos los eventos</option>
+            <option value="CONFERENCIA">Conferencias</option>
+            <option value="TALLER">Talleres</option>
+            <option value="ENCUENTRO">Encuentros</option>
         </select>
-    </div>
+        <button class="boton boton-principal" type="submit">Buscar</button>
+    </form>
 
-    <div class="rejilla-tarjetas" id="listaEventos">
-        <article class="tarjeta-publica" data-tipo="Conferencia">
-            <div class="icono-tarjeta">🎤</div>
-            <span class="estado-tarjeta">Conferencia</span>
-            <h2>Encuentro de investigación universitaria</h2>
-            <p>
-                Espacio demostrativo para presentar resultados, compartir
-                experiencias y conocer nuevas líneas de investigación.
-            </p>
-            <p class="dato-tarjeta"><strong>Tipo:</strong> Conferencia</p>
-            <button class="boton-secundario" type="button"
-                onclick="verDetalleEvento('Encuentro de investigación universitaria',
-                'Evento demostrativo para compartir experiencias y resultados de investigación.')">
-                Ver detalles
-            </button>
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">CONFERENCIA</span>
+                <h3>Encuentro de investigación universitaria</h3>
+                <p>Espacio para compartir experiencias, resultados y nuevas propuestas de investigación.</p>
+                <p><strong>Fecha:</strong> 12 de noviembre de 2026</p>
+                <p><strong>Modalidad:</strong> Presencial</p>
+                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-tipo="Taller">
-            <div class="icono-tarjeta">🧑‍💻</div>
-            <span class="estado-tarjeta">Taller</span>
-            <h2>Taller de herramientas investigativas</h2>
-            <p>
-                Actividad demostrativa para fortalecer habilidades de
-                búsqueda, análisis y organización de información académica.
-            </p>
-            <p class="dato-tarjeta"><strong>Tipo:</strong> Taller</p>
-            <button class="boton-secundario" type="button"
-                onclick="verDetalleEvento('Taller de herramientas investigativas',
-                'Actividad demostrativa de formación en herramientas para investigar.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">TALLER</span>
+                <h3>Metodología de investigación</h3>
+                <p>Taller práctico para fortalecer las habilidades de formulación y desarrollo de proyectos.</p>
+                <p><strong>Fecha:</strong> 19 de noviembre de 2026</p>
+                <p><strong>Modalidad:</strong> Virtual</p>
+                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-tipo="Encuentro">
-            <div class="icono-tarjeta">🤝</div>
-            <span class="estado-tarjeta">Encuentro</span>
-            <h2>Intercambio de experiencias científicas</h2>
-            <p>
-                Encuentro demostrativo para promover la colaboración entre
-                estudiantes, docentes y grupos de investigación.
-            </p>
-            <p class="dato-tarjeta"><strong>Tipo:</strong> Encuentro</p>
-            <button class="boton-secundario" type="button"
-                onclick="verDetalleEvento('Intercambio de experiencias científicas',
-                'Encuentro demostrativo para fomentar la colaboración académica.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">ENCUENTRO</span>
+                <h3>Feria de semilleros</h3>
+                <p>Presentación de iniciativas estudiantiles, proyectos y oportunidades de colaboración.</p>
+                <p><strong>Fecha:</strong> 27 de noviembre de 2026</p>
+                <p><strong>Modalidad:</strong> Presencial</p>
+                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
+            </div>
         </article>
-    </div>
-
-    <p id="sinEventos" hidden>
-        No se encontraron eventos con esos criterios.
-    </p>
-
-    <div id="modalEvento" class="modal-detalle" hidden>
-        <div class="contenido-modal">
-            <button class="cerrar-modal" type="button"
-                onclick="cerrarDetalleEvento()" aria-label="Cerrar">×</button>
-            <h2 id="tituloEvento"></h2>
-            <p id="descripcionEvento"></p>
-            <button class="boton-principal" type="button"
-                onclick="cerrarDetalleEvento()">Cerrar</button>
-        </div>
     </div>
 </section>
-
-<script>
-function verDetalleEvento(titulo, descripcion) {
-    document.getElementById("tituloEvento").textContent = titulo;
-    document.getElementById("descripcionEvento").textContent = descripcion;
-    document.getElementById("modalEvento").hidden = false;
-}
-
-function cerrarDetalleEvento() {
-    document.getElementById("modalEvento").hidden = true;
-}
-
-function filtrarEventos() {
-    const texto = document.getElementById("buscarEvento")
-        .value.toLowerCase().trim();
-    const tipo = document.getElementById("filtroTipo").value;
-    const tarjetas = document.querySelectorAll(
-        "#listaEventos .tarjeta-publica"
-    );
-
-    let visibles = 0;
-
-    tarjetas.forEach(tarjeta => {
-        const coincideTexto = tarjeta.textContent.toLowerCase().includes(texto);
-        const coincideTipo = !tipo || tarjeta.dataset.tipo === tipo;
-        const mostrar = coincideTexto && coincideTipo;
-
-        tarjeta.hidden = !mostrar;
-        if (mostrar) visibles++;
-    });
-
-    document.getElementById("sinEventos").hidden = visibles > 0;
-}
-
-document.getElementById("buscarEvento")
-    .addEventListener("input", filtrarEventos);
-
-document.getElementById("filtroTipo")
-    .addEventListener("change", filtrarEventos);
-</script>
 {% endblock %}
+

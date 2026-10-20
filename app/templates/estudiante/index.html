@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del estudiante | RIUL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="panel-layout">
+    <aside class="panel-sidebar">
+        <a href="/" class="logo">RIUL</a>
+        <p>Panel del estudiante</p>
+        <nav class="panel-menu">
+            <a href="#inicio" class="activo">Inicio</a>
+            <a href="#semillero">Mi semillero</a>
+            <a href="#proyectos">Proyectos</a>
+            <a href="#hoja-vida">Mi hoja de vida</a>
+            <a href="#logros">Mis logros</a>
+            <a href="#eventos">Eventos</a>
+            <a href="#notificaciones">Notificaciones</a>
+            <a href="/">Cerrar sesión</a>
+        </nav>
+    </aside>
+
+    <main class="panel-principal">
+        <header class="panel-encabezado">
+            <div>
+                <h1>¡Hola, estudiante!</h1>
+                <p>Bienvenido a tu espacio de investigación.</p>
+            </div>
+            <button class="boton boton-contorno" onclick="alert('Perfil de demostración')">
+                Mi perfil
+            </button>
+        </header>
+
+        <div class="panel-contenido" style="display:block">
+            <section id="inicio" class="panel-banner">
+                <h1>Impulsa tu futuro investigando</h1>
+                <p>Participa en proyectos, desarrolla habilidades y comparte tus logros.</p>
+                <button class="boton boton-blanco" onclick="document.getElementById('proyectos').scrollIntoView()">
+                    Explorar proyectos
+                </button>
+            </section>
+
+            <div class="panel-estadisticas">
+                <div class="panel-estadistica">
+                    <strong>350 XP</strong>
+                    <span>Experiencia acumulada</span>
+                </div>
+                <div class="panel-estadistica">
+                    <strong>2</strong>
+                    <span>Proyectos vinculados</span>
+                </div>
+                <div class="panel-estadistica">
+                    <strong>4</strong>
+                    <span>Logros obtenidos</span>
+                </div>
+                <div class="panel-estadistica">
+                    <strong>1</strong>
+                    <span>Semillero</span>
+                </div>
+            </div>
+
+            <section id="semillero" class="panel-tarjeta" style="margin-top:20px">
+                <h2>Mi semillero</h2>
+                <h3>Tecnología e Innovación</h3>
+                <p>Área: Ingeniería y desarrollo tecnológico</p>
+                <p>Rol: Estudiante investigador</p>
+                <button class="boton boton-principal" onclick="alert('Detalle del semillero de demostración')">
+                    Ver semillero
+                </button>
+            </section>
+
+            <section id="proyectos" style="margin-top:25px">
+                <h2>Mis proyectos</h2>
+                <div class="contenedor-tarjetas">
+                    <article class="tarjeta">
+                        <div class="tarjeta-contenido">
+                            <span class="estado estado-activo">Activo</span>
+                            <h3>Plataforma de innovación</h3>
+                            <p>Desarrollo de soluciones tecnológicas para la comunidad universitaria.</p>
+                            <div class="progreso">
+                                <div class="progreso-barra" style="width:65%"></div>
+                            </div>
+                            <p>Avance: 65 %</p>
+                            <button class="boton boton-contorno" onclick="alert('Detalle del proyecto de demostración')">Ver detalle</button>
+                        </div>
+                    </article>
+                    <article class="tarjeta">
+                        <div class="tarjeta-contenido">
+                            <span class="estado estado-revision">En revisión</span>
+                            <h3>Sistema de análisis de datos</h3>
+                            <p>Propuesta para apoyar el análisis de información investigativa.</p>
+                            <div class="progreso">
+                                <div class="progreso-barra" style="width:30%"></div>
+                            </div>
+                            <p>Avance: 30 %</p>
+                            <button class="boton boton-contorno" onclick="alert('Detalle del proyecto de demostración')">Ver detalle</button>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="hoja-vida" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Mi hoja de vida investigativa</h2>
+                <p>Completa tu perfil académico y registra tus habilidades y publicaciones.</p>
+                <button class="boton boton-principal" onclick="editarHojaVida()">Editar hoja de vida</button>
+                <div id="formHojaVida" hidden>
+                    <form onsubmit="guardarDemo(event, 'hojaMensaje')">
+                        <div class="auth-campo">
+                            <label for="habilidades">Mis habilidades</label>
+                            <textarea id="habilidades" rows="3" required></textarea>
+                        </div>
+                        <div class="auth-campo">
+                            <label for="intereses">Áreas de interés</label>
+                            <input id="intereses" required>
+                        </div>
+                        <button class="boton boton-principal">Guardar cambios</button>
+                        <p id="hojaMensaje" class="auth-mensaje"></p>
+                    </form>
+                </div>
+            </section>
+
+            <section id="logros" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Mis logros e insignias</h2>
+                <p>🏅 Primer proyecto · ⭐ Participación académica · 📚 Formación investigativa</p>
+                <button class="boton boton-contorno" onclick="alert('Historial de logros de demostración')">
+                    Ver historial
+                </button>
+            </section>
+
+            <section id="eventos" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Próximos eventos</h2>
+                <p>Encuentro de investigación universitaria · Noviembre de 2026</p>
+                <button class="boton boton-contorno" onclick="alert('Listado de eventos de demostración')">
+                    Explorar eventos
+                </button>
+            </section>
+
+            <section id="notificaciones" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Notificaciones</h2>
+                <p>Tienes una actualización pendiente sobre tus actividades investigativas.</p>
+                <button class="boton boton-contorno" onclick="this.previousElementSibling.textContent='No tienes notificaciones pendientes.'">
+                    Marcar como leída
+                </button>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script>
+function editarHojaVida() {
+    const formulario = document.getElementById("formHojaVida");
+    formulario.hidden = !formulario.hidden;
+}
+
+function guardarDemo(event, idMensaje) {
+    event.preventDefault();
+    document.getElementById(idMensaje).textContent =
+        "Cambios de demostración completados. No se guardaron en la base de datos.";
+}
+</script>
+</body>
+</html>

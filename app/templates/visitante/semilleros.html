@@ -4,131 +4,155 @@
 {% block title %}Semilleros de investigación | RIUL{% endblock %}
 
 {% block content %}
+
 <section class="seccion-publica">
     <div class="encabezado-seccion">
-        <span class="etiqueta-seccion">INVESTIGACIÓN UNIVERSITARIA</span>
+        <span class="etiqueta-roja">COMUNIDAD INVESTIGATIVA</span>
         <h1>Semilleros de investigación</h1>
         <p>
-            Explora los espacios académicos donde estudiantes y docentes
-            desarrollan ideas, conocimientos y proyectos de investigación.
+            Descubre los grupos de investigación de la Universidad Libre,
+            conoce sus líneas de trabajo y encuentra un espacio para desarrollar
+            tus ideas y proyectos científicos.
         </p>
     </div>
 
-    <div class="busqueda-seccion">
+    <form class="busqueda-seccion" action="{{ url_for('web.semilleros') }}" method="GET">
         <input
             type="search"
-            id="buscarSemillero"
-            placeholder="Buscar por nombre o área de investigación..."
-            aria-label="Buscar semilleros"
+            name="buscar"
+            placeholder="Buscar semilleros, áreas o investigadores..."
+            value="{{ request.args.get('buscar', '') }}"
         >
-        <select id="filtroArea" aria-label="Filtrar por área">
-            <option value="">Todas las áreas</option>
-            <option value="ingenieria">Ingeniería</option>
-            <option value="sociales">Ciencias sociales</option>
-            <option value="salud">Ciencias de la salud</option>
+
+        <select name="facultad">
+            <option value="">Todas las facultades</option>
+            <option value="Ingeniería">Ingeniería</option>
+            <option value="Ciencias Jurídicas">Ciencias Jurídicas</option>
+            <option value="Ciencias de la Salud">Ciencias de la Salud</option>
+            <option value="Ciencias Económicas">Ciencias Económicas</option>
         </select>
-    </div>
 
-    <div class="rejilla-tarjetas" id="listaSemilleros">
-        <article class="tarjeta-publica" data-area="ingenieria">
-            <div class="icono-tarjeta">🔬</div>
-            <span class="estado-tarjeta">Contenido</span>
-            <h2>Innovación y Tecnología</h2>
-            <p>
-                Espacio de ejemplo dedicado a la exploración de soluciones
-                tecnológicas y al desarrollo de ideas innovadoras.
-            </p>
-            <p class="dato-tarjeta"><strong>Área:</strong> Ingeniería</p>
-            <button type="button" class="boton-secundario"
-                onclick="mostrarDetalle('Innovación y Tecnología',
-                'Contenido demostrativo para la sección de semilleros de RIUL.')">
-                Ver detalles
-            </button>
+        <button type="submit" class="boton boton-principal">
+            Buscar
+        </button>
+    </form>
+
+    <div class="contenedor-tarjetas">
+
+        <article class="tarjeta">
+            <img
+                src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80"
+                alt="Investigación científica en laboratorio"
+            >
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">Ingeniería</span>
+                <h3>Tecnología e Innovación</h3>
+                <p>
+                    Investigación en tecnología, inteligencia artificial,
+                    automatización y desarrollo de soluciones innovadoras.
+                </p>
+                <p><strong>12 integrantes</strong> · 4 proyectos</p>
+                <button
+                    type="button"
+                    class="boton boton-contorno"
+                    onclick="mostrarDetalle('Tecnología e Innovación', 'Ingeniería', 'Investigación en inteligencia artificial, automatización y nuevas tecnologías.', '12', '4')"
+                >
+                    Ver más
+                </button>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-area="sociales">
-            <div class="icono-tarjeta">📚</div>
-            <span class="estado-tarjeta">Contenido</span>
-            <h2>Sociedad y Conocimiento</h2>
-            <p>
-                Espacio de ejemplo para investigar problemáticas sociales
-                y proponer alternativas basadas en el conocimiento.
-            </p>
-            <p class="dato-tarjeta"><strong>Área:</strong> Ciencias sociales</p>
-            <button type="button" class="boton-secundario"
-                onclick="mostrarDetalle('Sociedad y Conocimiento',
-                'Contenido demostrativo para la sección de semilleros de RIUL.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <img
+                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80"
+                alt="Estudiantes trabajando en equipo"
+            >
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">Ciencias Jurídicas</span>
+                <h3>Derecho y Sociedad</h3>
+                <p>
+                    Análisis de problemáticas jurídicas y sociales para
+                    contribuir a la justicia y al desarrollo de la comunidad.
+                </p>
+                <p><strong>8 integrantes</strong> · 2 proyectos</p>
+                <button
+                    type="button"
+                    class="boton boton-contorno"
+                    onclick="mostrarDetalle('Derecho y Sociedad', 'Ciencias Jurídicas', 'Investigación sobre derecho, sociedad, justicia y transformación social.', '8', '2')"
+                >
+                    Ver más
+                </button>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-area="salud">
-            <div class="icono-tarjeta">🧬</div>
-            <span class="estado-tarjeta">Contenido</span>
-            <h2>Ciencia y Bienestar</h2>
-            <p>
-                Espacio de ejemplo para el estudio de temas relacionados
-                con la salud, el bienestar y la calidad de vida.
-            </p>
-            <p class="dato-tarjeta"><strong>Área:</strong> Ciencias de la salud</p>
-            <button type="button" class="boton-secundario"
-                onclick="mostrarDetalle('Ciencia y Bienestar',
-                'Contenido demostrativo para la sección de semilleros de RIUL.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <img
+                src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80"
+                alt="Investigación científica en salud"
+            >
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">Ciencias de la Salud</span>
+                <h3>Salud Pública y Comunidad</h3>
+                <p>
+                    Estudios sobre prevención, bienestar, salud pública
+                    y calidad de vida de las comunidades.
+                </p>
+                <p><strong>15 integrantes</strong> · 5 proyectos</p>
+                <button
+                    type="button"
+                    class="boton boton-contorno"
+                    onclick="mostrarDetalle('Salud Pública y Comunidad', 'Ciencias de la Salud', 'Investigación enfocada en prevención, bienestar y salud comunitaria.', '15', '5')"
+                >
+                    Ver más
+                </button>
+            </div>
         </article>
-    </div>
 
-    <p id="sinResultados" hidden>
-        No se encontraron semilleros con esos criterios.
-    </p>
-
-    <div id="detalleSemillero" class="modal-detalle" hidden>
-        <div class="contenido-modal">
-            <button type="button" class="cerrar-modal"
-                onclick="cerrarDetalle()" aria-label="Cerrar">×</button>
-            <h2 id="tituloDetalle"></h2>
-            <p id="textoDetalle"></p>
-            <button type="button" class="boton-principal"
-                onclick="cerrarDetalle()">Cerrar</button>
-        </div>
     </div>
 </section>
 
+<div id="modalSemillero" class="modal-detalle" hidden>
+    <div class="contenido-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+        <button
+            type="button"
+            class="cerrar-modal"
+            onclick="cerrarDetalle()"
+            aria-label="Cerrar"
+        >&times;</button>
+
+        <span id="modalFacultad" class="etiqueta-roja"></span>
+        <h2 id="modalTitulo"></h2>
+        <p id="modalDescripcion"></p>
+        <p><strong>Integrantes:</strong> <span id="modalIntegrantes"></span></p>
+        <p><strong>Proyectos:</strong> <span id="modalProyectos"></span></p>
+
+        <button type="button" class="boton boton-principal" onclick="cerrarDetalle()">
+            Cerrar
+        </button>
+    </div>
+</div>
+
 <script>
-function mostrarDetalle(titulo, texto) {
-    document.getElementById("tituloDetalle").textContent = titulo;
-    document.getElementById("textoDetalle").textContent = texto;
-    document.getElementById("detalleSemillero").hidden = false;
+function mostrarDetalle(nombre, facultad, descripcion, integrantes, proyectos) {
+    document.getElementById("modalTitulo").textContent = nombre;
+    document.getElementById("modalFacultad").textContent = facultad;
+    document.getElementById("modalDescripcion").textContent = descripcion;
+    document.getElementById("modalIntegrantes").textContent = integrantes;
+    document.getElementById("modalProyectos").textContent = proyectos;
+    document.getElementById("modalSemillero").hidden = false;
 }
 
 function cerrarDetalle() {
-    document.getElementById("detalleSemillero").hidden = true;
+    document.getElementById("modalSemillero").hidden = true;
 }
 
-function filtrarSemilleros() {
-    const texto = document.getElementById("buscarSemillero")
-        .value.toLowerCase().trim();
-    const area = document.getElementById("filtroArea").value;
-    const tarjetas = document.querySelectorAll("#listaSemilleros .tarjeta-publica");
-    let visibles = 0;
-
-    tarjetas.forEach(tarjeta => {
-        const coincideTexto = tarjeta.textContent.toLowerCase().includes(texto);
-        const coincideArea = !area || tarjeta.dataset.area === area;
-        const mostrar = coincideTexto && coincideArea;
-
-        tarjeta.hidden = !mostrar;
-        if (mostrar) visibles++;
-    });
-
-    document.getElementById("sinResultados").hidden = visibles > 0;
-}
-
-document.getElementById("buscarSemillero")
-    .addEventListener("input", filtrarSemilleros);
-document.getElementById("filtroArea")
-    .addEventListener("change", filtrarSemilleros);
+document.getElementById("modalSemillero").addEventListener("click", function(event) {
+    if (event.target === this) {
+        cerrarDetalle();
+    }
+});
 </script>
+
 {% endblock %}
+
 

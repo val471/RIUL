@@ -1,0 +1,58 @@
+
+{% extends "base.html" %}
+
+{% block title %}Contacto | RIUL{% endblock %}
+
+{% block content %}
+<section class="seccion-publica">
+    <div class="encabezado-seccion">
+        <span class="etiqueta-roja">ESTAMOS PARA AYUDARTE</span>
+        <h1>Contacto</h1>
+        <p>¿Tienes dudas sobre los semilleros, proyectos o procesos de investigación? Escríbenos.</p>
+    </div>
+
+    <div class="tarjeta">
+        <div class="tarjeta-contenido">
+            <form id="formContacto">
+                <div class="auth-campo">
+                    <label for="nombre">Nombre completo</label>
+                    <input id="nombre" name="nombre" type="text" required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="correo">Correo institucional</label>
+                    <input id="correo" name="correo" type="email" required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="asunto">Asunto</label>
+                    <select id="asunto" name="asunto" required>
+                        <option value="">Selecciona un asunto</option>
+                        <option>Información sobre semilleros</option>
+                        <option>Información sobre proyectos</option>
+                        <option>Eventos académicos</option>
+                        <option>Soporte de la plataforma</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="mensaje">Mensaje</label>
+                    <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+                </div>
+
+                <button class="boton boton-principal" type="submit">Enviar mensaje</button>
+                <p id="mensajeContacto" class="auth-mensaje"></p>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById("formContacto").addEventListener("submit", function(event) {
+    event.preventDefault();
+    document.getElementById("mensajeContacto").textContent =
+        "Formulario de demostración: el envío se habilitará próximamente.";
+});
+</script>
+{% endblock %}

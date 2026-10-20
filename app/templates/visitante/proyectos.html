@@ -1,4 +1,4 @@
-```html
+
 {% extends "base.html" %}
 
 {% block title %}Proyectos de investigación | RIUL{% endblock %}
@@ -6,134 +6,55 @@
 {% block content %}
 <section class="seccion-publica">
     <div class="encabezado-seccion">
-        <span class="etiqueta-seccion">PRODUCCIÓN INVESTIGATIVA</span>
+        <span class="etiqueta-roja">INVESTIGACIÓN UNIVERSITARIA</span>
         <h1>Proyectos de investigación</h1>
-        <p>
-            Conoce las iniciativas de investigación que promueven la
-            innovación, el conocimiento y la solución de problemas sociales.
-        </p>
+        <p>Explora los proyectos desarrollados por nuestra comunidad académica y conoce sus avances, objetivos y resultados.</p>
     </div>
 
-    <div class="busqueda-seccion">
-        <input
-            type="search"
-            id="buscarProyecto"
-            placeholder="Buscar proyectos por nombre o descripción..."
-            aria-label="Buscar proyectos"
-        >
-
-        <select id="filtroEstado" aria-label="Filtrar proyectos por estado">
+    <form class="busqueda-seccion" method="GET">
+        <input type="search" name="buscar" placeholder="Buscar proyectos..." value="{{ request.args.get('buscar', '') }}">
+        <select name="estado">
             <option value="">Todos los estados</option>
-            <option value="En desarrollo">En desarrollo</option>
-            <option value="Finalizado">Finalizado</option>
-            <option value="En planeación">En planeación</option>
+            <option value="ACTIVO">Activo</option>
+            <option value="REVISION">En revisión</option>
+            <option value="FINALIZADO">Finalizado</option>
         </select>
-    </div>
+        <button class="boton boton-principal" type="submit">Buscar</button>
+    </form>
 
-    <div class="rejilla-tarjetas" id="listaProyectos">
-        <article class="tarjeta-publica" data-estado="En desarrollo">
-            <div class="icono-tarjeta">💡</div>
-            <span class="estado-tarjeta">En desarrollo</span>
-            <h2>Innovación tecnológica</h2>
-            <p>
-                Proyecto demostrativo orientado al desarrollo de soluciones
-                tecnológicas para necesidades del entorno.
-            </p>
-            <p class="dato-tarjeta"><strong>Estado:</strong> En desarrollo</p>
-            <button class="boton-secundario" type="button"
-                onclick="verDetalleProyecto('Innovación tecnológica',
-                'Proyecto demostrativo de investigación e innovación tecnológica.')">
-                Ver detalles
-            </button>
+    <div class="contenedor-tarjetas">
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="estado estado-activo">Activo</span>
+                <h3>Plataforma de innovación tecnológica</h3>
+                <p>Desarrollo de soluciones digitales para apoyar procesos de investigación universitaria.</p>
+                <p><strong>Semillero:</strong> Tecnología e Innovación</p>
+                <p><strong>Año:</strong> 2026</p>
+                <a class="boton boton-contorno" href="#proyecto1">Ver proyecto</a>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-estado="En planeación">
-            <div class="icono-tarjeta">🌱</div>
-            <span class="estado-tarjeta">En planeación</span>
-            <h2>Sostenibilidad ambiental</h2>
-            <p>
-                Iniciativa demostrativa sobre prácticas sostenibles y
-                alternativas para el cuidado del medio ambiente.
-            </p>
-            <p class="dato-tarjeta"><strong>Estado:</strong> En planeación</p>
-            <button class="boton-secundario" type="button"
-                onclick="verDetalleProyecto('Sostenibilidad ambiental',
-                'Proyecto demostrativo sobre sostenibilidad y cuidado ambiental.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="estado estado-revision">En revisión</span>
+                <h3>Estudio de impacto social comunitario</h3>
+                <p>Análisis de estrategias para fortalecer el bienestar y la participación de las comunidades.</p>
+                <p><strong>Semillero:</strong> Derecho y Sociedad</p>
+                <p><strong>Año:</strong> 2026</p>
+                <a class="boton boton-contorno" href="#proyecto2">Ver proyecto</a>
+            </div>
         </article>
 
-        <article class="tarjeta-publica" data-estado="Finalizado">
-            <div class="icono-tarjeta">📊</div>
-            <span class="estado-tarjeta">Finalizado</span>
-            <h2>Análisis de datos</h2>
-            <p>
-                Ejemplo de proyecto enfocado en el análisis de información
-                para apoyar la toma de decisiones.
-            </p>
-            <p class="dato-tarjeta"><strong>Estado:</strong> Finalizado</p>
-            <button class="boton-secundario" type="button" 
-                onclick="verDetalleProyecto('Análisis de datos',
-                'Proyecto demostrativo de análisis de información.')">
-                Ver detalles
-            </button>
+        <article class="tarjeta">
+            <div class="tarjeta-contenido">
+                <span class="estado estado-finalizado">Finalizado</span>
+                <h3>Estrategias de bienestar y salud</h3>
+                <p>Investigación sobre prevención y promoción de hábitos saludables en la comunidad.</p>
+                <p><strong>Semillero:</strong> Salud Pública y Comunidad</p>
+                <p><strong>Año:</strong> 2025</p>
+                <a class="boton boton-contorno" href="#proyecto3">Ver proyecto</a>
+            </div>
         </article>
-    </div>
-
-    <p id="sinProyectos" hidden>
-        No se encontraron proyectos con esos criterios.
-    </p>
-
-    <div id="modalProyecto" class="modal-detalle" hidden>
-        <div class="contenido-modal">
-            <button class="cerrar-modal" type="button"
-                onclick="cerrarDetalleProyecto()" aria-label="Cerrar">×</button>
-            <h2 id="tituloProyecto"></h2>
-            <p id="descripcionProyecto"></p>
-            <button class="boton-principal" type="button"
-                onclick="cerrarDetalleProyecto()">Cerrar</button>
-        </div>
     </div>
 </section>
-
-<script>
-function verDetalleProyecto(titulo, descripcion) {
-    document.getElementById("tituloProyecto").textContent = titulo;
-    document.getElementById("descripcionProyecto").textContent = descripcion;
-    document.getElementById("modalProyecto").hidden = false;
-}
-
-function cerrarDetalleProyecto() {
-    document.getElementById("modalProyecto").hidden = true;
-}
-
-function filtrarProyectos() {
-    const texto = document.getElementById("buscarProyecto")
-        .value.toLowerCase().trim();
-    const estado = document.getElementById("filtroEstado").value;
-    const tarjetas = document.querySelectorAll(
-        "#listaProyectos .tarjeta-publica"
-    );
-
-    let visibles = 0;
-
-    tarjetas.forEach(tarjeta => {
-        const coincideTexto = tarjeta.textContent.toLowerCase().includes(texto);
-        const coincideEstado = !estado || tarjeta.dataset.estado === estado;
-        const mostrar = coincideTexto && coincideEstado;
-
-        tarjeta.hidden = !mostrar;
-        if (mostrar) visibles++;
-    });
-
-    document.getElementById("sinProyectos").hidden = visibles > 0;
-}
-
-document.getElementById("buscarProyecto")
-    .addEventListener("input", filtrarProyectos);
-
-document.getElementById("filtroEstado")
-    .addEventListener("change", filtrarProyectos);
-</script>
 {% endblock %}
-```

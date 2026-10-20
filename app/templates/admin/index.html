@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del administrador | RIUL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="panel-layout">
+    <aside class="panel-sidebar">
+        <a href="/" class="logo">RIUL</a>
+        <p>Administración</p>
+        <nav class="panel-menu">
+            <a href="#inicio" class="activo">Dashboard</a>
+            <a href="#usuarios">Usuarios</a>
+            <a href="#solicitudes">Solicitudes</a>
+            <a href="#semilleros">Semilleros</a>
+            <a href="#proyectos">Proyectos</a>
+            <a href="#facultades">Facultades</a>
+            <a href="#reportes">Reportes</a>
+            <a href="/">Cerrar sesión</a>
+        </nav>
+    </aside>
+
+    <main class="panel-principal">
+        <header class="panel-encabezado">
+            <div>
+                <h1>Panel de administración</h1>
+                <p>Supervisa la actividad y gestiona la plataforma RIUL.</p>
+            </div>
+            <button class="boton boton-contorno" onclick="alert('Perfil del administrador de demostración')">Mi perfil</button>
+        </header>
+
+        <div class="panel-contenido" style="display:block">
+            <section id="inicio" class="panel-banner">
+                <h1>Administración de RIUL</h1>
+                <p>Consulta indicadores y gestiona las solicitudes de la comunidad universitaria.</p>
+            </section>
+
+            <div class="panel-estadisticas">
+                <div class="panel-estadistica"><strong id="totalUsuarios">128</strong><span>Usuarios registrados</span></div>
+                <div class="panel-estadistica"><strong>14</strong><span>Semilleros</span></div>
+                <div class="panel-estadistica"><strong>32</strong><span>Proyectos</span></div>
+                <div class="panel-estadistica"><strong id="totalPendientes">3</strong><span>Solicitudes pendientes</span></div>
+            </div>
+
+            <section id="solicitudes" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Solicitudes pendientes</h2>
+                <div class="tabla-contenedor">
+                    <table class="tabla">
+                        <thead>
+                            <tr><th>Solicitante</th><th>Correo</th><th>Rol solicitado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="tablaAdminSolicitudes">
+                            <tr>
+                                <td>María Rodríguez</td><td>maria@unilibre.edu.co</td><td>Estudiante</td>
+                                <td>
+                                    <button class="boton boton-principal" onclick="resolverAdmin(this,'Aprobada')">Aprobar</button>
+                                    <button class="boton boton-secundario" onclick="resolverAdmin(this,'Rechazada')">Rechazar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pedro Sánchez</td><td>pedro@unilibre.edu.co</td><td>Docente</td>
+                                <td>
+                                    <button class="boton boton-principal" onclick="resolverAdmin(this,'Aprobada')">Aprobar</button>
+                                    <button class="boton boton-secundario" onclick="resolverAdmin(this,'Rechazada')">Rechazar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Lucía Herrera</td><td>lucia@unilibre.edu.co</td><td>Estudiante</td>
+                                <td>
+                                    <button class="boton boton-principal" onclick="resolverAdmin(this,'Aprobada')">Aprobar</button>
+                                    <button class="boton boton-secundario" onclick="resolverAdmin(this,'Rechazada')">Rechazar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="usuarios" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Gestión de usuarios</h2>
+                <input id="buscarUsuario" placeholder="Buscar por nombre, correo o rol..." oninput="filtrarUsuarios()">
+
+                <div class="tabla-contenedor" style="margin-top:15px">
+                    <table class="tabla">
+                        <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead>
+                        <tbody id="tablaUsuarios">
+                            <tr><td>Laura Martínez</td><td>laura@unilibre.edu.co</td><td>Estudiante</td><td>Activo</td><td><button class="boton boton-secundario" onclick="cambiarEstado(this)">Desactivar</button></td></tr>
+                            <tr><td>Andrés Gómez</td><td>andres@unilibre.edu.co</td><td>Docente</td><td>Activo</td><td><button class="boton boton-secundario" onclick="cambiarEstado(this)">Desactivar</button></td></tr>
+                            <tr><td>Camila Torres</td><td>camila@unilibre.edu.co</td><td>Estudiante</td><td>Pendiente</td><td><button class="boton boton-principal" onclick="cambiarEstado(this)">Activar</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="semilleros" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Semilleros registrados</h2>
+                <p>Consulta la actividad de los grupos de investigación de la plataforma.</p>
+                <button class="boton boton-contorno" onclick="alert('Listado de semilleros de demostración')">Consultar semilleros</button>
+            </section>
+
+            <section id="proyectos" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Proyectos registrados</h2>
+                <p>Revisa los proyectos y sus estados generales.</p>
+                <button class="boton boton-contorno" onclick="alert('Listado de proyectos de demostración')">Consultar proyectos</button>
+            </section>
+
+            <section id="facultades" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Facultades</h2>
+                <ul>
+                    <li>Ingeniería</li>
+                    <li>Ciencias Jurídicas</li>
+                    <li>Ciencias de la Salud</li>
+                    <li>Ciencias Económicas</li>
+                </ul>
+                <button class="boton boton-principal" onclick="crearFacultad()">Agregar facultad de prueba</button>
+                <div id="listaFacultades"></div>
+            </section>
+
+            <section id="reportes" class="panel-tarjeta" style="margin-top:25px">
+                <h2>Reportes generales</h2>
+                <p>Genera un resumen demostrativo de la información mostrada en el panel.</p>
+                <button class="boton boton-principal" onclick="generarReporte()">Generar reporte</button>
+                <pre id="resultadoReporte" hidden></pre>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script>
+function resolverAdmin(boton, estado) {
+    const fila = boton.closest("tr");
+    fila.cells[3].textContent = estado + " (demostración)";
+    fila.cells[3].style.color = estado === "Aprobada" ? "#16834A" : "#C8102E";
+    fila.cells[3].style.fontWeight = "bold";
+    fila.cells[3].colSpan = 1;
+    fila.cells[0].style.textDecoration = "line-through";
+    fila.cells[3].dataset.estado = estado;
+    fila.cells[0].title = "Solicitud " + estado.toLowerCase();
+    fila.cells[3].parentElement.cells[3].textContent = estado;
+    fila.cells[3].parentElement.cells[4]?.remove();
+    actualizarPendientes();
+}
+
+function actualizarPendientes() {
+    const pendientes = [...document.querySelectorAll("#tablaAdminSolicitudes tr")]
+        .filter(fila => !fila.cells[0].style.textDecoration.includes("line-through")).length;
+    document.getElementById("totalPendientes").textContent = pendientes;
+}
+
+function filtrarUsuarios() {
+    const filtro = document.getElementById("buscarUsuario").value.toLowerCase();
+    document.querySelectorAll("#tablaUsuarios tr").forEach(fila => {
+        fila.hidden = !fila.textContent.toLowerCase().includes(filtro);
+    });
+}
+
+function cambiarEstado(boton) {
+    const fila = boton.closest("tr");
+    const estado = fila.cells[3];
+    if (estado.textContent === "Activo") {
+        estado.textContent = "Inactivo";
+        boton.textContent = "Activar";
+    } else {
+        estado.textContent = "Activo";
+        boton.textContent = "Desactivar";
+    }
+}
+
+function crearFacultad() {
+    const nombre = prompt("Nombre de la nueva facultad:");
+    if (!nombre || !nombre.trim()) return;
+    const elemento = document.createElement("p");
+    elemento.textContent = nombre.trim();
+    document.getElementById("listaFacultades").appendChild(elemento);
+}
+
+function generarReporte() {
+    const filas = document.querySelectorAll("#tablaUsuarios tr");
+    const reporte = {
+        usuariosDemostracion: filas.length,
+        solicitudesPendientes: document.getElementById("totalPendientes").textContent,
+        fechaGeneracion: new Date().toLocaleDateString("es-CO"),
+        nota: "Datos de prueba; no representan cifras reales de la base de datos."
+    };
+    const salida = document.getElementById("resultadoReporte");
+    salida.textContent = JSON.stringify(reporte, null, 2);
+    salida.hidden = false;
+}
+</script>
+</body>
+</html>

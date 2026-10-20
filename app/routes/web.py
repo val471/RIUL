@@ -1,11 +1,11 @@
 
+
 from flask import Blueprint, render_template
 
 web = Blueprint("web", __name__)
 
 
 # PÁGINAS PÚBLICAS
-
 @web.route("/")
 def inicio():
     return render_template("index.html")
@@ -28,16 +28,10 @@ def eventos():
 
 @web.route("/contacto")
 def contacto():
-    return render_template(
-        "visitante/pagina.html",
-        titulo="Contacto",
-        descripcion="Comunícate con la Red de Investigación Universidad Libre.",
-        seccion="contacto"
-    )
+    return render_template("visitante/contacto.html")
 
 
-# AUTENTICACIÓN VISUAL (sin validaciones de momento para los usuarios)
-
+# AUTENTICACIÓN
 @web.route("/iniciar-sesion")
 def iniciar_sesion():
     return render_template("auth/login.html")
@@ -48,33 +42,17 @@ def registro():
     return render_template("auth/registro.html")
 
 
-# PÁGINAS DE LOS ROLES (Temporales para navegación)
-
+# PANELES POR ROL
 @web.route("/estudiante")
-def estudiante():
-    return render_template(
-        "visitante/pagina.html",
-        titulo="Panel del estudiante",
-        descripcion="Aquí podrás consultar tus proyectos, semilleros y actividades de investigación.",
-        seccion="estudiante"
-    )
+def panel_estudiante():
+    return render_template("estudiante/index.html")
 
 
 @web.route("/docente")
-def docente():
-    return render_template(
-        "visitante/pagina.html",
-        titulo="Panel del docente",
-        descripcion="Aquí podrás gestionar semilleros, proyectos y actividades de investigación.",
-        seccion="docente"
-    )
+def panel_docente():
+    return render_template("docente/index.html")
 
 
 @web.route("/administrador")
-def administrador():
-    return render_template(
-        "visitante/pagina.html",
-        titulo="Panel del administrador",
-        descripcion="Aquí podrás administrar usuarios y gestionar la plataforma RIUL.",
-        seccion="administrador"
-    )
+def panel_administrador():
+    return render_template("administrador/index.html")
