@@ -4,103 +4,152 @@
 {% block title %}Crear cuenta | RIUL{% endblock %}
 
 {% block content %}
-<section class="auth-pagina">
-    <div class="auth-tarjeta auth-tarjeta-registro">
-        <a href="{{ url_for('web.inicio') }}" class="auth-logo">RIUL</a>
 
-        <span class="etiqueta-seccion">ÚNETE A NUESTRA COMUNIDAD</span>
-        <h1>Crea tu cuenta</h1>
-        <p class="auth-descripcion">
-            Forma parte de la Red de Investigación Universidad Libre.
-        </p>
+<main class="auth-pagina">
 
-        <form id="formRegistro">
-            <div class="auth-campo">
-                <label for="nombreRegistro">Nombre completo</label>
-                <input
-                    type="text"
-                    id="nombreRegistro"
-                    name="nombre"
-                    placeholder="Escribe tu nombre completo"
-                    autocomplete="name"
-                    required
-                >
-            </div>
-
-            <div class="auth-campo">
-                <label for="correoRegistro">Correo institucional</label>
-                <input
-                    type="email"
-                    id="correoRegistro"
-                    name="correo"
-                    placeholder="nombre@unilibre.edu.co"
-                    autocomplete="email"
-                    required
-                >
-            </div>
-
-            <div class="auth-campo">
-                <label for="rolRegistro">Tipo de usuario</label>
-                <select id="rolRegistro" name="rol" required>
-                    <option value="">Selecciona tu rol</option>
-                    <option value="ESTUDIANTE">Estudiante</option>
-                    <option value="DOCENTE">Docente</option>
-                </select>
-            </div>
-
-            <div class="auth-campo">
-                <label for="contrasenaRegistro">Contraseña</label>
-                <input
-                    type="password"
-                    id="contrasenaRegistro"
-                    name="contrasena"
-                    placeholder="Mínimo 8 caracteres"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-            </div>
-
-            <div class="auth-campo">
-                <label for="confirmarContrasena">Confirmar contraseña</label>
-                <input
-                    type="password"
-                    id="confirmarContrasena"
-                    name="confirmar_contrasena"
-                    placeholder="Repite tu contraseña"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-            </div>
-
-            <button type="submit" class="auth-boton">
-                Crear cuenta
-            </button>
-
-            <p id="mensajeRegistro" class="auth-mensaje" role="status"></p>
-        </form>
-
-        <div class="auth-separador"></div>
-
-        <p class="auth-pie">
-            ¿Ya tienes una cuenta?
-            <a href="{{ url_for('web.iniciar_sesion') }}">Inicia sesión</a>
-        </p>
-
-        <a href="{{ url_for('web.inicio') }}" class="auth-volver">
-            ← Volver al inicio
+    <section class="auth-lateral">
+        <a href="{{ url_for('web.inicio') }}"
+           class="logo"
+           style="color: white;">
+            RIUL
         </a>
-    </div>
-</section>
+
+        <p class="etiqueta-roja" style="color: white;">
+            Red de Investigación Universidad Libre
+        </p>
+
+        <h1>Tu investigación comienza aquí.</h1>
+
+        <p>
+            Crea tu cuenta en RIUL y conecta con investigadores,
+            semilleros y proyectos de la comunidad universitaria.
+        </p>
+
+        <p>
+            <strong>Investigar, compartir y crecer.</strong>
+        </p>
+    </section>
+
+    <!-- Formulario de registro -->
+    <section class="auth-contenedor">
+        <div class="auth-tarjeta">
+
+            <a href="{{ url_for('web.inicio') }}" class="logo">
+                RIUL
+            </a>
+
+            <p class="etiqueta-roja">ÚNETE A NUESTRA COMUNIDAD</p>
+
+            <h2>Crea tu cuenta</h2>
+
+            <p class="auth-descripcion">
+                Completa tus datos para formar parte de RIUL.
+            </p>
+
+            <form id="formRegistro">
+
+                <div class="auth-campo">
+                    <label for="nombreRegistro">Nombre completo</label>
+                    <input
+                        type="text"
+                        id="nombreRegistro"
+                        name="nombre"
+                        placeholder="Escribe tu nombre completo"
+                        autocomplete="name"
+                        required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="correoRegistro">Correo institucional</label>
+                    <input
+                        type="email"
+                        id="correoRegistro"
+                        name="correo"
+                        placeholder="nombre@unilibre.edu.co"
+                        autocomplete="email"
+                        required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="rolRegistro">Tipo de usuario</label>
+                    <select id="rolRegistro" name="rol" required>
+                        <option value="">Selecciona tu rol</option>
+                        <option value="ESTUDIANTE">Estudiante</option>
+                        <option value="DOCENTE">Docente</option>
+                    </select>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="contrasenaRegistro">Contraseña</label>
+                    <input
+                        type="password"
+                        id="contrasenaRegistro"
+                        name="contrasena"
+                        placeholder="Mínimo 8 caracteres"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="confirmarContrasena">
+                        Confirmar contraseña
+                    </label>
+                    <input
+                        type="password"
+                        id="confirmarContrasena"
+                        name="confirmar_contrasena"
+                        placeholder="Repite tu contraseña"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required>
+                </div>
+
+                <button type="submit" class="auth-boton">
+                    Crear cuenta
+                </button>
+
+                <p id="mensajeRegistro"
+                   class="mensaje-demo"
+                   role="status"
+                   hidden></p>
+
+            </form>
+
+            <div class="demo-cuentas">
+                <p style="margin: 0; text-align: center;">
+                    ¿Ya tienes una cuenta?
+                    <a href="{{ url_for('web.iniciar_sesion') }}">
+                        Inicia sesión
+                    </a>
+                </p>
+            </div>
+
+            <p style="margin-top: 18px; text-align: center;">
+                <a href="{{ url_for('web.inicio') }}">
+                    ← Volver al inicio
+                </a>
+            </p>
+
+        </div>
+    </section>
+
+</main>
 
 <script>
 document.getElementById("formRegistro").addEventListener("submit", function(event) {
     event.preventDefault();
 
-    const contrasena = document.getElementById("contrasenaRegistro").value;
-    const confirmar = document.getElementById("confirmarContrasena");
-    const mensaje = document.getElementById("mensajeRegistro");
+    const contrasena =
+        document.getElementById("contrasenaRegistro").value;
+
+    const confirmar =
+        document.getElementById("confirmarContrasena");
+
+    const mensaje =
+        document.getElementById("mensajeRegistro");
+
+    mensaje.hidden = true;
 
     if (contrasena !== confirmar.value) {
         confirmar.setCustomValidity("Las contraseñas no coinciden.");
@@ -109,8 +158,10 @@ document.getElementById("formRegistro").addEventListener("submit", function(even
         return;
     }
 
+    mensaje.hidden = false;
     mensaje.textContent =
-        "El formulario está listo. El registro se habilitará al conectar la base de datos.";
+        "El formulario está validado. El registro real estará disponible cuando se conecte la base de datos.";
 });
 </script>
+
 {% endblock %}

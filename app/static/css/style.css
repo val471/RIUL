@@ -1023,3 +1023,46 @@ button:focus-visible {
         font-size: 22px;
     }
 }
+
+/* Registro: mismo diseño que inicio de sesión */
+.auth-tarjeta .etiqueta-roja {
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.auth-tarjeta h2 {
+    margin-bottom: 8px;
+}
+
+.auth-descripcion {
+    margin-top: 0;
+    margin-bottom: 24px;
+    color: var(--gris-riul);
+}
+
+/* El registro necesita más espacio vertical */
+.auth-tarjeta:has(#formRegistro) {
+    max-width: 500px;
+    margin: 20px 0;
+}
+
+/* Enlaces dentro de la tarjeta */
+.auth-tarjeta a:not(.logo) {
+    color: var(--rojo-riul);
+    font-weight: 600;
+}
+
+.auth-tarjeta a:not(.logo):hover {
+    text-decoration: underline;
+}
+
+/* En pantallas pequeñas, evitar desbordamientos */
+@media (max-width: 760px) {
+    .auth-tarjeta:has(#formRegistro) {
+        margin: 0;
+    }
+
+    .auth-pagina .auth-lateral {
+        padding: 28px;
+    }
+}
