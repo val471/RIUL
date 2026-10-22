@@ -1,62 +1,136 @@
-
-{% extends "admin/base_admin.html" %}
-
-{% block titulo %}Panel administrador | RIUL{% endblock %}
-
-{% block contenido_admin %}
-<section class="admin-pagina">
-    <header class="admin-encabezado">
-        <div>
-            <span class="admin-etiqueta">RED DE INVESTIGACIÓN UNIVERSIDAD LIBRE</span>
-            <h2>Panel de administración</h2>
-            <p>Bienvenido. Desde aquí puedes supervisar la actividad de RIUL.</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador | RIUL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root{--rojo:#c8102e;--rojo-claro:#fff0f2;--texto:#111827;--gris:#64748b;--fondo:#f8f7f7;--borde:#e2e8f0;--verde:#059669}
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--fondo);color:var(--texto);font-family:Arial,Helvetica,sans-serif}
+        .admin-shell{min-height:100vh;display:flex}
+        .admin-sidebar{width:382px;flex-shrink:0;background:#fff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;min-height:100vh}
+        .admin-brand{display:flex;align-items:center;gap:18px;padding:22px 28px 30px;border-bottom:1px solid #f1f1f1}
+        .admin-brand-mark{width:56px;height:56px;border-radius:18px;background:var(--rojo);color:#fff;display:grid;place-items:center;font-size:27px;font-weight:800}
+        .admin-brand h2{margin:0;font-size:25px}.admin-brand p{margin:13px 0 0;color:#94a3b8;font-size:18px}
+        .admin-nav{padding:17px 17px;display:grid;gap:7px}
+        .admin-nav a{display:flex;align-items:center;gap:19px;padding:17px 14px;border-radius:17px;color:#475569;text-decoration:none;font-size:23px}
+        .admin-nav a.active,.admin-nav a:hover{background:#fdecef;color:var(--rojo)}
+        .admin-nav .nav-icon{width:24px;text-align:center;font-size:24px}
+        .admin-user{margin-top:auto;border-top:1px solid #f1f1f1;padding:25px 28px;display:flex;align-items:center;gap:14px}
+        .admin-avatar{width:54px;height:54px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;background:var(--rojo);color:#fff;font-weight:700;font-size:20px}
+        .admin-user strong{font-size:19px}.admin-user small{display:block;color:#94a3b8;font-size:17px;margin-top:7px}
+        .admin-main{flex:1;min-width:0}
+        .admin-topbar{height:76px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 32px;border-bottom:1px solid #f1f1f1}
+        .admin-topbar h2{margin:0;font-size:24px}.admin-topbar p{margin:5px 0 0;color:#94a3b8;font-size:17px}
+        .admin-top-icons{font-size:25px;color:#64748b}
+        .admin-content{padding:30px 32px 50px}
+        .eyebrow{color:var(--rojo);font-weight:800;letter-spacing:4px;font-size:17px;margin:20px 0 10px}
+        .page-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:35px}
+        .page-heading h1{font-size:43px;margin:0 0 10px;letter-spacing:-1px}
+        .page-heading p{font-size:22px;color:#64748b;margin:0}
+        .btn{border:1px solid var(--borde);border-radius:15px;background:#fff;color:#334155;padding:15px 22px;font-size:18px;cursor:pointer}
+        .btn-red{background:var(--rojo);border-color:var(--rojo);color:#fff;box-shadow:0 3px 6px #00000012}
+        .btn-soft-red{background:#fff0f2;color:var(--rojo);border-color:transparent}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-bottom:36px}
+        .stat-card{background:#fff;border-radius:24px;padding:28px;min-height:180px;box-shadow:0 10px 35px #0f172a08}
+        .stat-icon{width:57px;height:57px;border-radius:17px;background:#fdecef;color:var(--rojo);display:grid;place-items:center;font-size:26px;margin-bottom:25px}
+        .stat-card strong{display:block;font-size:42px;line-height:1.1;margin-bottom:5px}
+        .stat-card span{font-size:20px}.stat-card small{display:block;color:#94a3b8;font-size:16px;margin-top:9px}
+        .admin-card{background:#fff;border-radius:24px;box-shadow:0 10px 35px #0f172a08;overflow:hidden;margin-top:25px}
+        .card-heading{padding:28px 26px 24px}.card-heading h2{font-size:24px;margin:0 0 8px}.card-heading p{font-size:18px;color:#64748b;margin:0}
+        .toolbar{display:flex;gap:18px;padding:0 26px 24px}.search{flex:1;min-width:0;border:1px solid var(--borde);border-radius:17px;padding:17px 20px;font-size:20px;outline-color:#fda4af}
+        .filter{border:1px solid var(--borde);border-radius:17px;background:#fff;padding:0 18px;font-size:19px;min-width:190px}
+        .table-wrap{width:100%;overflow-x:auto}
+        table{border-collapse:collapse;width:100%;min-width:700px;text-align:left}
+        thead{background:#f8fafc;color:#64748b}
+        th{padding:19px 25px;font-size:16px;text-transform:uppercase}
+        td{padding:23px 25px;border-bottom:1px solid #f1f5f9;font-size:18px;vertical-align:middle}
+        tbody tr:last-child td{border-bottom:0}
+        .person{display:flex;align-items:center;gap:16px;min-width:250px}.person .admin-avatar{width:62px;height:62px}
+        .person strong{display:block;font-size:18px}.person small{display:block;margin-top:7px;color:#94a3b8;font-size:15px}
+        .role-select{width:100%;min-width:200px;border:1px solid var(--borde);border-radius:12px;padding:11px 14px;background:#fff;font-size:17px}
+        .status{display:inline-block;padding:9px 16px;border-radius:30px;background:#e9fbf4;color:#00865b;font-weight:700;white-space:nowrap}
+        .status.suspended{background:#fff0f2;color:#c8102e}
+        .empty-state{padding:25px;color:#64748b}
+        .admin-page{display:none}.admin-page.active-page{display:block}
+        @media(max-width:1000px) and (min-width:601px){.admin-sidebar{width:280px;flex-shrink:0}.admin-nav a{font-size:18px}.page-heading h1{font-size:34px}.admin-content{padding:24px 20px}}
+        @media(max-width:600px){.admin-shell{display:block}.admin-sidebar{width:100%;min-height:auto}.admin-brand{padding:15px}.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}.admin-nav a{font-size:15px;padding:12px;gap:8px}.admin-user{display:none}.admin-topbar{height:auto;padding:15px}.admin-content{padding:18px 12px}.page-heading{align-items:flex-start;flex-direction:column}.page-heading h1{font-size:30px}.page-heading p{font-size:17px}.stats-grid{grid-template-columns:1fr;gap:14px}.stat-card{min-height:auto}.toolbar{flex-direction:column;padding:0 15px 18px}.filter{min-height:50px}.card-heading{padding:20px 16px}td{padding:15px}}
+    </style>
+</head>
+<body>
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-brand-mark">R</div>
+            <div><h2>RIUL</h2><p>Sistema de Investigación</p></div>
         </div>
-    </header>
+        <nav class="admin-nav">
+            <a href="#inicio" class="active" data-page="inicio"><span class="nav-icon">⌂</span>Inicio</a>
+            <a href="#usuarios" data-page="usuarios"><span class="nav-icon">♙</span>Usuarios</a>
+            <a href="#facultades" data-page="facultades"><span class="nav-icon">▦</span>Facultades y Programas</a>
+            <a href="#semilleros" data-page="semilleros"><span class="nav-icon">♜</span>Semilleros</a>
+            <a href="#eventos" data-page="eventos"><span class="nav-icon">▣</span>Convocatorias y Eventos</a>
+            <a href="#logros" data-page="logros"><span class="nav-icon">✓</span>Validación de logros</a>
+            <a href="#solicitudes" data-page="solicitudes"><span class="nav-icon">▤</span>Solicitudes</a>
+            <a href="#informes" data-page="informes"><span class="nav-icon">▥</span>Informes</a>
+            <a href="#ranking" data-page="ranking"><span class="nav-icon">◇</span>Top 10 de clasificación</a>
+        </nav>
+        <div class="admin-user"><div class="admin-avatar">CM</div><div><strong>Carlos Moreno</strong><small>Administrador</small></div><span style="margin-left:auto;color:#94a3b8">⇥</span></div>
+    </aside>
 
-    <div class="admin-tarjetas">
-        <article class="admin-tarjeta">
-            <p>Facultades</p>
-            <h2>8</h2>
-            <a href="/admin/facultades">Gestionar facultades →</a>
-        </article>
-        <article class="admin-tarjeta">
-            <p>Semilleros</p>
-            <h2>24</h2>
-            <a href="/admin/semilleros">Gestionar semilleros →</a>
-        </article>
-        <article class="admin-tarjeta">
-            <p>Usuarios</p>
-            <h2>186</h2>
-            <a href="/admin/usuarios">Gestionar usuarios →</a>
-        </article>
-        <article class="admin-tarjeta">
-            <p>Solicitudes pendientes</p>
-            <h2>7</h2>
-            <a href="/admin/solicitudes">Revisar solicitudes →</a>
-        </article>
-    </div>
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div><h2 id="topTitle">Inicio</h2><p>Universidad Libre · RIUL</p></div>
+            <div class="admin-top-icons" aria-label="Notificaciones">♧ <span style="color:#c8102e;font-size:15px">●</span></div>
+        </header>
+        <div class="admin-content">
+            <section class="admin-page active-page" id="page-inicio">
+                <p class="eyebrow">ADMINISTRACIÓN</p>
+                <div class="page-heading"><div><h1>Resumen institucional</h1><p>Actividad de la plataforma y decisiones pendientes.</p></div></div>
+                <div class="stats-grid">
+                    <article class="stat-card"><div class="stat-icon">♙</div><strong>284</strong><span>Usuarios activos</span><small>+12 este mes</small></article>
+                    <article class="stat-card"><div class="stat-icon">♜</div><strong>38</strong><span>Semilleros</span><small>34 activos</small></article>
+                    <article class="stat-card"><div class="stat-icon">▤</div><strong>3</strong><span>Solicitudes</span><small>Requieren revisión</small></article>
+                    <article class="stat-card"><div class="stat-icon">◇</div><strong>2</strong><span>Logros por validar</span><small>Calificados por docentes</small></article>
+                </div>
+                <section class="admin-card"><div class="card-heading"><h2>Solicitudes de registro</h2><p>Aprueba o rechaza el acceso a RIUL.</p></div>
+                    <div class="table-wrap"><table><thead><tr><th>Solicitante</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody id="requestsTable">
+                        <tr><td><div class="person"><div class="admin-avatar">VR</div><div><strong>Valentina Rojas</strong><small>Estudiante</small></div></div></td><td>valentina.rojas@unilibre.edu.co</td><td>Estudiante</td><td><span class="status">Pendiente</span></td><td><button class="btn" onclick="resolveRequest(this,'Aprobada')">Aprobar</button> <button class="btn btn-soft-red" onclick="resolveRequest(this,'Rechazada')">Rechazar</button></td></tr>
+                        <tr><td><div class="person"><div class="admin-avatar">JP</div><div><strong>Juan Pérez</strong><small>Docente</small></div></div></td><td>juan.perez@unilibre.edu.co</td><td>Docente</td><td><span class="status">Pendiente</span></td><td><button class="btn" onclick="resolveRequest(this,'Aprobada')">Aprobar</button> <button class="btn btn-soft-red" onclick="resolveRequest(this,'Rechazada')">Rechazar</button></td></tr>
+                    </tbody></table></div>
+                </section>
+            </section>
 
-    <div class="admin-tarjetas admin-inicio-columnas">
-        <section class="admin-tarjeta">
-            <h3>Accesos rápidos</h3>
-            <ul>
-                <li><a href="/admin/publicaciones">Moderar publicaciones</a></li>
-                <li><a href="/admin/convocatorias">Administrar convocatorias</a></li>
-                <li><a href="/admin/ranking">Consultar ranking</a></li>
-                <li><a href="/admin/logros">Revisar logros y productos</a></li>
-                <li><a href="/admin/reportes">Consultar reportes</a></li>
-            </ul>
-        </section>
-
-        <section class="admin-tarjeta">
-            <h3>Actividad reciente</h3>
-            <ul>
-                <li>Se registró una nueva solicitud de vinculación.</li>
-                <li>Se publicó contenido académico nuevo.</li>
-                <li>Hay una convocatoria en preparación.</li>
-                <li>Un producto de investigación está pendiente de revisión.</li>
-            </ul>
-        </section>
-    </div>
-</section>
-{% endblock %}
+            <section class="admin-page" id="page-usuarios">
+                <p class="eyebrow">ADMINISTRACIÓN</p><div class="page-heading"><div><h1>Usuarios</h1><p>Activa, suspende o cambia el rol de las cuentas.</p></div><button class="btn btn-red" onclick="alert('Formulario de nuevo usuario de demostración')">＋ Nuevo usuario</button></div>
+                <div class="toolbar"><input class="search" id="searchUsers" placeholder="⌕  Buscar por nombre o correo..." oninput="filterUsers()"><select class="filter" id="filterRole" onchange="filterUsers()"><option value="">Todos</option><option>Docente líder</option><option>Estudiante investigador</option><option>Administrador</option></select></div>
+                <section class="admin-card"><div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Programa</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="usersTable">
+                    <tr><td><div class="person"><div class="admin-avatar">LG</div><div><strong>Dra. Laura Gómez</strong><small>laura.gomez@unilibre.edu.co</small></div></div></td><td>Ingeniería de Sistemas</td><td><select class="role-select"><option>Docente líder</option><option>Estudiante investigador</option><option>Administrador</option></select></td><td><span class="status">Activo</span></td><td><button class="btn btn-soft-red" onclick="toggleUser(this)">Tirante</button></td></tr>
+                    <tr><td><div class="person"><div class="admin-avatar">AM</div><div><strong>Andrés Martínez</strong><small>andres.martinez@unilibre.edu.co</small></div></div></td><td>Ingeniería de Sistemas</td><td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td><td><span class="status">Activo</span></td><td><button class="btn btn-soft-red" onclick="toggleUser(this)">Tirante</button></td></tr>
+                    <tr><td><div class="person"><div class="admin-avatar">SR</div><div><strong>Sofía Restrepo</strong><small>sofia.restrepo@unilibre.edu.co</small></div></div></td><td>Ingeniería Industrial</td><td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td><td><span class="status suspended">Suspendido</span></td><td><button class="btn" onclick="toggleUser(this)">Activar</button></td></tr>
+                </tbody></table></div></section>
+            </section>
+            <section class="admin-page" id="page-facultades"><p class="eyebrow">GESTIÓN ACADÉMICA</p><div class="page-heading"><div><h1>Facultades y Programas</h1><p>Consulta las facultades y programas registrados.</p></div><button class="btn btn-red" onclick="addItem('listaFacultades','Nombre de la facultad')">＋ Nueva facultad</button></div><div class="admin-card card-heading"><h2>Facultades registradas</h2><div id="listaFacultades"><p>Ingeniería</p><p>Ciencias Jurídicas</p><p>Ciencias de la Salud</p><p>Ciencias Económicas</p></div></div></section>
+            <section class="admin-page" id="page-semilleros"><p class="eyebrow">INVESTIGACIÓN</p><div class="page-heading"><div><h1>Semilleros</h1><p>Consulta y administra los semilleros de investigación.</p></div><button class="btn btn-red" onclick="addItem('listaSemilleros','Nombre del semillero')">＋ Nuevo semillero</button></div><div class="admin-card card-heading" id="listaSemilleros"><p>Tecnología e Innovación</p><p>Investigación y Desarrollo</p></div></section>
+            <section class="admin-page" id="page-eventos"><p class="eyebrow">AGENDA INSTITUCIONAL</p><div class="page-heading"><div><h1>Convocatorias y Eventos</h1><p>Consulta las actividades de investigación.</p></div><button class="btn btn-red" onclick="addItem('listaEventos','Nombre del evento o convocatoria')">＋ Nuevo evento</button></div><div class="admin-card card-heading" id="listaEventos"><p>Encuentro de investigación universitaria · Noviembre de 2026</p></div></section>
+            <section class="admin-page" id="page-logros"><p class="eyebrow">REVISIÓN</p><div class="page-heading"><div><h1>Validación de logros</h1><p>Revisa los logros enviados por los estudiantes.</p></div></div><div class="admin-card card-heading"><h2>Logros pendientes de validar</h2><p>Actualmente hay 2 logros por revisar (dato de demostración).</p><button class="btn btn-red" onclick="alert('Validación de logros de demostración')">Revisar logros</button></div></section>
+            <section class="admin-page" id="page-solicitudes"><p class="eyebrow">SOLICITUDES</p><div class="page-heading"><div><h1>Solicitudes</h1><p>Revisa las solicitudes de acceso a RIUL.</p></div></div><div class="admin-card"><div class="card-heading"><h2>Solicitudes de registro</h2><p>Aprueba o rechaza las solicitudes pendientes desde Inicio.</p></div></div></section>
+            <section class="admin-page" id="page-informes"><p class="eyebrow">INFORMACIÓN</p><div class="page-heading"><div><h1>Informes</h1><p>Resumen demostrativo de actividad de la plataforma.</p></div><button class="btn btn-red" onclick="generateReport()">Generar informe</button></div><div class="admin-card card-heading"><pre id="reportOutput" hidden></pre></div></section>
+            <section class="admin-page" id="page-ranking"><p class="eyebrow">CLASIFICACIÓN</p><div class="page-heading"><div><h1>Top 10 de clasificación</h1><p>Participación investigativa (datos de demostración).</p></div></div><div class="admin-card card-heading"><ol><li>Laura Gómez</li><li>Andrés Martínez</li><li>Sofía Restrepo</li></ol></div></section>
+        </div>
+    </main>
+</div>
+<script>
+const titles={inicio:'Inicio',usuarios:'Usuarios',facultades:'Facultades y Programas',semilleros:'Semilleros',eventos:'Convocatorias y Eventos',logros:'Validación de logros',solicitudes:'Solicitudes',informes:'Informes',ranking:'Top 10 de clasificación'};
+document.querySelectorAll('.admin-nav a[data-page]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();const page=link.dataset.page;document.querySelectorAll('.admin-page').forEach(section=>section.classList.remove('active-page'));document.getElementById('page-'+page).classList.add('active-page');document.querySelectorAll('.admin-nav a').forEach(a=>a.classList.toggle('active',a===link));document.getElementById('topTitle').textContent=titles[page];}));
+function resolveRequest(button,state){const row=button.closest('tr');row.cells[3].innerHTML='<span class="status '+(state==='Rechazada'?'suspended':'')+'">'+state+'</span>';row.cells[4].textContent='Resuelta';}
+function filterUsers(){const q=document.getElementById('searchUsers').value.toLowerCase();const role=document.getElementById('filterRole').value;document.querySelectorAll('#usersTable tr').forEach(row=>{row.hidden=!(row.textContent.toLowerCase().includes(q)&&(!role||row.cells[2].querySelector('select').value===role));});}
+function toggleUser(button){const row=button.closest('tr');const status=row.querySelector('.status');const suspended=status.classList.toggle('suspended');status.textContent=suspended?'Suspendido':'Activo';button.textContent=suspended?'Activar':'Tirante';}
+function addItem(id,label){const name=prompt(label+':');if(!name||!name.trim())return;const p=document.createElement('p');p.textContent=name.trim();document.getElementById(id).appendChild(p);}
+function generateReport(){const output=document.getElementById('reportOutput');output.textContent='Informe demostrativo RIUL\\nUsuarios mostrados: '+document.querySelectorAll('#usersTable tr').length+'\\nFecha: '+new Date().toLocaleDateString('es-CO')+'\\n\\nLos datos no provienen de la base de datos.';output.hidden=false;}
+</script>
+</body>
+</html>
