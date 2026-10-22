@@ -47,12 +47,12 @@ def registro():
     return render_template("auth/registro.html")
 
 
-# PANELES POR ROL
+# PANEL ESTUDIANTE
 @web.route("/estudiante")
 def panel_estudiante():
     return estudiante_controller.mostrar_panel()
 
-
+# PANEL DOCENTE
 @web.route("/docente")
 def panel_docente():
     return docente_controller.mostrar_panel()
@@ -108,6 +108,52 @@ def docente_perfil():
     return docente_controller.mostrar_perfil()
 
 
+# PANEL DE ADMINISTRADOR
 @web.route("/admin")
 def panel_administrador():
     return admin_controller.mostrar_panel()
+
+
+@web.route("/admin/usuarios")
+def admin_usuarios():
+    return admin_controller.mostrar_usuarios()
+
+
+@web.route("/admin/facultades")
+def admin_facultades():
+    return admin_controller.mostrar_facultades()
+
+
+@web.route("/admin/semilleros")
+def admin_semilleros():
+    return admin_controller.mostrar_semilleros()
+
+
+@web.route("/admin/convocatorias")
+def admin_convocatorias():
+    return admin_controller.mostrar_convocatorias()
+
+
+@web.route("/admin/publicaciones")
+def admin_publicaciones():
+    return admin_controller.mostrar_publicaciones()
+
+
+@web.route("/admin/logros")
+def admin_logros():
+    return admin_controller.mostrar_logros()
+
+
+@web.route("/admin/ranking")
+def admin_ranking():
+    return admin_controller.mostrar_ranking()
+
+
+@web.route("/admin/reportes")
+def admin_reportes():
+    return admin_controller.mostrar_reportes()
+
+
+@web.route("/admin/solicitudes")
+def admin_solicitudes():
+    return admin_controller.mostrar_solicitudes()
