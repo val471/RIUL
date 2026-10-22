@@ -1,0 +1,77 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Perfil del semillero | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Perfil del semillero</h2>
+        <p>Consulta y actualiza la información del grupo de investigación.</p>
+    </div>
+    <span class="estado estado-activo">Activo</span>
+</div>
+
+<div id="mensaje-semillero" role="status" aria-live="polite"></div>
+
+<form class="tarjeta-formulario" id="form-semillero">
+    <h3>Información general</h3>
+
+    <div class="campo-formulario">
+        <label for="nombre">Nombre del semillero</label>
+        <input id="nombre" name="nombre" required
+               value="Semillero de Innovación y Tecnología">
+    </div>
+
+    <div class="campo-formulario">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" rows="4" required>Grupo académico orientado al desarrollo de soluciones tecnológicas, la innovación y la investigación aplicada a problemáticas del entorno.</textarea>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="linea">Línea de investigación</label>
+        <select id="linea" name="linea" required>
+            <option>Innovación tecnológica</option>
+            <option>Inteligencia artificial y analítica de datos</option>
+            <option>Desarrollo de software</option>
+            <option>Transformación digital</option>
+        </select>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="facultad">Facultad</label>
+        <input id="facultad" name="facultad" value="Facultad de Ingeniería" required>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="programa">Programa académico</label>
+        <input id="programa" name="programa" value="Ingeniería de Sistemas" required>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="objetivo">Objetivo del semillero</label>
+        <textarea id="objetivo" name="objetivo" rows="3">Promover las competencias investigativas de los estudiantes mediante proyectos colaborativos y soluciones innovadoras.</textarea>
+    </div>
+
+    <div class="acciones-formulario">
+        <button type="submit" class="boton-principal">Simular actualización</button>
+        <button type="reset" class="boton-secundario">Restablecer formulario</button>
+    </div>
+</form>
+
+<section class="tarjeta-formulario">
+    <h3>Información de gestión</h3>
+    <p><strong>Docente líder:</strong> Docente Líder</p>
+    <p><strong>Integrantes registrados:</strong> 12</p>
+    <p><strong>Proyectos activos:</strong> 4</p>
+    <p><strong>Estado:</strong> Activo</p>
+</section>
+
+<script>
+document.getElementById("form-semillero").addEventListener("submit", function(event) {
+    event.preventDefault();
+    document.getElementById("mensaje-semillero").innerHTML =
+        '<div class="mensaje-demo">Perfil actualizado correctamente en la demostración. Los cambios no se guardaron permanentemente.</div>';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Mi perfil | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Mi perfil</h2>
+        <p>Consulta tus datos de contacto y preferencias de cuenta.</p>
+    </div>
+    <span class="estado estado-activo">Docente líder</span>
+</div>
+
+<div id="mensaje-perfil" role="status" aria-live="polite"></div>
+
+<section class="tarjeta-formulario">
+    <h3>Información personal</h3>
+
+    <div class="perfil-detalle">
+        <div>
+            <span class="docente-avatar">DL</span>
+        </div>
+        <div>
+            <h4>Docente Líder</h4>
+            <p>Responsable del Semillero de Innovación y Tecnología.</p>
+            <span class="estado estado-activo">Cuenta de demostración</span>
+        </div>
+    </div>
+
+    <form id="form-perfil">
+        <div class="campo-formulario">
+            <label for="perfil-nombre">Nombre completo</label>
+            <input id="perfil-nombre" value="Docente Líder" required>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="perfil-correo">Correo institucional</label>
+            <input id="perfil-correo" type="email"
+                   value="docente@unilibre.edu.co" required>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="perfil-facultad">Facultad</label>
+            <input id="perfil-facultad" value="Facultad de Ingeniería" required>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="perfil-programa">Programa académico</label>
+            <input id="perfil-programa" value="Ingeniería de Sistemas" required>
+        </div>
+
+        <button type="submit" class="boton-principal">
+            Simular solicitud de actualización
+        </button>
+    </form>
+</section>
+
+<section class="tarjeta-formulario">
+    <h3>Preferencias de cuenta</h3>
+    <p>Estas opciones son únicamente visuales en la versión de demostración.</p>
+
+    <label class="opcion-perfil">
+        <input type="checkbox" id="notificaciones" checked>
+        Recibir avisos de nuevas solicitudes
+    </label>
+
+    <label class="opcion-perfil">
+        <input type="checkbox" id="avisos-productos" checked>
+        Recibir avisos de productos pendientes de validación
+    </label>
+
+    <button type="button" class="boton-secundario" id="guardar-preferencias">
+        Aplicar preferencias
+    </button>
+</section>
+
+<script>
+document.getElementById("form-perfil").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("perfil-nombre").value.trim();
+
+    document.getElementById("mensaje-perfil").textContent =
+        "Solicitud de actualización generada para " + nombre +
+        ". Los datos no se modificaron permanentemente.";
+});
+
+document.getElementById("guardar-preferencias").addEventListener("click", function() {
+    document.getElementById("mensaje-perfil").textContent =
+        "Preferencias aplicadas durante esta sesión de demostración.";
+});
+</script>
+{% endblock %}

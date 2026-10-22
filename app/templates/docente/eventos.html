@@ -1,0 +1,139 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Eventos | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Eventos académicos</h2>
+        <p>Organiza encuentros, jornadas y actividades relacionadas con investigación.</p>
+    </div>
+</div>
+
+<div id="mensaje-evento" role="status" aria-live="polite"></div>
+
+<section class="tarjeta-formulario">
+    <h3>Próximos eventos</h3>
+    <div class="tabla-contenedor">
+        <table id="tabla-eventos">
+            <thead>
+                <tr>
+                    <th>Evento</th>
+                    <th>Fecha</th>
+                    <th>Modalidad</th>
+                    <th>Participantes</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Encuentro de Semilleros de Investigación</td>
+                    <td>30/10/2026</td>
+                    <td>Presencial</td>
+                    <td>18</td>
+                    <td><button class="boton-principal" type="button"
+                        onclick="registrarParticipacion(this)">Registrar participación</button></td>
+                </tr>
+                <tr>
+                    <td>Taller de escritura científica</td>
+                    <td>06/11/2026</td>
+                    <td>Virtual</td>
+                    <td>25</td>
+                    <td><button class="boton-principal" type="button"
+                        onclick="registrarParticipacion(this)">Registrar participación</button></td>
+                </tr>
+                <tr>
+                    <td>Jornada de Innovación Universitaria</td>
+                    <td>20/11/2026</td>
+                    <td>Presencial</td>
+                    <td>32</td>
+                    <td><button class="boton-principal" type="button"
+                        onclick="registrarParticipacion(this)">Registrar participación</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="tarjeta-formulario">
+    <h3>Crear evento de demostración</h3>
+    <form id="form-evento">
+        <div class="campo-formulario">
+            <label for="evento-nombre">Nombre del evento</label>
+            <input id="evento-nombre" required>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="evento-descripcion">Descripción</label>
+            <textarea id="evento-descripcion" rows="3" required></textarea>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="evento-fecha">Fecha</label>
+            <input id="evento-fecha" type="date" required>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="evento-modalidad">Modalidad</label>
+            <select id="evento-modalidad">
+                <option>Presencial</option>
+                <option>Virtual</option>
+                <option>Híbrida</option>
+            </select>
+        </div>
+
+        <div class="campo-formulario">
+            <label for="evento-evidencia">Evidencia (opcional)</label>
+            <input id="evento-evidencia" type="file" accept=".pdf,.jpg,.jpeg,.png">
+            <small>El archivo no se sube ni se almacena en el servidor.</small>
+        </div>
+
+        <button class="boton-principal" type="submit">Crear evento</button>
+    </form>
+</section>
+
+<script>
+function registrarParticipacion(boton) {
+    const fila = boton.closest("tr");
+    const participantes = Number(fila.cells[3].textContent);
+    fila.cells[3].textContent = participantes + 1;
+    boton.textContent = "Participación registrada";
+    boton.disabled = true;
+
+    document.getElementById("mensaje-evento").textContent =
+        "La participación se registró en pantalla para esta demostración.";
+}
+
+document.getElementById("form-evento").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("evento-nombre").value.trim();
+    const descripcion = document.getElementById("evento-descripcion").value.trim();
+    const fecha = document.getElementById("evento-fecha").value;
+    const modalidad = document.getElementById("evento-modalidad").value;
+
+    const fila = document.querySelector("#tabla-eventos tbody").insertRow();
+    fila.insertCell().textContent = nombre;
+    fila.insertCell().textContent = fecha;
+    fila.insertCell().textContent = modalidad;
+    fila.insertCell().textContent = "0";
+
+    const celda = fila.insertCell();
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "boton-principal";
+    boton.textContent = "Registrar participación";
+    boton.addEventListener("click", function() {
+        registrarParticipacion(boton);
+    });
+    celda.appendChild(boton);
+
+    document.getElementById("mensaje-evento").textContent =
+        "Evento creado en pantalla: " + nombre + ". " + descripcion +
+        " No se guardó permanentemente.";
+
+    this.reset();
+});
+</script>
+{% endblock %}

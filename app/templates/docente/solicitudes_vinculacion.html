@@ -1,0 +1,130 @@
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Solicitudes de vinculación | RIUL{% endblock %}
+
+{% block contenido_docente %}
+
+<section class="pagina-encabezado">
+    <div>
+        <h2>Solicitudes de vinculación</h2>
+        <p>Evalúa las solicitudes de estudiantes interesados en el semillero.</p>
+    </div>
+
+    <span class="estado estado-pendiente" id="contador-pendientes">
+        3 pendientes
+    </span>
+</section>
+
+<div id="mensaje-solicitud" aria-live="polite" role="status"></div>
+
+<section class="tarjeta-formulario">
+    <h3>Solicitudes recibidas</h3>
+    <p>Revisa la información académica antes de tomar una decisión.</p>
+
+    <div class="tabla-contenedor">
+        <table id="tabla-solicitudes">
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Programa académico</th>
+                    <th>Proyecto de interés</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Decisión</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>María Fernanda Torres</td>
+                    <td>Ingeniería de Sistemas</td>
+                    <td>Analítica de datos</td>
+                    <td>15/10/2026</td>
+                    <td>
+                        <span class="estado estado-pendiente">Pendiente</span>
+                    </td>
+                    <td>
+                        <div class="acciones-formulario">
+                            <button type="button"
+                                    class="boton-principal"
+                                    data-accion="aprobar">
+                                Aprobar
+                            </button>
+
+                            <button type="button"
+                                    class="boton-rechazar"
+                                    data-accion="rechazar">
+                                Rechazar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Juan Sebastián Rojas</td>
+                    <td>Administración de Empresas</td>
+                    <td>Emprendimiento sostenible</td>
+                    <td>16/10/2026</td>
+                    <td>
+                        <span class="estado estado-pendiente">Pendiente</span>
+                    </td>
+                    <td>
+                        <div class="acciones-formulario">
+                            <button type="button"
+                                    class="boton-principal"
+                                    data-accion="aprobar">
+                                Aprobar
+                            </button>
+
+                            <button type="button"
+                                    class="boton-rechazar"
+                                    data-accion="rechazar">
+                                Rechazar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Valentina Andrea López</td>
+                    <td>Contaduría Pública</td>
+                    <td>Transformación digital</td>
+                    <td>17/10/2026</td>
+                    <td>
+                        <span class="estado estado-pendiente">Pendiente</span>
+                    </td>
+                    <td>
+                        <div class="acciones-formulario">
+                            <button type="button"
+                                    class="boton-principal"
+                                    data-accion="aprobar">
+                                Aprobar
+                            </button>
+
+                            <button type="button"
+                                    class="boton-rechazar"
+                                    data-accion="rechazar">
+                                Rechazar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="tarjeta-formulario">
+    <h3>Historial de decisiones de esta sesión</h3>
+    <p>
+        Las decisiones aparecerán aquí mientras la página permanezca abierta.
+    </p>
+
+    <div id="historial-decisiones">
+        <p class="texto-ayuda">
+            Todavía no se han tomado decisiones en esta sesión.
+        </p>
+    </div>
+</section>
+
+{% endblock %}

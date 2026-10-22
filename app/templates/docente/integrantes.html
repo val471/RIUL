@@ -1,0 +1,154 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Integrantes | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Integrantes del semillero</h2>
+        <p>Consulta los estudiantes vinculados al grupo de investigación.</p>
+    </div>
+    <span class="estado estado-activo" id="contador-integrantes">3 estudiantes visibles</span>
+</div>
+
+<div id="mensaje-integrantes" role="status" aria-live="polite"></div>
+
+<form class="tarjeta-formulario" id="form-integrante">
+    <h3>Agregar integrante de demostración</h3>
+
+    <div class="campo-formulario">
+        <label for="integrante-nombre">Nombre completo</label>
+        <input id="integrante-nombre" required placeholder="Nombre del estudiante">
+    </div>
+
+    <div class="campo-formulario">
+        <label for="integrante-codigo">Código estudiantil</label>
+        <input id="integrante-codigo" required placeholder="Ej. 202510045">
+    </div>
+
+    <div class="campo-formulario">
+        <label for="integrante-programa">Programa académico</label>
+        <select id="integrante-programa" required>
+            <option value="">Selecciona un programa</option>
+            <option>Ingeniería de Sistemas</option>
+            <option>Administración de Empresas</option>
+            <option>Contaduría Pública</option>
+            <option>Derecho</option>
+            <option>Psicología</option>
+        </select>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="integrante-correo">Correo institucional</label>
+        <input id="integrante-correo" type="email" required placeholder="estudiante@ejemplo.edu.co">
+    </div>
+
+    <button class="boton-principal" type="submit">Agregar a la lista</button>
+</form>
+
+<section class="tarjeta-formulario">
+    <h3>Estudiantes vinculados</h3>
+    <div class="tabla-contenedor">
+        <table id="tabla-integrantes">
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Código</th>
+                    <th>Programa</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Laura Camila Mendoza</td>
+                    <td>202410128</td>
+                    <td>Ingeniería de Sistemas</td>
+                    <td><span class="estado estado-activo">Vinculado</span></td>
+                    <td><button type="button" class="boton-rechazar"
+                        onclick="retirarIntegrante(this)">Retirar</button></td>
+                </tr>
+                <tr>
+                    <td>Andrés Felipe Ramírez</td>
+                    <td>202410215</td>
+                    <td>Administración de Empresas</td>
+                    <td><span class="estado estado-activo">Vinculado</span></td>
+                    <td><button type="button" class="boton-rechazar"
+                        onclick="retirarIntegrante(this)">Retirar</button></td>
+                </tr>
+                <tr>
+                    <td>Sofía Valentina Castro</td>
+                    <td>202510076</td>
+                    <td>Ingeniería de Sistemas</td>
+                    <td><span class="estado estado-activo">Vinculado</span></td>
+                    <td><button type="button" class="boton-rechazar"
+                        onclick="retirarIntegrante(this)">Retirar</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+function actualizarContadorIntegrantes() {
+    const total = document.querySelectorAll("#tabla-integrantes tbody tr").length;
+    document.getElementById("contador-integrantes").textContent =
+        total + (total === 1 ? " estudiante visible" : " estudiantes visibles");
+}
+
+document.getElementById("form-integrante").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("integrante-nombre").value.trim();
+    const codigo = document.getElementById("integrante-codigo").value.trim();
+    const programa = document.getElementById("integrante-programa").value;
+    const correo = document.getElementById("integrante-correo").value.trim();
+
+    const filas = document.querySelectorAll("#tabla-integrantes tbody tr");
+    if ([...filas].some(fila => fila.cells[1].textContent === codigo)) {
+        alert("Ese código ya aparece en la lista.");
+        return;
+    }
+
+    const fila = document.querySelector("#tabla-integrantes tbody").insertRow();
+    fila.insertCell().textContent = nombre;
+    fila.insertCell().textContent = codigo;
+    fila.insertCell().textContent = programa;
+
+    const estado = fila.insertCell();
+    estado.innerHTML = '<span class="estado estado-activo">Vinculado</span>';
+
+    const accion = fila.insertCell();
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "boton-rechazar";
+    boton.textContent = "Retirar";
+    boton.addEventListener("click", function() { retirarIntegrante(boton); });
+    accion.appendChild(boton);
+
+    actualizarContadorIntegrantes();
+    document.getElementById("mensaje-integrantes").innerHTML =
+        '<div class="mensaje-demo">Estudiante agregado a la lista de demostración. Correo: ' +
+        escaparHTML(correo) + '. No se guardó permanentemente.</div>';
+
+    this.reset();
+});
+
+function retirarIntegrante(boton) {
+    const nombre = boton.closest("tr").cells[0].textContent;
+    if (!confirm("¿Deseas retirar a " + nombre + " de la lista de demostración?")) return;
+
+    boton.closest("tr").remove();
+    actualizarContadorIntegrantes();
+    document.getElementById("mensaje-integrantes").innerHTML =
+        '<div class="mensaje-demo">El estudiante fue retirado de la lista visible.</div>';
+}
+
+function escaparHTML(texto) {
+    const elemento = document.createElement("span");
+    elemento.textContent = texto;
+    return elemento.innerHTML;
+}
+</script>
+{% endblock %}

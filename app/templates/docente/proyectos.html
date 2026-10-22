@@ -1,0 +1,165 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Proyectos | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Proyectos de investigación</h2>
+        <p>Registra iniciativas y realiza seguimiento a sus avances.</p>
+    </div>
+    <span class="estado estado-activo">4 proyectos</span>
+</div>
+
+<div id="mensaje-proyecto" role="status" aria-live="polite"></div>
+
+<form class="tarjeta-formulario" id="form-proyecto">
+    <h3>Registrar nuevo proyecto</h3>
+
+    <div class="campo-formulario">
+        <label for="proyecto-nombre">Nombre del proyecto</label>
+        <input id="proyecto-nombre" required placeholder="Ej. Plataforma de analítica académica">
+    </div>
+
+    <div class="campo-formulario">
+        <label for="proyecto-descripcion">Descripción</label>
+        <textarea id="proyecto-descripcion" rows="3" required
+                  placeholder="Describe el propósito y alcance del proyecto"></textarea>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="proyecto-linea">Línea de investigación</label>
+        <select id="proyecto-linea" required>
+            <option value="">Selecciona una línea</option>
+            <option>Innovación tecnológica</option>
+            <option>Inteligencia artificial y analítica de datos</option>
+            <option>Desarrollo de software</option>
+            <option>Transformación digital</option>
+        </select>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="proyecto-estado">Estado inicial</label>
+        <select id="proyecto-estado">
+            <option>Planeación</option>
+            <option>En desarrollo</option>
+            <option>Finalizado</option>
+        </select>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="proyecto-avance">Avance (%)</label>
+        <input id="proyecto-avance" type="number" min="0" max="100" value="0" required>
+    </div>
+
+    <div class="campo-formulario">
+        <label for="proyecto-archivo">Documento de soporte (opcional)</label>
+        <input id="proyecto-archivo" type="file" accept=".pdf,.doc,.docx">
+        <small>El archivo solo se selecciona en el navegador; no se carga a un servidor.</small>
+    </div>
+
+    <button type="submit" class="boton-principal">Registrar proyecto de demostración</button>
+</form>
+
+<section class="tarjeta-formulario">
+    <h3>Proyectos registrados</h3>
+    <div class="tabla-contenedor">
+        <table id="tabla-proyectos">
+            <thead>
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Línea</th>
+                    <th>Avance</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Analítica de datos para la toma de decisiones</td>
+                    <td>Inteligencia artificial</td>
+                    <td>65%</td>
+                    <td><span class="estado estado-activo">En desarrollo</span></td>
+                    <td><button type="button" class="boton-secundario"
+                        onclick="verProyecto(this)">Ver</button></td>
+                </tr>
+                <tr>
+                    <td>Aplicación para seguimiento académico</td>
+                    <td>Desarrollo de software</td>
+                    <td>40%</td>
+                    <td><span class="estado estado-activo">En desarrollo</span></td>
+                    <td><button type="button" class="boton-secundario"
+                        onclick="verProyecto(this)">Ver</button></td>
+                </tr>
+                <tr>
+                    <td>Herramientas digitales para el aprendizaje</td>
+                    <td>Innovación tecnológica</td>
+                    <td>100%</td>
+                    <td><span class="estado estado-activo">Finalizado</span></td>
+                    <td><button type="button" class="boton-secundario"
+                        onclick="verProyecto(this)">Ver</button></td>
+                </tr>
+                <tr>
+                    <td>Transformación digital en pequeñas empresas</td>
+                    <td>Transformación digital</td>
+                    <td>20%</td>
+                    <td><span class="estado estado-pendiente">Planeación</span></td>
+                    <td><button type="button" class="boton-secundario"
+                        onclick="verProyecto(this)">Ver</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+document.getElementById("form-proyecto").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("proyecto-nombre").value.trim();
+    const linea = document.getElementById("proyecto-linea").value;
+    const estado = document.getElementById("proyecto-estado").value;
+    const avance = Number(document.getElementById("proyecto-avance").value);
+
+    if (avance < 0 || avance > 100) {
+        alert("El avance debe estar entre 0 y 100.");
+        return;
+    }
+
+    const fila = document.getElementById("tabla-proyectos").querySelector("tbody").insertRow();
+    fila.insertCell().textContent = nombre;
+    fila.insertCell().textContent = linea;
+    fila.insertCell().textContent = avance + "%";
+
+    const celdaEstado = fila.insertCell();
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "estado " + (estado === "Planeación" ? "estado-pendiente" : "estado-activo");
+    etiqueta.textContent = estado;
+    celdaEstado.appendChild(etiqueta);
+
+    const celdaAcciones = fila.insertCell();
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "boton-secundario";
+    boton.textContent = "Ver";
+    boton.addEventListener("click", function() { verProyecto(boton); });
+    celdaAcciones.appendChild(boton);
+
+    document.getElementById("mensaje-proyecto").innerHTML =
+        '<div class="mensaje-demo">Proyecto registrado en pantalla. No se guardó permanentemente.</div>';
+
+    this.reset();
+});
+
+function verProyecto(boton) {
+    const fila = boton.closest("tr");
+    const nombre = fila.cells[0].textContent;
+    const linea = fila.cells[1].textContent;
+    const avance = fila.cells[2].textContent;
+    const estado = fila.cells[3].textContent;
+    alert("Detalle del proyecto\n\nNombre: " + nombre +
+          "\nLínea: " + linea + "\nAvance: " + avance + "\nEstado: " + estado);
+}
+</script>
+{% endblock %}

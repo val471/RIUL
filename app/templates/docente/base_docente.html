@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block titulo %}Panel docente | RIUL{% endblock %}
+
+{% block estilos %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/docente.css') }}">
+{% endblock %}
+
+{% block encabezado %}{% endblock %}
+{% block pie_pagina %}{% endblock %}
+
+{% block contenido %}
+<div class="docente-layout">
+
+    <aside class="docente-sidebar">
+        <a class="docente-logo" href="{{ url_for('web.panel_docente') }}">
+            <span class="docente-logo-icono">R</span>
+            <span>
+                <strong>RIUL</strong>
+                <small>Panel docente</small>
+            </span>
+        </a>
+
+        <nav class="docente-menu">
+            <p class="docente-menu-titulo">GENERAL</p>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente' %}activo{% endif %}"
+               href="{{ url_for('web.panel_docente') }}">
+                <span class="docente-menu-icono">⌂</span>
+                <span>Inicio</span>
+            </a>
+
+            <p class="docente-menu-titulo">MI SEMILLERO</p>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/semillero' %}activo{% endif %}"
+               href="{{ url_for('web.docente_semillero') }}">
+                <span class="docente-menu-icono">◇</span>
+                <span>Perfil del semillero</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/integrantes' %}activo{% endif %}"
+               href="{{ url_for('web.docente_integrantes') }}">
+                <span class="docente-menu-icono">♧</span>
+                <span>Integrantes</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/solicitudes-vinculacion' %}activo{% endif %}"
+               href="{{ url_for('web.docente_solicitudes_vinculacion') }}">
+                <span class="docente-menu-icono">⇄</span>
+                <span>Solicitudes de vinculación</span>
+            </a>
+
+            <p class="docente-menu-titulo">INVESTIGACIÓN</p>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/proyectos' %}activo{% endif %}"
+               href="{{ url_for('web.docente_proyectos') }}">
+                <span class="docente-menu-icono">▤</span>
+                <span>Proyectos</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/convocatorias' %}activo{% endif %}"
+               href="{{ url_for('web.docente_convocatorias') }}">
+                <span class="docente-menu-icono">◎</span>
+                <span>Convocatorias</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/eventos' %}activo{% endif %}"
+               href="{{ url_for('web.docente_eventos') }}">
+                <span class="docente-menu-icono">◇</span>
+                <span>Eventos</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/logros' %}activo{% endif %}"
+               href="{{ url_for('web.docente_logros') }}">
+                <span class="docente-menu-icono">☆</span>
+                <span>Logros y productos</span>
+            </a>
+
+            <p class="docente-menu-titulo">CUENTA</p>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/perfil' %}activo{% endif %}"
+               href="{{ url_for('web.docente_perfil') }}">
+                <span class="docente-menu-icono">⚙</span>
+                <span>Mi perfil</span>
+            </a>
+        </nav>
+
+        <div class="docente-sidebar-pie">
+            <small>RIUL · Red de Investigación</small>
+            <small>Universidad Libre</small>
+        </div>
+    </aside>
+
+    <section class="docente-principal">
+
+        <header class="docente-topbar">
+            <div class="docente-topbar-titulo">
+                <small>RED DE INVESTIGACIÓN UNIVERSIDAD LIBRE</small>
+                <h1>Panel docente</h1>
+            </div>
+
+            <div class="docente-topbar-usuario">
+                <span class="docente-avatar docente-avatar-pequeno">DL</span>
+
+                <span class="docente-datos-usuario">
+                    <strong>Docente Líder</strong>
+                    <small>Jung Woo-young</small>
+                </span>
+            </div>
+        </header>
+
+        <main class="docente-contenido">
+            {% block contenido_docente %}{% endblock %}
+        </main>
+
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/docente.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,114 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Convocatorias | RIUL{% endblock %}
+
+{% block contenido_docente %}
+<div class="pagina-encabezado">
+    <div>
+        <h2>Convocatorias</h2>
+        <p>Consulta oportunidades de investigación y participación académica.</p>
+    </div>
+</div>
+
+<div id="mensaje-convocatoria" role="status" aria-live="polite"></div>
+
+<section class="docente-accesos">
+    <article class="tarjeta-formulario">
+        <span class="estado estado-activo">Abierta</span>
+        <h3>Encuentro Universitario de Semilleros</h3>
+        <p>Espacio para presentar avances y resultados de proyectos de investigación.</p>
+        <p><strong>Área:</strong> Investigación universitaria</p>
+        <p><strong>Cierre:</strong> 30/10/2026</p>
+        <p><strong>Requisitos:</strong> Resumen del proyecto, aval del docente y listado de participantes.</p>
+        <button class="boton-principal" type="button"
+            onclick="inscribirConvocatoria(this)">Simular inscripción</button>
+        <p class="texto-ayuda">Inscritos en esta sesión: <span class="inscritos">0</span></p>
+    </article>
+
+    <article class="tarjeta-formulario">
+        <span class="estado estado-activo">Abierta</span>
+        <h3>Jornada de Innovación Tecnológica</h3>
+        <p>Convocatoria para demostrar prototipos, herramientas digitales y soluciones tecnológicas.</p>
+        <p><strong>Área:</strong> Innovación</p>
+        <p><strong>Cierre:</strong> 05/11/2026</p>
+        <p><strong>Requisitos:</strong> Descripción de la solución, objetivos y evidencia del avance.</p>
+        <button class="boton-principal" type="button"
+            onclick="inscribirConvocatoria(this)">Simular inscripción</button>
+        <p class="texto-ayuda">Inscritos en esta sesión: <span class="inscritos">0</span></p>
+    </article>
+
+    <article class="tarjeta-formulario">
+        <span class="estado estado-pendiente">Próxima</span>
+        <h3>Seminario de Investigación Aplicada</h3>
+        <p>Encuentro académico para compartir experiencias y metodologías de investigación.</p>
+        <p><strong>Área:</strong> Investigación aplicada</p>
+        <p><strong>Fecha prevista:</strong> 20/11/2026</p>
+        <p><strong>Requisitos:</strong> Propuesta de ponencia y datos del equipo investigador.</p>
+        <button class="boton-principal" type="button"
+            onclick="inscribirConvocatoria(this)">Simular inscripción</button>
+        <p class="texto-ayuda">Inscritos en esta sesión: <span class="inscritos">0</span></p>
+    </article>
+</section>
+
+<section class="tarjeta-formulario">
+    <h3>Crear convocatoria de demostración</h3>
+    <form id="form-convocatoria">
+        <div class="campo-formulario">
+            <label for="conv-nombre">Nombre</label>
+            <input id="conv-nombre" required>
+        </div>
+        <div class="campo-formulario">
+            <label for="conv-descripcion">Descripción</label>
+            <textarea id="conv-descripcion" rows="3" required></textarea>
+        </div>
+        <div class="campo-formulario">
+            <label for="conv-fecha">Fecha de cierre</label>
+            <input id="conv-fecha" type="date" required>
+        </div>
+        <button class="boton-principal" type="submit">Agregar convocatoria</button>
+    </form>
+</section>
+
+<script>
+function inscribirConvocatoria(boton) {
+    const tarjeta = boton.closest("article");
+    const contador = tarjeta.querySelector(".inscritos");
+    const numero = Number(contador.textContent);
+
+    contador.textContent = numero + 1;
+    boton.textContent = "Inscripción simulada";
+    boton.disabled = true;
+
+    document.getElementById("mensaje-convocatoria").textContent =
+        "La inscripción se registró visualmente para esta demostración. No se guardó permanentemente.";
+}
+
+document.getElementById("form-convocatoria").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarjeta-formulario";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = document.getElementById("conv-nombre").value;
+
+    const descripcion = document.createElement("p");
+    descripcion.textContent = document.getElementById("conv-descripcion").value;
+
+    const fecha = document.createElement("p");
+    fecha.textContent = "Fecha de cierre: " + document.getElementById("conv-fecha").value;
+
+    const estado = document.createElement("span");
+    estado.className = "estado estado-activo";
+    estado.textContent = "Creada en esta sesión";
+
+    tarjeta.append(estado, titulo, descripcion, fecha);
+    document.querySelector(".docente-accesos").appendChild(tarjeta);
+
+    document.getElementById("mensaje-convocatoria").textContent =
+        "Convocatoria añadida a la pantalla. No se guardó permanentemente.";
+    this.reset();
+});
+</script>
+{% endblock %}

@@ -1,203 +1,77 @@
+{% extends "docente/base_docente.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del docente | RIUL</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-<div class="panel-layout">
-    <aside class="panel-sidebar">
-        <a href="/" class="logo">RIUL</a>
-        <p>Panel del docente</p>
-        <nav class="panel-menu">
-            <a href="#inicio" class="activo">Inicio</a>
-            <a href="#semillero">Mi semillero</a>
-            <a href="#proyectos">Proyectos</a>
-            <a href="#integrantes">Integrantes</a>
-            <a href="#solicitudes">Solicitudes</a>
-            <a href="#avances">Avances</a>
-            <a href="#eventos">Eventos</a>
-            <a href="/">Cerrar sesión</a>
-        </nav>
-    </aside>
+{% block titulo %}Inicio docente | RIUL{% endblock %}
 
-    <main class="panel-principal">
-        <header class="panel-encabezado">
-            <div>
-                <h1>Panel del docente</h1>
-                <p>Gestiona tu semillero y acompaña los proyectos de investigación.</p>
-            </div>
-            <button class="boton boton-contorno" onclick="alert('Perfil docente de demostración')">Mi perfil</button>
-        </header>
+{% block contenido_docente %}
 
-        <div class="panel-contenido" style="display:block">
-            <section id="inicio" class="panel-banner">
-                <h1>¡Bienvenido, docente!</h1>
-                <p>Organiza tus proyectos, revisa avances y acompaña a tus estudiantes.</p>
-                <button class="boton boton-blanco" onclick="abrirFormulario('formProyecto')">
-                    + Crear proyecto
-                </button>
-            </section>
+<section class="bienvenida-docente">
+    <p>BIENVENIDO/A A RIUL</p>
+    <h2>¡Hola, Docente Líder!</h2>
+    <p>
+        Desde este panel puedes gestionar tu semillero, acompañar proyectos
+        de investigación y hacer seguimiento a los integrantes.
+    </p>
+</section>
 
-            <div class="panel-estadisticas">
-                <div class="panel-estadistica"><strong>4</strong><span>Proyectos</span></div>
-                <div class="panel-estadistica"><strong>12</strong><span>Integrantes</span></div>
-                <div class="panel-estadistica"><strong>3</strong><span>Solicitudes pendientes</span></div>
-                <div class="panel-estadistica"><strong>2</strong><span>Avances por revisar</span></div>
-            </div>
+<section class="resumen-docente" aria-label="Resumen del semillero">
 
-            <section id="semillero" class="panel-tarjeta" style="margin-top:20px">
-                <h2>Mi semillero</h2>
-                <h3>Tecnología e Innovación</h3>
-                <p>Facultad: Ingeniería</p>
-                <p>Enfoque: innovación, sistemas y desarrollo tecnológico.</p>
-                <button class="boton boton-contorno" onclick="alert('Edición del semillero de demostración')">Gestionar semillero</button>
-            </section>
+    <article class="tarjeta-resumen">
+        <span class="tarjeta-icono" aria-hidden="true">◇</span>
+        <p>Mi semillero</p>
+        <h3>Innovación y Tecnología</h3>
+        <small>Semillero activo</small>
+    </article>
 
-            <section id="proyectos" style="margin-top:25px">
-                <h2>Proyectos de investigación</h2>
-                <div id="formProyecto" class="panel-tarjeta" hidden>
-                    <h3>Nuevo proyecto</h3>
-                    <form onsubmit="crearProyecto(event)">
-                        <div class="auth-campo">
-                            <label for="nombreProyecto">Nombre del proyecto</label>
-                            <input id="nombreProyecto" required>
-                        </div>
-                        <div class="auth-campo">
-                            <label for="descripcionProyecto">Descripción</label>
-                            <textarea id="descripcionProyecto" rows="3" required></textarea>
-                        </div>
-                        <button class="boton boton-principal">Crear proyecto de prueba</button>
-                        <button type="button" class="boton boton-secundario" onclick="abrirFormulario('formProyecto')">Cancelar</button>
-                    </form>
-                </div>
+    <article class="tarjeta-resumen">
+        <span class="tarjeta-icono" aria-hidden="true">♧</span>
+        <p>Integrantes</p>
+        <h3>12</h3>
+        <small>Estudiantes vinculados</small>
+    </article>
 
-                <div class="contenedor-tarjetas" id="listaProyectos">
-                    <article class="tarjeta">
-                        <div class="tarjeta-contenido">
-                            <span class="estado estado-activo">Activo</span>
-                            <h3>Plataforma de innovación</h3>
-                            <p>Responsable: Docente líder</p>
-                            <div class="progreso"><div class="progreso-barra" style="width:65%"></div></div>
-                            <p>Avance: 65 %</p>
-                            <button class="boton boton-contorno" onclick="alert('Detalle de proyecto de prueba')">Ver detalle</button>
-                        </div>
-                    </article>
-                    <article class="tarjeta">
-                        <div class="tarjeta-contenido">
-                            <span class="estado estado-revision">En revisión</span>
-                            <h3>Análisis de datos investigativos</h3>
-                            <p>Responsable: Docente líder</p>
-                            <div class="progreso"><div class="progreso-barra" style="width:35%"></div></div>
-                            <p>Avance: 35 %</p>
-                            <button class="boton boton-contorno" onclick="alert('Detalle de proyecto de prueba')">Ver detalle</button>
-                        </div>
-                    </article>
-                </div>
-            </section>
+    <article class="tarjeta-resumen">
+        <span class="tarjeta-icono" aria-hidden="true">▤</span>
+        <p>Proyectos</p>
+        <h3>4</h3>
+        <small>Proyectos registrados</small>
+    </article>
 
-            <section id="integrantes" class="panel-tarjeta" style="margin-top:25px">
-                <h2>Integrantes del semillero</h2>
-                <input id="buscarIntegrante" placeholder="Buscar integrante..." oninput="filtrarIntegrantes()">
-                <div class="tabla-contenedor" style="margin-top:15px">
-                    <table class="tabla">
-                        <thead><tr><th>Nombre</th><th>Correo</th><th>Estado</th></tr></thead>
-                        <tbody id="tablaIntegrantes">
-                            <tr><td>Laura Martínez</td><td>laura@unilibre.edu.co</td><td>Activo</td></tr>
-                            <tr><td>Andrés Gómez</td><td>andres@unilibre.edu.co</td><td>Activo</td></tr>
-                            <tr><td>Camila Torres</td><td>camila@unilibre.edu.co</td><td>Pendiente</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+    <article class="tarjeta-resumen">
+        <span class="tarjeta-icono" aria-hidden="true">☆</span>
+        <p>Validaciones</p>
+        <h3>3</h3>
+        <small>Solicitudes pendientes</small>
+    </article>
 
-            <section id="solicitudes" class="panel-tarjeta" style="margin-top:25px">
-                <h2>Solicitudes de vinculación</h2>
-                <div class="tabla-contenedor">
-                    <table class="tabla">
-                        <thead><tr><th>Estudiante</th><th>Solicitud</th><th>Acciones</th></tr></thead>
-                        <tbody id="tablaSolicitudes">
-                            <tr>
-                                <td>Camila Torres</td><td>Vinculación al semillero</td>
-                                <td>
-                                    <button class="boton boton-principal" onclick="resolverSolicitud(this,'Aprobada')">Aprobar</button>
-                                    <button class="boton boton-secundario" onclick="resolverSolicitud(this,'Rechazada')">Rechazar</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Juan Pérez</td><td>Vinculación al semillero</td>
-                                <td>
-                                    <button class="boton boton-principal" onclick="resolverSolicitud(this,'Aprobada')">Aprobar</button>
-                                    <button class="boton boton-secundario" onclick="resolverSolicitud(this,'Rechazada')">Rechazar</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+</section>
 
-            <section id="avances" class="panel-tarjeta" style="margin-top:25px">
-                <h2>Avances por revisar</h2>
-                <p>Informe de resultados · Plataforma de innovación</p>
-                <button class="boton boton-principal" onclick="alert('Avance marcado como revisado en la demostración')">Revisar avance</button>
-            </section>
+<section class="docente-panel-informativo">
+    <h3>Accesos rápidos</h3>
+    <p>Selecciona una sección para comenzar a organizar tu trabajo.</p>
 
-            <section id="eventos" class="panel-tarjeta" style="margin-top:25px">
-                <h2>Eventos académicos</h2>
-                <p>Encuentro de investigación universitaria · Noviembre de 2026</p>
-                <button class="boton boton-contorno" onclick="alert('Gestión de eventos de demostración')">Gestionar eventos</button>
-            </section>
-        </div>
-    </main>
-</div>
+    <div class="docente-accesos">
 
-<script>
-function abrirFormulario(id) {
-    const elemento = document.getElementById(id);
-    elemento.hidden = !elemento.hidden;
-}
+        <a href="{{ url_for('web.docente_semillero') }}">
+            <strong>Configurar semillero</strong>
+            <span>Editar nombre, descripción y línea de investigación.</span>
+        </a>
 
-function crearProyecto(event) {
-    event.preventDefault();
-    const nombre = document.getElementById("nombreProyecto").value;
-    const descripcion = document.getElementById("descripcionProyecto").value;
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta";
-    const contenido = document.createElement("div");
-    contenido.className = "tarjeta-contenido";
+        <a href="{{ url_for('web.docente_proyectos') }}">
+            <strong>Gestionar proyectos</strong>
+            <span>Consultar proyectos, avances y archivos.</span>
+        </a>
 
-    const estado = document.createElement("span");
-    estado.className = "estado estado-activo";
-    estado.textContent = "Activo";
+        <a href="{{ url_for('web.docente_integrantes') }}">
+            <strong>Consultar integrantes</strong>
+            <span>Revisar estudiantes vinculados al semillero.</span>
+        </a>
 
-    const titulo = document.createElement("h3");
-    titulo.textContent = nombre;
+        <a href="{{ url_for('web.docente_solicitudes_vinculacion') }}">
+            <strong>Revisar solicitudes</strong>
+            <span>Consultar solicitudes de vinculación pendientes.</span>
+        </a>
 
-    const texto = document.createElement("p");
-    texto.textContent = descripcion;
+    </div>
+</section>
 
-    contenido.append(estado, titulo, texto);
-    tarjeta.appendChild(contenido);
-    document.getElementById("listaProyectos").prepend(tarjeta);
-    event.target.reset();
-    abrirFormulario("formProyecto");
-    alert("Proyecto añadido solo a esta demostración. No se guardó en MySQL.");
-}
-
-function filtrarIntegrantes() {
-    const filtro = document.getElementById("buscarIntegrante").value.toLowerCase();
-    document.querySelectorAll("#tablaIntegrantes tr").forEach(fila => {
-        fila.hidden = !fila.textContent.toLowerCase().includes(filtro);
-    });
-}
-
-function resolverSolicitud(boton, estado) {
-    const fila = boton.closest("tr");
-    fila.cells[2].textContent = estado + " (demostración)";
-}
-</script>
-</body>
-</html>
+{% endblock %}
