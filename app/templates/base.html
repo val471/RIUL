@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block titulo %}RIUL - Red de Investigación Universidad Libre{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
 
+    <title>
+        {% block titulo %}
+            RIUL - Red de Investigación Universidad Libre
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block estilos %}{% endblock %}
+</head>
 <body>
 
+    {% block encabezado %}
     <header class="encabezado">
         <a href="{{ url_for('web.inicio') }}" class="logo">RIUL</a>
 
@@ -21,22 +30,35 @@
         </nav>
 
         <div class="acciones-menu">
-            <a class="boton boton-secundario" href="{{ url_for('web.iniciar_sesion') }}">Iniciar sesión</a>
-            <a class="boton boton-principal" href="{{ url_for('web.registro') }}">Registrarse</a>
+            <a class="boton boton-secundario"
+               href="{{ url_for('web.iniciar_sesion') }}">
+                Iniciar sesión
+            </a>
+
+            <a class="boton boton-principal"
+               href="{{ url_for('web.registro') }}">
+                Registrarse
+            </a>
         </div>
     </header>
+    {% endblock %}
 
     <main>
         {% block contenido %}{% endblock %}
     </main>
 
+    {% block pie_pagina %}
     <footer class="pie-pagina">
         <h2>RIUL</h2>
         <p>Red de Investigación Universidad Libre</p>
-        <p>Conectando estudiantes, docentes y proyectos de investigación.</p>
+        <p>
+            Conectando estudiantes, docentes y proyectos de investigación.
+        </p>
         <small>© 2026 RIUL. Proyecto académico.</small>
     </footer>
+    {% endblock %}
 
     {% block scripts %}{% endblock %}
+
 </body>
 </html>
