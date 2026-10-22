@@ -1,78 +1,54 @@
-
-{% extends "base.html" %}
-
-{% block title %}Crear cuenta | RIUL{% endblock %}
-
-{% block content %}
-
-<main class="auth-pagina">
-
-    <section class="auth-lateral">
-        <a href="{{ url_for('web.inicio') }}"
-           class="logo"
-           style="color: white;">
-            RIUL
-        </a>
-
-        <p class="etiqueta-roja" style="color: white;">
-            Red de Investigación Universidad Libre
-        </p>
-
-        <h1>Tu investigación comienza aquí.</h1>
-
-        <p>
-            Crea tu cuenta en RIUL y conecta con investigadores,
-            semilleros y proyectos de la comunidad universitaria.
-        </p>
-
-        <p>
-            <strong>Investigar, compartir y crecer.</strong>
-        </p>
-    </section>
-
-    <!-- Formulario de registro -->
-    <section class="auth-contenedor">
-        <div class="auth-tarjeta">
-
-            <a href="{{ url_for('web.inicio') }}" class="logo">
-                RIUL
-            </a>
-
-            <p class="etiqueta-roja">ÚNETE A NUESTRA COMUNIDAD</p>
-
-            <h2>Crea tu cuenta</h2>
-
-            <p class="auth-descripcion">
-                Completa tus datos para formar parte de RIUL.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | RIUL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="auth-pagina">
+        <section class="auth-lateral">
+            <a href="{{ url_for('web.inicio') }}" class="logo" style="color:white;">RIUL</a>
+            <h1>Únete a la comunidad investigativa</h1>
+            <p>
+                Regístrate para explorar semilleros, conocer proyectos
+                y participar en actividades académicas.
             </p>
+            <img
+                src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=80"
+                alt="Estudiantes universitarios">
+        </section>
 
-            <form id="formRegistro">
+        <section class="auth-contenedor">
+            <form class="auth-tarjeta" id="formRegistro">
+                <h2>Crear cuenta</h2>
+                <p>Completa tus datos institucionales.</p>
 
                 <div class="auth-campo">
-                    <label for="nombreRegistro">Nombre completo</label>
-                    <input
-                        type="text"
-                        id="nombreRegistro"
-                        name="nombre"
-                        placeholder="Escribe tu nombre completo"
-                        autocomplete="name"
-                        required>
+                    <label for="nombres">Nombres</label>
+                    <input type="text" id="nombres" name="nombres" required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" name="apellidos" required>
+                </div>
+
+                <div class="auth-campo">
+                    <label for="documento">Documento de identidad</label>
+                    <input type="text" id="documento" name="documento" required>
                 </div>
 
                 <div class="auth-campo">
                     <label for="correoRegistro">Correo institucional</label>
-                    <input
-                        type="email"
-                        id="correoRegistro"
-                        name="correo"
-                        placeholder="nombre@unilibre.edu.co"
-                        autocomplete="email"
-                        required>
+                    <input type="email" id="correoRegistro" name="correo"
+                           placeholder="usuario@unilibre.edu.co" required>
                 </div>
 
                 <div class="auth-campo">
-                    <label for="rolRegistro">Tipo de usuario</label>
-                    <select id="rolRegistro" name="rol" required>
+                    <label for="rol">Rol</label>
+                    <select id="rol" name="rol" required>
                         <option value="">Selecciona tu rol</option>
                         <option value="ESTUDIANTE">Estudiante</option>
                         <option value="DOCENTE">Docente</option>
@@ -80,88 +56,40 @@
                 </div>
 
                 <div class="auth-campo">
-                    <label for="contrasenaRegistro">Contraseña</label>
-                    <input
-                        type="password"
-                        id="contrasenaRegistro"
-                        name="contrasena"
-                        placeholder="Mínimo 8 caracteres"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required>
+                    <label for="facultad">Facultad</label>
+                    <select id="facultad" name="facultad" required>
+                        <option value="">Selecciona tu facultad</option>
+                        <option value="Ingeniería">Ingeniería</option>
+                        <option value="Ciencias Económicas">Ciencias Económicas</option>
+                        <option value="Derecho">Derecho</option>
+                        <option value="Ciencias de la Salud">Ciencias de la Salud</option>
+                        <option value="Otra">Otra</option>
+                    </select>
                 </div>
 
                 <div class="auth-campo">
-                    <label for="confirmarContrasena">
-                        Confirmar contraseña
-                    </label>
-                    <input
-                        type="password"
-                        id="confirmarContrasena"
-                        name="confirmar_contrasena"
-                        placeholder="Repite tu contraseña"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required>
+                    <label for="claveRegistro">Contraseña</label>
+                    <input type="password" id="claveRegistro" name="contrasena"
+                           minlength="8" required>
                 </div>
 
-                <button type="submit" class="auth-boton">
-                    Crear cuenta
-                </button>
+                <div class="auth-campo">
+                    <label for="confirmarClave">Confirmar contraseña</label>
+                    <input type="password" id="confirmarClave"
+                           name="confirmar_contrasena" minlength="8" required>
+                </div>
 
-                <p id="mensajeRegistro"
-                   class="mensaje-demo"
-                   role="status"
-                   hidden></p>
+                <p id="mensajeRegistro" role="status"></p>
 
-            </form>
+                <button class="auth-boton" type="submit">Crear cuenta</button>
 
-            <div class="demo-cuentas">
-                <p style="margin: 0; text-align: center;">
-                    ¿Ya tienes una cuenta?
-                    <a href="{{ url_for('web.iniciar_sesion') }}">
-                        Inicia sesión
-                    </a>
+                <p>¿Ya tienes cuenta?
+                    <a href="{{ url_for('web.iniciar_sesion') }}">Inicia sesión</a>
                 </p>
-            </div>
+            </form>
+        </section>
+    </main>
 
-            <p style="margin-top: 18px; text-align: center;">
-                <a href="{{ url_for('web.inicio') }}">
-                    ← Volver al inicio
-                </a>
-            </p>
-
-        </div>
-    </section>
-
-</main>
-
-<script>
-document.getElementById("formRegistro").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const contrasena =
-        document.getElementById("contrasenaRegistro").value;
-
-    const confirmar =
-        document.getElementById("confirmarContrasena");
-
-    const mensaje =
-        document.getElementById("mensajeRegistro");
-
-    mensaje.hidden = true;
-
-    if (contrasena !== confirmar.value) {
-        confirmar.setCustomValidity("Las contraseñas no coinciden.");
-        confirmar.reportValidity();
-        confirmar.setCustomValidity("");
-        return;
-    }
-
-    mensaje.hidden = false;
-    mensaje.textContent =
-        "El formulario está validado. El registro real estará disponible cuando se conecte la base de datos.";
-});
-</script>
-
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

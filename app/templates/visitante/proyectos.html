@@ -1,60 +1,84 @@
 
 {% extends "base.html" %}
 
-{% block title %}Proyectos de investigación | RIUL{% endblock %}
+{% block titulo %}Proyectos de investigación | RIUL{% endblock %}
 
-{% block content %}
-<section class="seccion-publica">
-    <div class="encabezado-seccion">
-        <span class="etiqueta-roja">INVESTIGACIÓN UNIVERSITARIA</span>
-        <h1>Proyectos de investigación</h1>
-        <p>Explora los proyectos desarrollados por nuestra comunidad académica y conoce sus avances, objetivos y resultados.</p>
+{% block contenido %}
+<section class="bienvenida">
+    <h1>Proyectos de investigación</h1>
+    <p>Conoce iniciativas académicas, sus objetivos y los avances de la comunidad investigativa.</p>
+</section>
+
+<section class="busqueda-seccion">
+    <div style="flex:2;min-width:220px;">
+        <label for="buscarProyecto">Buscar proyecto</label>
+        <input id="buscarProyecto" type="search" placeholder="Escribe el nombre o tema">
     </div>
 
-    <form class="busqueda-seccion" method="GET">
-        <input type="search" name="buscar" placeholder="Buscar proyectos..." value="{{ request.args.get('buscar', '') }}">
-        <select name="estado">
+    <div style="flex:1;min-width:180px;">
+        <label for="estadoProyecto">Estado</label>
+        <select id="estadoProyecto">
             <option value="">Todos los estados</option>
-            <option value="ACTIVO">Activo</option>
-            <option value="REVISION">En revisión</option>
-            <option value="FINALIZADO">Finalizado</option>
+            <option value="activo">En desarrollo</option>
+            <option value="revision">En revisión</option>
+            <option value="finalizado">Finalizado</option>
         </select>
-        <button class="boton boton-principal" type="submit">Buscar</button>
-    </form>
-
-    <div class="contenedor-tarjetas">
-        <article class="tarjeta">
-            <div class="tarjeta-contenido">
-                <span class="estado estado-activo">Activo</span>
-                <h3>Plataforma de innovación tecnológica</h3>
-                <p>Desarrollo de soluciones digitales para apoyar procesos de investigación universitaria.</p>
-                <p><strong>Semillero:</strong> Tecnología e Innovación</p>
-                <p><strong>Año:</strong> 2026</p>
-                <a class="boton boton-contorno" href="#proyecto1">Ver proyecto</a>
-            </div>
-        </article>
-
-        <article class="tarjeta">
-            <div class="tarjeta-contenido">
-                <span class="estado estado-revision">En revisión</span>
-                <h3>Estudio de impacto social comunitario</h3>
-                <p>Análisis de estrategias para fortalecer el bienestar y la participación de las comunidades.</p>
-                <p><strong>Semillero:</strong> Derecho y Sociedad</p>
-                <p><strong>Año:</strong> 2026</p>
-                <a class="boton boton-contorno" href="#proyecto2">Ver proyecto</a>
-            </div>
-        </article>
-
-        <article class="tarjeta">
-            <div class="tarjeta-contenido">
-                <span class="estado estado-finalizado">Finalizado</span>
-                <h3>Estrategias de bienestar y salud</h3>
-                <p>Investigación sobre prevención y promoción de hábitos saludables en la comunidad.</p>
-                <p><strong>Semillero:</strong> Salud Pública y Comunidad</p>
-                <p><strong>Año:</strong> 2025</p>
-                <a class="boton boton-contorno" href="#proyecto3">Ver proyecto</a>
-            </div>
-        </article>
     </div>
 </section>
+
+<section class="seccion">
+    <div class="contenedor-tarjetas" id="listaProyectos">
+        <article class="tarjeta" data-nombre="plataforma educativa digital" data-estado="activo">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Trabajo con herramientas digitales">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">TECNOLOGÍA</span>
+                <h3>Plataforma Educativa Digital</h3>
+                <p>Propuesta para mejorar el acceso a herramientas y recursos de aprendizaje.</p>
+                <p><strong>Estado:</strong> <span class="estado estado-activo">En desarrollo</span></p>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarDetalleProyecto(this)"
+                        data-detalle="Proyecto demostrativo enfocado en el desarrollo de herramientas digitales para apoyar el aprendizaje.">
+                    Ver más
+                </button>
+            </div>
+        </article>
+
+        <article class="tarjeta" data-nombre="medio ambiente sostenible" data-estado="revision">
+            <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=900&q=80" alt="Paisaje natural">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">MEDIO AMBIENTE</span>
+                <h3>Medio Ambiente Sostenible</h3>
+                <p>Estudio de prácticas que contribuyen al cuidado de los recursos naturales.</p>
+                <p><strong>Estado:</strong> <span class="estado estado-revision">En revisión</span></p>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarDetalleProyecto(this)"
+                        data-detalle="Proyecto demostrativo que estudia alternativas para promover prácticas sostenibles en la comunidad.">
+                    Ver más
+                </button>
+            </div>
+        </article>
+
+        <article class="tarjeta" data-nombre="innovacion social" data-estado="finalizado">
+            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80" alt="Personas colaborando en una iniciativa">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">SOCIEDAD</span>
+                <h3>Innovación Social</h3>
+                <p>Identificación de oportunidades para responder a necesidades de la comunidad.</p>
+                <p><strong>Estado:</strong> <span class="estado estado-aprobado">Finalizado</span></p>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarDetalleProyecto(this)"
+                        data-detalle="Proyecto demostrativo sobre alternativas de innovación para atender necesidades sociales.">
+                    Ver más
+                </button>
+            </div>
+        </article>
+    </div>
+
+    <p id="sinProyectos" hidden>No se encontraron proyectos con esos criterios.</p>
+    <div id="detalleProyecto" class="panel-tarjeta" hidden aria-live="polite"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

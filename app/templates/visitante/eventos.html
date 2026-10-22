@@ -1,61 +1,84 @@
 
 {% extends "base.html" %}
 
-{% block title %}Eventos | RIUL{% endblock %}
+{% block titulo %}Eventos académicos | RIUL{% endblock %}
 
-{% block content %}
-<section class="seccion-publica">
-    <div class="encabezado-seccion">
-        <span class="etiqueta-roja">AGENDA ACADÉMICA</span>
-        <h1>Eventos de investigación</h1>
-        <p>Conoce encuentros, jornadas, conferencias y actividades que impulsan el intercambio de conocimiento.</p>
+{% block contenido %}
+<section class="bienvenida">
+    <h1>Eventos académicos</h1>
+    <p>Consulta encuentros, jornadas y actividades para compartir conocimientos y resultados de investigación.</p>
+</section>
+
+<section class="busqueda-seccion">
+    <div style="flex:2;min-width:220px;">
+        <label for="buscarEvento">Buscar evento</label>
+        <input id="buscarEvento" type="search" placeholder="Nombre del evento">
     </div>
 
-    <form class="busqueda-seccion" method="GET">
-        <input type="search" name="buscar" placeholder="Buscar eventos..." value="{{ request.args.get('buscar', '') }}">
-        <select name="tipo">
-            <option value="">Todos los eventos</option>
-            <option value="CONFERENCIA">Conferencias</option>
-            <option value="TALLER">Talleres</option>
-            <option value="ENCUENTRO">Encuentros</option>
+    <div style="flex:1;min-width:180px;">
+        <label for="tipoEvento">Tipo de evento</label>
+        <select id="tipoEvento">
+            <option value="">Todos</option>
+            <option value="conferencia">Conferencia</option>
+            <option value="taller">Taller</option>
+            <option value="encuentro">Encuentro</option>
         </select>
-        <button class="boton boton-principal" type="submit">Buscar</button>
-    </form>
+    </div>
+</section>
 
-    <div class="contenedor-tarjetas">
-        <article class="tarjeta">
-            <div class="tarjeta-contenido">
-                <span class="etiqueta-roja">CONFERENCIA</span>
-                <h3>Encuentro de investigación universitaria</h3>
-                <p>Espacio para compartir experiencias, resultados y nuevas propuestas de investigación.</p>
-                <p><strong>Fecha:</strong> 12 de noviembre de 2026</p>
-                <p><strong>Modalidad:</strong> Presencial</p>
-                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
-            </div>
-        </article>
-
-        <article class="tarjeta">
-            <div class="tarjeta-contenido">
-                <span class="etiqueta-roja">TALLER</span>
-                <h3>Metodología de investigación</h3>
-                <p>Taller práctico para fortalecer las habilidades de formulación y desarrollo de proyectos.</p>
-                <p><strong>Fecha:</strong> 19 de noviembre de 2026</p>
-                <p><strong>Modalidad:</strong> Virtual</p>
-                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
-            </div>
-        </article>
-
-        <article class="tarjeta">
+<section class="seccion">
+    <div class="contenedor-tarjetas" id="listaEventos">
+        <article class="tarjeta" data-nombre="jornada de investigacion" data-tipo="encuentro">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=80" alt="Encuentro académico">
             <div class="tarjeta-contenido">
                 <span class="etiqueta-roja">ENCUENTRO</span>
-                <h3>Feria de semilleros</h3>
-                <p>Presentación de iniciativas estudiantiles, proyectos y oportunidades de colaboración.</p>
-                <p><strong>Fecha:</strong> 27 de noviembre de 2026</p>
+                <h3>Jornada de Investigación</h3>
+                <p>Espacio para presentar iniciativas y compartir experiencias investigativas.</p>
+                <p><strong>Fecha:</strong> 20 de noviembre de 2026</p>
                 <p><strong>Modalidad:</strong> Presencial</p>
-                <button class="boton boton-contorno" type="button" onclick="alert('La inscripción estará disponible próximamente.')">Ver evento</button>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarAvisoEvento('Para inscribirte, inicia sesión en RIUL.')">
+                    Inscribirme
+                </button>
+            </div>
+        </article>
+
+        <article class="tarjeta" data-nombre="taller de innovacion digital" data-tipo="taller">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Trabajo digital">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">TALLER</span>
+                <h3>Taller de Innovación Digital</h3>
+                <p>Actividad demostrativa para explorar herramientas digitales aplicadas a la investigación.</p>
+                <p><strong>Fecha:</strong> 27 de noviembre de 2026</p>
+                <p><strong>Modalidad:</strong> Virtual</p>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarAvisoEvento('Para inscribirte, inicia sesión en RIUL.')">
+                    Inscribirme
+                </button>
+            </div>
+        </article>
+
+        <article class="tarjeta" data-nombre="conferencia ciencia y sociedad" data-tipo="conferencia">
+            <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=900&q=80" alt="Conferencia">
+            <div class="tarjeta-contenido">
+                <span class="etiqueta-roja">CONFERENCIA</span>
+                <h3>Ciencia y Sociedad</h3>
+                <p>Conversación sobre el impacto de la investigación en las comunidades.</p>
+                <p><strong>Fecha:</strong> 4 de diciembre de 2026</p>
+                <p><strong>Modalidad:</strong> Presencial</p>
+                <button type="button" class="boton boton-principal"
+                        onclick="mostrarAvisoEvento('Para inscribirte, inicia sesión en RIUL.')">
+                    Inscribirme
+                </button>
             </div>
         </article>
     </div>
+
+    <p id="sinEventos" hidden>No se encontraron eventos con esos criterios.</p>
+    <p id="mensajeEvento" role="status" aria-live="polite"></p>
 </section>
 {% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

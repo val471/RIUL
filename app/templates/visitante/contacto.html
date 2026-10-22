@@ -1,58 +1,48 @@
 
 {% extends "base.html" %}
 
-{% block title %}Contacto | RIUL{% endblock %}
+{% block titulo %}Contacto | RIUL{% endblock %}
 
-{% block content %}
-<section class="seccion-publica">
-    <div class="encabezado-seccion">
-        <span class="etiqueta-roja">ESTAMOS PARA AYUDARTE</span>
-        <h1>Contacto</h1>
-        <p>¿Tienes dudas sobre los semilleros, proyectos o procesos de investigación? Escríbenos.</p>
-    </div>
+{% block contenido %}
+<section class="bienvenida">
+    <h1>Contáctanos</h1>
+    <p>¿Tienes preguntas o propuestas? Completa el formulario de contacto.</p>
+</section>
 
-    <div class="tarjeta">
-        <div class="tarjeta-contenido">
-            <form id="formContacto">
-                <div class="auth-campo">
-                    <label for="nombre">Nombre completo</label>
-                    <input id="nombre" name="nombre" type="text" required>
-                </div>
+<section class="seccion">
+    <div class="panel-tarjeta" style="max-width:700px;margin:auto;">
+        <h2>Envíanos un mensaje</h2>
 
-                <div class="auth-campo">
-                    <label for="correo">Correo institucional</label>
-                    <input id="correo" name="correo" type="email" required>
-                </div>
+        <form id="formContacto">
+            <div class="auth-campo">
+                <label for="nombreContacto">Nombre completo</label>
+                <input type="text" id="nombreContacto" required>
+            </div>
 
-                <div class="auth-campo">
-                    <label for="asunto">Asunto</label>
-                    <select id="asunto" name="asunto" required>
-                        <option value="">Selecciona un asunto</option>
-                        <option>Información sobre semilleros</option>
-                        <option>Información sobre proyectos</option>
-                        <option>Eventos académicos</option>
-                        <option>Soporte de la plataforma</option>
-                        <option>Otro</option>
-                    </select>
-                </div>
+            <div class="auth-campo">
+                <label for="correoContacto">Correo electrónico</label>
+                <input type="email" id="correoContacto" required>
+            </div>
 
-                <div class="auth-campo">
-                    <label for="mensaje">Mensaje</label>
-                    <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
-                </div>
+            <div class="auth-campo">
+                <label for="asuntoContacto">Asunto</label>
+                <input type="text" id="asuntoContacto" required>
+            </div>
 
-                <button class="boton boton-principal" type="submit">Enviar mensaje</button>
-                <p id="mensajeContacto" class="auth-mensaje"></p>
-            </form>
-        </div>
+            <div class="auth-campo">
+                <label for="mensajeContacto">Mensaje</label>
+                <textarea id="mensajeContacto" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="boton boton-principal">Enviar mensaje</button>
+            <p id="resultadoContacto" role="status" aria-live="polite"></p>
+        </form>
     </div>
 </section>
 
-<script>
-document.getElementById("formContacto").addEventListener("submit", function(event) {
-    event.preventDefault();
-    document.getElementById("mensajeContacto").textContent =
-        "Formulario de demostración: el envío se habilitará próximamente.";
-});
-</script>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}

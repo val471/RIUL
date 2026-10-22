@@ -10,7 +10,7 @@ services:
       - "5000:5000"
 
     environment:
-      DATABASE_URL: mysql+pymysql://riul_app:RIUL_AAA@db:3306/riul_db
+      DATABASE_URL: mysql+pymysql://riul_app:RIUL_AAA@db:3306/riul
       JWT_SECRET_KEY: suero-AAA
 
     depends_on:
@@ -25,7 +25,7 @@ services:
     container_name: RIUL_mysql
 
     environment:
-      MYSQL_DATABASE: riul_db
+      MYSQL_DATABASE: riul
       MYSQL_USER: riul_app
       MYSQL_PASSWORD: RIUL_AAA
       MYSQL_ROOT_PASSWORD: RIULRoot_AAA

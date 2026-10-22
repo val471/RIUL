@@ -2,33 +2,38 @@
 
 from flask import Blueprint, render_template
 
+from app.controllers import visitante_controller
+from app.controllers import admin_controller
+from app.controllers import estudiante_controller
+from app.controllers import docente_controller
+
 web = Blueprint("web", __name__)
 
 
 # PÁGINAS PÚBLICAS
 @web.route("/")
 def inicio():
-    return render_template("index.html")
+    return visitante_controller.inicio()
 
 
 @web.route("/semilleros")
 def semilleros():
-    return render_template("visitante/semilleros.html")
+    return visitante_controller.semilleros()
 
 
 @web.route("/proyectos")
 def proyectos():
-    return render_template("visitante/proyectos.html")
+    return visitante_controller.proyectos()
 
 
 @web.route("/eventos")
 def eventos():
-    return render_template("visitante/eventos.html")
+    return visitante_controller.eventos()
 
 
 @web.route("/contacto")
 def contacto():
-    return render_template("visitante/contacto.html")
+    return visitante_controller.contacto()
 
 
 # AUTENTICACIÓN
@@ -45,14 +50,14 @@ def registro():
 # PANELES POR ROL
 @web.route("/estudiante")
 def panel_estudiante():
-    return render_template("estudiante/index.html")
+    return estudiante_controller.mostrar_panel()
 
 
 @web.route("/docente")
 def panel_docente():
-    return render_template("docente/index.html")
+    return docente_controller.mostrar_panel()
 
 
-@web.route("/administrador")
+@web.route("/admin")
 def panel_administrador():
-    return render_template("administrador/index.html")
+    return admin_controller.mostrar_panel()

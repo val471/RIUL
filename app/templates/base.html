@@ -3,46 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>{% block title %}RIUL - Sistema de Investigación{% endblock %}</title>
-
+    <title>{% block titulo %}RIUL - Red de Investigación Universidad Libre{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
     <header class="encabezado">
-        <a href="/" class="logo">RIUL</a>
+        <a href="{{ url_for('web.inicio') }}" class="logo">RIUL</a>
 
         <nav class="menu">
-            <a href="/">Inicio</a>
-            <a href="/semilleros">Semilleros</a>
-            <a href="/proyectos">Proyectos</a>
-            <a href="/eventos">Eventos</a>
-            <a href="/contacto">Contacto</a>
+            <a href="{{ url_for('web.inicio') }}">Inicio</a>
+            <a href="{{ url_for('web.semilleros') }}">Semilleros</a>
+            <a href="{{ url_for('web.proyectos') }}">Proyectos</a>
+            <a href="{{ url_for('web.eventos') }}">Eventos</a>
+            <a href="{{ url_for('web.contacto') }}">Contacto</a>
         </nav>
 
         <div class="acciones-menu">
-            <a href="/iniciar-sesion" class="boton boton-secundario">
-                Iniciar sesión
-            </a>
-
-            <a href="/registro" class="boton boton-principal">
-                Registrarse
-            </a>
+            <a class="boton boton-secundario" href="{{ url_for('web.iniciar_sesion') }}">Iniciar sesión</a>
+            <a class="boton boton-principal" href="{{ url_for('web.registro') }}">Registrarse</a>
         </div>
     </header>
 
     <main>
-        {% block content %}{% endblock %}
+        {% block contenido %}{% endblock %}
     </main>
 
     <footer class="pie-pagina">
-        <h2>¿Quieres hacer parte de RIUL?</h2>
-        <p>Únete a nuestra comunidad de investigación universitaria.</p>
-        <a href="/registro" class="boton boton-blanco">Crear una cuenta</a>
-        <p class="copyright">RIUL - Sistema de Investigación</p>
+        <h2>RIUL</h2>
+        <p>Red de Investigación Universidad Libre</p>
+        <p>Conectando estudiantes, docentes y proyectos de investigación.</p>
+        <small>© 2026 RIUL. Proyecto académico.</small>
     </footer>
 
+    {% block scripts %}{% endblock %}
 </body>
 </html>

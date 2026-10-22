@@ -1,249 +1,219 @@
 
 {% extends "base.html" %}
 
-{% block title %}Inicio - RIUL{% endblock %}
+{% block titulo %}Inicio | RIUL{% endblock %}
 
-{% block content %}
+{% block contenido %}
 
-<section class="bienvenida">
-    <div class="contenido-bienvenida">
-        <p class="etiqueta">Investigación universitaria</p>
+<section class="inicio-hero">
+    <div class="inicio-hero-contenido">
+        <span class="hero-etiqueta">INVESTIGACIÓN UNIVERSITARIA</span>
 
         <h1>Sistema de Investigación RIUL</h1>
 
         <p>
-            Conectamos investigadores, semilleros y proyectos
-            para impulsar la innovación y el conocimiento.
+            Conectando ideas, generando conocimiento y construyendo futuro.
+            La plataforma que impulsa la investigación universitaria.
         </p>
 
         <div class="acciones-bienvenida">
-            <a href="/semilleros" class="boton boton-blanco">
+            <a href="{{ url_for('web.semilleros') }}"
+               class="boton boton-blanco">
                 Explorar semilleros
             </a>
 
-            <a href="/proyectos" class="boton boton-transparente">
-                Ver proyectos
+            <a href="{{ url_for('web.registro') }}"
+               class="boton boton-transparente">
+                Regístrate gratis
             </a>
+        </div>
+
+        <div class="hero-estadisticas">
+            <div>
+                <strong>245</strong>
+                <span>Investigadores</span>
+            </div>
+            <div>
+                <strong>38</strong>
+                <span>Semilleros</span>
+            </div>
+            <div>
+                <strong>120+</strong>
+                <span>Proyectos</span>
+            </div>
         </div>
     </div>
 
-    <div class="imagen-bienvenida">
+    <div class="inicio-hero-imagen">
         <img
-            src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1000&q=80"
-            alt="Investigadores trabajando en un laboratorio universitario"
-        >
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=85"
+            alt="Estudiantes universitarios trabajando en investigación">
+        <span class="imagen-distintivo">✦ &nbsp; 38 grupos</span>
     </div>
 </section>
 
+<section class="inicio-busqueda">
+    <form action="{{ url_for('web.semilleros') }}" method="get">
+        <input
+            type="search"
+            name="buscar"
+            placeholder="Buscar semilleros, proyectos, investigadores..."
+            aria-label="Buscar en RIUL">
 
-<section class="estadisticas">
-    <article class="estadistica">
-        <h2>245 +</h2>
-        <p>Investigadores</p>
-    </article>
-    
-    <article class="estadistica">
-        <h2>38</h2>
-        <p>Semilleros</p>
-    </article>
-    
-    <article class="estadistica">
-        <h2>120 +</h2>
-        <p>Proyectos</p>
-    </article>
+        <select name="facultad" aria-label="Facultad">
+            <option value="">Todas las facultades</option>
+        </select>
+
+        <select name="categoria" aria-label="Categoría">
+            <option value="">Categoría</option>
+        </select>
+
+        <button type="submit" aria-label="Buscar">⌕</button>
+    </form>
 </section>
 
-<!-- GRUPOS DE INVESTIGACIÓN -->-
-<section class="seccion">
-    <div class="titulo-seccion">
-        <p class="etiqueta-roja">COMUNIDAD ACADÉMICA</p>
-        <h2>Grupos de investigación</h2>
-        <p>Conoce los semilleros que hacen parte de RIUL.</p>
+<section class="inicio-seccion">
+    <div class="inicio-titulo">
+        <div>
+            <span class="etiqueta-roja">COMUNIDAD INVESTIGATIVA</span>
+            <h2>Grupos de investigación</h2>
+        </div>
+        <a href="{{ url_for('web.semilleros') }}">Ver todos ›</a>
     </div>
 
-    <div class="contenedor-tarjetas tarjetas-inicio">
-
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
-                alt="Equipo universitario trabajando en investigación"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
-                <h3>Inteligencia Artificial</h3>
-                <p>Facultad de Ingeniería</p>
-                <a href="/semilleros" class="enlace">
-                    Ver detalles →
-                </a>
+    <div class="inicio-tarjetas">
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=700&q=80"
+                 alt="Estudiantes colaborando en un proyecto">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Ingeniería</small>
+                <h3>Tecnología e Innovación</h3>
+                <p>Investigación · Proyectos</p>
+                <a href="{{ url_for('web.semilleros') }}">Ver más</a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80"
-                alt="Investigación sobre energías renovables"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
-                <h3>Energías Renovables</h3>
-                <p>Facultad de Ingeniería</p>
-                <a href="/semilleros" class="enlace">
-                    Ver detalles →
-                </a>
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=700&q=80"
+                 alt="Personas trabajando en tecnología">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Ciencias Jurídicas</small>
+                <h3>Derechos y Sociedad</h3>
+                <p>Investigación · Proyectos</p>
+                <a href="{{ url_for('web.semilleros') }}">Ver más</a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80"
-                alt="Investigación científica en salud"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
-                <h3>Investigación en Salud</h3>
-                <p>Facultad de Ciencias de la Salud</p>
-                <a href="/semilleros" class="enlace">
-                    Ver detalles →
-                </a>
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=700&q=80"
+                 alt="Investigación científica en laboratorio">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Ciencias de la Salud</small>
+                <h3>Salud Pública y Comunidad</h3>
+                <p>Investigación · Proyectos</p>
+                <a href="{{ url_for('web.semilleros') }}">Ver más</a>
             </div>
         </article>
-
-    </div>
-
-    <div class="acciones-seccion">
-        <a href="/semilleros" class="boton boton-secundario">
-            Ver todos los semilleros →
-        </a>
     </div>
 </section>
 
-<!-- PROYECTOS RECIENTES -->
-<section class="seccion">
-    <div class="titulo-seccion">
-        <p class="etiqueta-roja">INVESTIGACIÓN ACTIVA</p>
-        <h2>Proyectos recientes</h2>
-        <p>Descubre algunas iniciativas de investigación.</p>
+<section class="inicio-seccion inicio-fondo-gris">
+    <div class="inicio-titulo">
+        <div>
+            <span class="etiqueta-roja">INVESTIGACIÓN ACTIVA</span>
+            <h2>Proyectos recientes</h2>
+        </div>
+        <a href="{{ url_for('web.proyectos') }}">Ver todos ›</a>
     </div>
 
-    <div class="contenedor-tarjetas tarjetas-inicio">
-
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80"
-                alt="Tecnología e inteligencia artificial"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
+    <div class="inicio-tarjetas inicio-tarjetas-proyectos">
+        <article class="inicio-tarjeta proyecto-mini">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>▱</small>
+                <h3>IA Aplicada a la Educación</h3>
+                <p>Semillero de Innovación</p>
                 <span class="estado estado-activo">Activo</span>
-                <h3>IA aplicada a la educación</h3>
-                <p>Innovación y tecnología educativa.</p>
-                <a href="/proyectos" class="enlace">
-                    Ver proyecto →
-                </a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80"
-                alt="Biodiversidad y naturaleza"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
+        <article class="inicio-tarjeta proyecto-mini">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>▱</small>
+                <h3>Biodiversidad Urbana</h3>
+                <p>Ciencias Ambientales</p>
                 <span class="estado estado-activo">Activo</span>
-                <h3>Biodiversidad urbana</h3>
-                <p>Sostenibilidad y medioambiente.</p>
-                <a href="/proyectos" class="enlace">
-                    Ver proyecto →
-                </a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80"
-                alt="Libros y documentos jurídicos"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
+        <article class="inicio-tarjeta proyecto-mini">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>▱</small>
+                <h3>Derechos Digitales</h3>
+                <p>Semillero Jurídico</p>
                 <span class="estado estado-revision">En revisión</span>
-                <h3>Derechos digitales</h3>
-                <p>Investigación y transformación jurídica.</p>
-                <a href="/proyectos" class="enlace">
-                    Ver proyecto →
-                </a>
             </div>
         </article>
-
-    </div>
-
-    <div class="acciones-seccion">
-        <a href="/proyectos" class="boton boton-secundario">
-            Ver todos los proyectos →
-        </a>
     </div>
 </section>
 
-<!-- PRÓXIMOS EVENTOS -->
-<section class="seccion">
-    <div class="titulo-seccion">
-        <p class="etiqueta-roja">AGENDA ACADÉMICA</p>
-        <h2>Próximos eventos</h2>
-        <p>Participa en las actividades de investigación.</p>
+<section class="inicio-seccion">
+    <div class="inicio-titulo">
+        <div>
+            <span class="etiqueta-roja">AGENDA ACADÉMICA</span>
+            <h2>Próximos eventos</h2>
+        </div>
+        <a href="{{ url_for('web.eventos') }}">Ver todos ›</a>
     </div>
 
-    <div class="contenedor-tarjetas tarjetas-inicio">
-
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80"
-                alt="Congreso académico"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
+    <div class="inicio-tarjetas">
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=700&q=80"
+                 alt="Congreso académico">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Congreso</small>
                 <h3>Congreso Nacional de Investigación</h3>
-                <p>Encuentro académico para investigadores.</p>
-                <a href="/eventos" class="enlace">
-                    Ver evento →
-                </a>
+                <p>Encuentro académico</p>
+                <a href="{{ url_for('web.eventos') }}">Ver más ›</a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80"
-                alt="Taller de aprendizaje y tecnología"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=700&q=80"
+                 alt="Taller académico">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Taller</small>
                 <h3>Taller de Metodología Científica</h3>
-                <p>Herramientas y métodos para investigar.</p>
-                <a href="/eventos" class="enlace">
-                    Ver evento →
-                </a>
+                <p>Formación investigativa</p>
+                <a href="{{ url_for('web.eventos') }}">Ver más ›</a>
             </div>
         </article>
 
-        <article class="tarjeta tarjeta-inicio">
-            <img
-                src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80"
-                alt="Estudiantes participando en una actividad universitaria"
-                loading="lazy">
-
-            <div class="tarjeta-contenido">
-                <h3>Feria de Semilleros</h3>
-                <p>Conoce nuevos proyectos universitarios.</p>
-                <a href="/eventos" class="enlace">
-                    Ver evento →
-                </a>
+        <article class="inicio-tarjeta">
+            <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80"
+                 alt="Feria y encuentro universitario">
+            <div class="inicio-tarjeta-cuerpo">
+                <small>Feria</small>
+                <h3>Feria de Semilleros 2026</h3>
+                <p>Encuentro universitario</p>
+                <a href="{{ url_for('web.eventos') }}">Ver más ›</a>
             </div>
         </article>
-
     </div>
+</section>
 
-    <div class="acciones-seccion">
-        <a href="/eventos" class="boton boton-secundario">
-            Ver todos los eventos →
+<section class="inicio-llamado">
+    <h2>¿Listo para hacer parte de RIUL?</h2>
+    <p>
+        Únete a la comunidad de investigadores de la Universidad Libre
+        y lleva tus ideas al siguiente nivel.
+    </p>
+    <div>
+        <a href="{{ url_for('web.registro') }}" class="boton boton-blanco">
+            Crear mi cuenta
+        </a>
+        <a href="{{ url_for('web.iniciar_sesion') }}"
+           class="boton boton-transparente">
+            Ya tengo cuenta
         </a>
     </div>
 </section>
