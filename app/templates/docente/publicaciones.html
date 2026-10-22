@@ -1,0 +1,208 @@
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Publicaciones | RIUL{% endblock %}
+
+{% block estilos %}
+{{ super() }}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/publicaciones.css') }}">
+{% endblock %}
+
+{% block contenido_docente %}
+
+<section class="pub-pagina">
+
+    <header class="pub-encabezado">
+        <div>
+            <span class="pub-etiqueta">DOCENCIA E INVESTIGACIÓN</span>
+            <h2>Publicaciones</h2>
+            <p>Comparte avances, archivos y contenido académico.</p>
+        </div>
+
+        <button type="button" class="pub-btn pub-btn-principal"
+                id="pub-abrir-modal">
+            <span>＋</span> Publicar
+        </button>
+    </header>
+
+    <div class="pub-busqueda">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" id="pub-buscar"
+               placeholder="Buscar publicaciones..."
+               aria-label="Buscar publicaciones">
+    </div>
+
+    <div id="pub-mensaje" class="pub-mensaje"
+         role="status" aria-live="polite" hidden></div>
+
+    <div id="pub-lista" class="pub-lista">
+
+        <!-- PUBLICACIÓN 1 -->
+        <article class="pub-tarjeta" data-autor="Dra. Laura Gómez">
+            <div class="pub-cabecera">
+                <div class="pub-avatar">LG</div>
+                <div class="pub-autor">
+                    <strong>Dra. Laura Gómez</strong>
+                    <span>Hace 2 horas · Publicación académica ·
+                        <b>+5 XP</b></span>
+                </div>
+                <button type="button" class="pub-menu"
+                        data-accion="menu" aria-label="Opciones">
+                    ⋯
+                </button>
+                <div class="pub-opciones" hidden>
+                    <button type="button" data-accion="editar">Editar</button>
+                    <button type="button" data-accion="eliminar">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="pub-texto">
+                Nuestro semillero presentó avances del proyecto de
+                analítica educativa. Gracias a todo el equipo por su
+                trabajo riguroso.
+            </div>
+
+            <a class="pub-archivo" href="#" data-archivo-demo>
+                <span class="pub-archivo-icono">▤</span>
+                <span>
+                    <strong>memorias_congreso.pdf</strong>
+                    <small>Archivo académico · Demostración</small>
+                </span>
+                <span class="pub-archivo-descarga">↗</span>
+            </a>
+
+            <div class="pub-estadisticas">
+                <span><span data-total-likes>34</span> reacciones</span>
+                <span><span data-total-comentarios>8</span> comentarios</span>
+                <span>◉ <span data-total-vistas>186</span> vistas</span>
+            </div>
+
+            <div class="pub-acciones">
+                <button type="button" data-accion="like"
+                        aria-pressed="false">♡ <span>Me gusta</span></button>
+                <button type="button" data-accion="comentar">
+                    ▤ <span>Comentar</span>
+                </button>
+                <button type="button" data-accion="compartir">
+                    ↗ <span>Compartir</span>
+                </button>
+            </div>
+
+            <div class="pub-comentarios" hidden>
+                <div class="pub-comentarios-lista"></div>
+                <form class="pub-form-comentario">
+                    <input name="comentario" maxlength="500" required
+                           placeholder="Escribe un comentario...">
+                    <button class="pub-btn pub-btn-principal" type="submit">
+                        Enviar
+                    </button>
+                </form>
+            </div>
+        </article>
+
+        <!-- PUBLICACIÓN 2 -->
+        <article class="pub-tarjeta" data-autor="Andrés Martínez"
+                 data-propia="true">
+            <div class="pub-cabecera">
+                <div class="pub-avatar">AM</div>
+                <div class="pub-autor">
+                    <strong>Andrés Martínez</strong>
+                    <span>Hace 2 horas · Publicación académica</span>
+                </div>
+                <button type="button" class="pub-menu"
+                        data-accion="menu" aria-label="Opciones">
+                    ⋯
+                </button>
+                <div class="pub-opciones" hidden>
+                    <button type="button" data-accion="editar">Editar</button>
+                    <button type="button" data-accion="eliminar">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="pub-texto">
+                Comparto algunas conclusiones del taller de metodología
+                científica y una guía breve para estructurar revisiones
+                sistemáticas.
+            </div>
+
+            <div class="pub-estadisticas">
+                <span><span data-total-likes>18</span> reacciones</span>
+                <span><span data-total-comentarios>4</span> comentarios</span>
+                <span>◉ <span data-total-vistas>92</span> vistas</span>
+            </div>
+
+            <div class="pub-acciones">
+                <button type="button" data-accion="like"
+                        aria-pressed="false">♡ <span>Me gusta</span></button>
+                <button type="button" data-accion="comentar">
+                    ▤ <span>Comentar</span>
+                </button>
+                <button type="button" data-accion="compartir">
+                    ↗ <span>Compartir</span>
+                </button>
+            </div>
+
+            <div class="pub-comentarios" hidden>
+                <div class="pub-comentarios-lista"></div>
+                <form class="pub-form-comentario">
+                    <input name="comentario" maxlength="500" required
+                           placeholder="Escribe un comentario...">
+                    <button class="pub-btn pub-btn-principal" type="submit">
+                        Enviar
+                    </button>
+                </form>
+            </div>
+        </article>
+
+    </div>
+
+    <p id="pub-sin-resultados" class="pub-sin-resultados" hidden>
+        No se encontraron publicaciones.
+    </p>
+
+</section>
+
+<!-- MODAL PARA CREAR Y EDITAR -->
+<div class="pub-modal" id="pub-modal" hidden>
+    <div class="pub-modal-fondo" data-accion="cerrar-modal"></div>
+
+    <section class="pub-modal-contenido" role="dialog"
+             aria-modal="true" aria-labelledby="pub-modal-titulo">
+
+        <header class="pub-modal-cabecera">
+            <div>
+                <span class="pub-etiqueta">RIUL</span>
+                <h3 id="pub-modal-titulo">Crear publicación</h3>
+            </div>
+            <button type="button" class="pub-cerrar"
+                    data-accion="cerrar-modal"
+                    aria-label="Cerrar">×</button>
+        </header>
+
+        <form id="pub-form-publicar">
+            <label for="pub-descripcion">¿Qué deseas compartir?</label>
+            <textarea id="pub-descripcion" name="descripcion"
+                      rows="5" maxlength="3000" required
+                      placeholder="Escribe los avances de tu investigación..."></textarea>
+
+            <label for="pub-adjunto">Adjuntar archivo (opcional)</label>
+            <input type="file" id="pub-adjunto"
+                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg">
+
+            <p class="pub-ayuda">
+                Simulación local: la publicación y los archivos no se
+                guardan en el servidor.
+            </p>
+
+            <div class="pub-modal-acciones">
+                <button type="button" class="pub-btn pub-btn-secundario"
+                        data-accion="cerrar-modal">Cancelar</button>
+                <button type="submit" class="pub-btn pub-btn-principal">
+                    Publicar
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+{% endblock %}

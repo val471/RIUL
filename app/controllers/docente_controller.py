@@ -31,6 +31,14 @@ def mostrar_eventos():
     return render_template("docente/eventos.html")
 
 
+def mostrar_publicaciones():
+    return render_template("docente/publicaciones.html")
+
+
+def mostrar_ranking():
+    return render_template("docente/ranking.html")
+
+
 def mostrar_logros():
     return render_template("docente/logros.html")
 

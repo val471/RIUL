@@ -74,7 +74,13 @@
             <a class="docente-menu-enlace {% if request.path == '/docente/logros' %}activo{% endif %}"
                href="{{ url_for('web.docente_logros') }}">
                 <span class="docente-menu-icono">☆</span>
-                <span>Logros y productos</span>
+                <span>Logros</span>
+            </a>
+
+            <a class="docente-menu-enlace {% if request.path == '/docente/ranking' %}activo{% endif %}"
+               href="{{ url_for('web.docente_ranking') }}">
+                <span class="docente-menu-icono">▥</span>
+                <span>Ranking</span>
             </a>
 
             <p class="docente-menu-titulo">CUENTA</p>
@@ -83,6 +89,11 @@
                href="{{ url_for('web.docente_perfil') }}">
                 <span class="docente-menu-icono">⚙</span>
                 <span>Mi perfil</span>
+            </a>
+            <a class="docente-menu-enlace {% if request.path == '/docente/publicaciones' %}activo{% endif %}"
+               href="{{ url_for('web.docente_publicaciones') }}">
+                <span class="docente-menu-icono">▤</span>
+                <span>Publicaciones</span>
             </a>
         </nav>
 

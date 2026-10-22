@@ -1,0 +1,103 @@
+
+.logros-pagina {
+    width: 100%;
+}
+
+.logros-pagina .pagina-encabezado h2 {
+    margin: 0 0 5px;
+    color: #111827;
+    font-size: 26px;
+}
+
+.logros-pagina .pagina-encabezado p {
+    margin: 0;
+    color: var(--docente-texto-secundario);
+    font-size: 13px;
+}
+
+.lista-logros {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.logro-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid #EDF0F3;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(20, 30, 50, .04);
+}
+
+.logro-card > div:first-child {
+    min-width: 0;
+    flex: 1 1 230px;
+}
+
+.logro-card strong {
+    display: block;
+    color: #111827;
+    font-size: 13px;
+}
+
+.logro-card p {
+    margin: 5px 0;
+    color: #64748B;
+    font-size: 12px;
+}
+
+.logro-card small {
+    color: #64748B;
+    font-size: 11px;
+}
+
+.logro-selector {
+    flex: 0 1 190px;
+    min-width: 170px;
+}
+
+.logro-selector select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #E0E4EA;
+    border-radius: 9px;
+    background: white;
+    color: #334155;
+    font-size: 12px;
+}
+
+.logro-xp {
+    flex-basis: 100%;
+    color: var(--docente-rojo) !important;
+    font-weight: 700;
+}
+
+.solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+    .logros-pagina .pagina-encabezado h2 {
+        font-size: 23px;
+    }
+
+    .logro-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .logro-selector {
+        flex-basis: auto;
+        width: 100%;
+    }
+}

@@ -1,0 +1,99 @@
+
+.ranking-pagina {
+    width: 100%;
+}
+
+.ranking-encabezado {
+    margin-bottom: 20px;
+}
+
+.ranking-encabezado h2 {
+    margin: 0 0 5px;
+    color: #111827;
+    font-size: 26px;
+}
+
+.ranking-encabezado p {
+    margin: 0;
+    color: var(--docente-texto-secundario);
+    font-size: 13px;
+}
+
+.ranking-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(20, 30, 50, .04);
+}
+
+.ranking-tabla {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    background: white;
+}
+
+.ranking-tabla thead {
+    background: #F8FAFC;
+}
+
+.ranking-tabla th {
+    padding: 14px 16px;
+    color: #64748B;
+    font-size: 10px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ranking-tabla td {
+    padding: 16px;
+    border-bottom: 1px solid #EDF0F3;
+    color: #64748B;
+    font-size: 12px;
+}
+
+.ranking-tabla tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ranking-tabla tbody tr:hover {
+    background: #FFF7F8;
+}
+
+.ranking-tabla .ranking-posicion {
+    color: var(--docente-rojo);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.ranking-tabla .ranking-investigador,
+.ranking-tabla .ranking-xp {
+    color: #111827;
+    font-weight: 700;
+}
+
+.ranking-estrellas {
+    color: #FF9418;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+#ranking-sin-resultados {
+    padding: 22px;
+    color: #64748B;
+    text-align: center;
+}
+
+@media (max-width: 650px) {
+    .ranking-encabezado h2 {
+        font-size: 23px;
+    }
+
+    .ranking-tabla th,
+    .ranking-tabla td {
+        padding: 13px 12px;
+    }
+}

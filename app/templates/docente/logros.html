@@ -1,245 +1,108 @@
-
 {% extends "docente/base_docente.html" %}
 
-{% block titulo %}Logros y productos | RIUL{% endblock %}
+{% block titulo %}Logros | RIUL{% endblock %}
+
+{% block estilos %}
+{{ super() }}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/docente_logros.css') }}">
+{% endblock %}
 
 {% block contenido_docente %}
-<div class="pagina-encabezado">
-    <div>
-        <h2>Logros y productos</h2>
-        <p>Registra resultados de investigación y revisa evidencias académicas.</p>
+<section class="logros-pagina">
+    <div class="pagina-encabezado">
+        <div>
+            <span class="logros-eyebrow">DOCENCIA E INVESTIGACIÓN</span>
+            <h2>Logros de estudiantes</h2>
+            <p>Registra logros y califica su calidad en 50, 75 o 100 %.</p>
+        </div>
+        <button type="button" class="boton-principal"
+                data-abrir-logro>+ Registrar</button>
+    </div>
+
+    <p id="mensaje-logros" role="status" aria-live="polite"></p>
+
+    <div id="lista-logros" class="lista-logros">
+        <article class="logro-card" data-logro>
+            <div>
+                <strong data-logro-titulo>Proyecto de analítica educativa</strong>
+                <p>Andrés Martínez · Proyecto · XP base: 200</p>
+                <small data-logro-calificacion>Sin calificar</small>
+            </div>
+
+            <label class="logro-selector">
+                <span class="solo-lectores">Calificar proyecto</span>
+                <select data-calificar-logro aria-label="Calificar proyecto de analítica educativa">
+                    <option value="">Calificar...</option>
+                    <option value="50">50 % · Básico</option>
+                    <option value="75">75 % · Destacado</option>
+                    <option value="100">100 % · Excelente</option>
+                </select>
+            </label>
+
+            <p class="logro-xp" data-logro-xp hidden></p>
+        </article>
+    </div>
+</section>
+
+<div class="modal-logro" id="modal-logro"
+     role="dialog" aria-modal="true"
+     aria-labelledby="titulo-modal-logro" hidden>
+    <div class="modal-logro-contenido">
+        <button type="button" class="modal-cerrar"
+                data-cerrar-logro aria-label="Cerrar">×</button>
+
+        <span class="logros-eyebrow">RIUL</span>
+        <h3 id="titulo-modal-logro">Registrar logro</h3>
+
+        <form id="form-logro">
+            <div class="campo-formulario">
+                <label for="logro-titulo">Nombre o título</label>
+                <input id="logro-titulo" name="titulo"
+                       placeholder="Escribe un nombre descriptivo"
+                       maxlength="150" required>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="logro-descripcion">Descripción</label>
+                <textarea id="logro-descripcion" name="descripcion"
+                          rows="4" maxlength="1500"
+                          placeholder="Agrega información relevante"
+                          required></textarea>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="logro-tipo">Tipo de logro</label>
+                <select id="logro-tipo" name="tipo" required>
+                    <option value="publicacion" data-xp="5">Publicación · 5 XP base</option>
+                    <option value="evento" data-xp="50">Evento · 50 XP base</option>
+                    <option value="ponencia" data-xp="100">Ponencia · 100 XP base</option>
+                    <option value="articulo" data-xp="150">Artículo · 150 XP base</option>
+                    <option value="proyecto" data-xp="200">Proyecto · 200 XP base</option>
+                    <option value="patente" data-xp="300">Patente · 300 XP base</option>
+                </select>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="logro-estudiante">Estudiante</label>
+                <input id="logro-estudiante" name="estudiante"
+                       placeholder="Nombre del estudiante"
+                       maxlength="150" required>
+            </div>
+
+            <div class="acciones-formulario">
+                <button type="button" class="boton-secundario"
+                        data-cerrar-logro>Cancelar</button>
+                <button type="submit" class="boton-principal">
+                    Registrar logro
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+{% endblock %}
 
-<div id="mensaje-logro" role="status" aria-live="polite"></div>
-
-<section class="tarjeta-formulario">
-    <h3>Registrar producto de investigación</h3>
-    <form id="form-producto">
-        <div class="campo-formulario">
-            <label for="producto-tipo">Tipo de producto</label>
-            <select id="producto-tipo" required>
-                <option>Artículo de investigación</option>
-                <option>Ponencia</option>
-                <option>Informe de investigación</option>
-                <option>Prototipo tecnológico</option>
-                <option>Material académico</option>
-            </select>
-        </div>
-
-        <div class="campo-formulario">
-            <label for="producto-nombre">Título del producto</label>
-            <input id="producto-nombre" required>
-        </div>
-
-        <div class="campo-formulario">
-            <label for="producto-proyecto">Proyecto relacionado</label>
-            <select id="producto-proyecto" required>
-                <option>Analítica de datos para la toma de decisiones</option>
-                <option>Aplicación para seguimiento académico</option>
-                <option>Herramientas digitales para el aprendizaje</option>
-                <option>Transformación digital en pequeñas empresas</option>
-            </select>
-        </div>
-
-        <div class="campo-formulario">
-            <label for="producto-descripcion">Descripción</label>
-            <textarea id="producto-descripcion" rows="3" required></textarea>
-        </div>
-
-        <div class="campo-formulario">
-            <label for="producto-archivo">Evidencia documental (opcional)</label>
-            <input id="producto-archivo" type="file" accept=".pdf,.doc,.docx">
-            <small>El archivo solo se selecciona; no se almacena en el servidor.</small>
-        </div>
-
-        <button type="submit" class="boton-principal">Registrar producto</button>
-    </form>
-</section>
-
-<section class="tarjeta-formulario">
-    <h3>Productos registrados</h3>
-    <div class="tabla-contenedor">
-        <table id="tabla-productos">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Tipo</th>
-                    <th>Proyecto</th>
-                    <th>Estado</th>
-                    <th>Decisión</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Informe de innovación educativa</td>
-                    <td>Informe de investigación</td>
-                    <td>Herramientas digitales para el aprendizaje</td>
-                    <td><span class="estado estado-pendiente">Pendiente</span></td>
-                    <td>
-                        <button type="button" class="boton-principal"
-                            onclick="resolverProducto(this, 'Aprobado')">Aprobar</button>
-                        <button type="button" class="boton-rechazar"
-                            onclick="resolverProducto(this, 'Rechazado')">Rechazar</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Prototipo de seguimiento académico</td>
-                    <td>Prototipo tecnológico</td>
-                    <td>Aplicación para seguimiento académico</td>
-                    <td><span class="estado estado-activo">Aprobado</span></td>
-                    <td>Validado</td>
-                </tr>
-                <tr>
-                    <td>Ponencia sobre analítica de datos</td>
-                    <td>Ponencia</td>
-                    <td>Analítica de datos para la toma de decisiones</td>
-                    <td><span class="estado estado-pendiente">Pendiente</span></td>
-                    <td>
-                        <button type="button" class="boton-principal"
-                            onclick="resolverProducto(this, 'Aprobado')">Aprobar</button>
-                        <button type="button" class="boton-rechazar"
-                            onclick="resolverProducto(this, 'Rechazado')">Rechazar</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="tarjeta-formulario">
-    <h3>Registrar logro individual</h3>
-    <form id="form-logro">
-        <div class="campo-formulario">
-            <label for="logro-estudiante">Estudiante</label>
-            <select id="logro-estudiante" required>
-                <option>Laura Camila Mendoza</option>
-                <option>Andrés Felipe Ramírez</option>
-                <option>Sofía Valentina Castro</option>
-            </select>
-        </div>
-
-        <div class="campo-formulario">
-            <label for="logro-nombre">Nombre del logro</label>
-            <input id="logro-nombre" required placeholder="Ej. Participación en encuentro académico">
-        </div>
-
-        <div class="campo-formulario">
-            <label for="logro-puntos">Puntos de reconocimiento</label>
-            <select id="logro-puntos">
-                <option value="50">50 puntos</option>
-                <option value="75">75 puntos</option>
-                <option value="100">100 puntos</option>
-            </select>
-        </div>
-
-        <button type="submit" class="boton-principal">Registrar logro</button>
-    </form>
-</section>
-
-<section class="tarjeta-formulario">
-    <h3>Logros individuales</h3>
-    <div class="tabla-contenedor">
-        <table id="tabla-logros">
-            <thead>
-                <tr>
-                    <th>Estudiante</th>
-                    <th>Logro</th>
-                    <th>Puntos</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Laura Camila Mendoza</td>
-                    <td>Participación en jornada de investigación</td>
-                    <td>75</td>
-                    <td><span class="estado estado-activo">Reconocido</span></td>
-                </tr>
-                <tr>
-                    <td>Sofía Valentina Castro</td>
-                    <td>Apoyo en prototipo tecnológico</td>
-                    <td>50</td>
-                    <td><span class="estado estado-pendiente">Por validar</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<script>
-function resolverProducto(boton, decision) {
-    const fila = boton.closest("tr");
-    const estadoActual = fila.cells[3].textContent.trim();
-
-    if (estadoActual !== "Pendiente") {
-        alert("Este producto ya tiene una decisión: " + estadoActual + ".");
-        return;
-    }
-
-    const nombre = fila.cells[0].textContent;
-    if (!confirm("¿Deseas marcar el producto como " + decision.toLowerCase() + "?")) return;
-
-    const etiqueta = fila.cells[3].querySelector(".estado");
-    etiqueta.textContent = decision;
-    etiqueta.className = "estado " +
-        (decision === "Aprobado" ? "estado-activo" : "estado-rechazado");
-    fila.cells[4].textContent = decision === "Aprobado" ? "Validado" : "No aprobado";
-
-    document.getElementById("mensaje-logro").textContent =
-        decision + ": " + nombre + ". La decisión solo se refleja en esta demostración.";
-}
-
-document.getElementById("form-producto").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const nombre = document.getElementById("producto-nombre").value.trim();
-    const tipo = document.getElementById("producto-tipo").value;
-    const proyecto = document.getElementById("producto-proyecto").value;
-
-    const fila = document.querySelector("#tabla-productos tbody").insertRow();
-    fila.insertCell().textContent = nombre;
-    fila.insertCell().textContent = tipo;
-    fila.insertCell().textContent = proyecto;
-
-    const celdaEstado = fila.insertCell();
-    celdaEstado.innerHTML = '<span class="estado estado-pendiente">Pendiente</span>';
-
-    const celdaAccion = fila.insertCell();
-    ["Aprobar", "Rechazar"].forEach(function(texto) {
-        const boton = document.createElement("button");
-        boton.type = "button";
-        boton.className = texto === "Aprobar" ? "boton-principal" : "boton-rechazar";
-        boton.textContent = texto;
-        boton.addEventListener("click", function() {
-            resolverProducto(boton, texto === "Aprobar" ? "Aprobado" : "Rechazado");
-        });
-        celdaAccion.appendChild(boton);
-    });
-
-    document.getElementById("mensaje-logro").textContent =
-        "Producto agregado y pendiente de revisión. No se guardó permanentemente.";
-    this.reset();
-});
-
-document.getElementById("form-logro").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const estudiante = document.getElementById("logro-estudiante").value;
-    const nombre = document.getElementById("logro-nombre").value.trim();
-    const puntos = document.getElementById("logro-puntos").value;
-
-    const fila = document.querySelector("#tabla-logros tbody").insertRow();
-    fila.insertCell().textContent = estudiante;
-    fila.insertCell().textContent = nombre;
-    fila.insertCell().textContent = puntos;
-
-    const celda = fila.insertCell();
-    celda.innerHTML = '<span class="estado estado-pendiente">Por validar</span>';
-
-    document.getElementById("mensaje-logro").textContent =
-        "Logro registrado en pantalla para " + estudiante + ".";
-    this.reset();
-});
-</script>
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/docente.js') }}" defer></script>
 {% endblock %}

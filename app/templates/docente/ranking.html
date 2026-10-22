@@ -1,0 +1,121 @@
+
+{% extends "docente/base_docente.html" %}
+
+{% block titulo %}Ranking | RIUL{% endblock %}
+
+{% block estilos %}
+{{ super() }}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/docente_ranking.css') }}">
+{% endblock %}
+
+{% block contenido_docente %}
+<section class="ranking-pagina">
+    <div class="ranking-encabezado">
+        <span class="ranking-eyebrow">DOCENCIA E INVESTIGACIÓN</span>
+        <h2>Ranking RIUL</h2>
+        <p>Clasificación calculada con XP aprobado.</p>
+    </div>
+
+    <label class="ranking-busqueda">
+        <span aria-hidden="true">⌕</span>
+        <input id="buscar-ranking" type="search"
+               placeholder="Buscar investigador o semillero..."
+               aria-label="Buscar investigador o semillero">
+    </label>
+
+    <div class="ranking-tabla-contenedor">
+        <table class="ranking-tabla">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Investigador</th>
+                    <th>Semillero</th>
+                    <th>XP</th>
+                    <th>Nivel</th>
+                </tr>
+            </thead>
+            <tbody id="filas-ranking">
+                <tr data-ranking>
+                    <td class="ranking-posicion">#1</td>
+                    <td class="ranking-investigador">Patricia Herrera</td>
+                    <td>Biotecnología Aplicada</td>
+                    <td class="ranking-xp">1.245 XP</td>
+                    <td><span class="ranking-estrellas">★★★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#2</td>
+                    <td class="ranking-investigador">Ricardo Solano</td>
+                    <td>Derecho Digital</td>
+                    <td class="ranking-xp">1.090 XP</td>
+                    <td><span class="ranking-estrellas">★★★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#3</td>
+                    <td class="ranking-investigador">Laura Gómez</td>
+                    <td>Tecnología e Innovación</td>
+                    <td class="ranking-xp">980 XP</td>
+                    <td><span class="ranking-estrellas">★★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#4</td>
+                    <td class="ranking-investigador">Andrés Martínez</td>
+                    <td>Tecnología e Innovación</td>
+                    <td class="ranking-xp">675 XP</td>
+                    <td><span class="ranking-estrellas">★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#5</td>
+                    <td class="ranking-investigador">María Ospina</td>
+                    <td>Salud Pública</td>
+                    <td class="ranking-xp">620 XP</td>
+                    <td><span class="ranking-estrellas">★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#6</td>
+                    <td class="ranking-investigador">Felipe Castro</td>
+                    <td>Finanzas e Innovación</td>
+                    <td class="ranking-xp">575 XP</td>
+                    <td><span class="ranking-estrellas">★★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#7</td>
+                    <td class="ranking-investigador">Juan Nieto</td>
+                    <td>Derechos Humanos</td>
+                    <td class="ranking-xp">510 XP</td>
+                    <td><span class="ranking-estrellas">★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#8</td>
+                    <td class="ranking-investigador">Sofía Restrepo</td>
+                    <td>Gestión Industrial</td>
+                    <td class="ranking-xp">470 XP</td>
+                    <td><span class="ranking-estrellas">★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#9</td>
+                    <td class="ranking-investigador">Laura García</td>
+                    <td>Tecnología e Innovación</td>
+                    <td class="ranking-xp">440 XP</td>
+                    <td><span class="ranking-estrellas">★★</span></td>
+                </tr>
+                <tr data-ranking>
+                    <td class="ranking-posicion">#10</td>
+                    <td class="ranking-investigador">Miguel Torres</td>
+                    <td>Infraestructura Sostenible</td>
+                    <td class="ranking-xp">390 XP</td>
+                    <td><span class="ranking-estrellas">★★</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <p id="ranking-sin-resultados" hidden>
+            No se encontraron investigadores o semilleros.
+        </p>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/docente.js') }}" defer></script>
+{% endblock %}

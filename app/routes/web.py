@@ -60,42 +60,52 @@ def panel_docente():
 
 @web.route("/docente/semillero")
 def docente_semillero():
-    return render_template("docente/semillero.html")
+    return docente_controller.mostrar_semillero()
 
 
 @web.route("/docente/proyectos")
 def docente_proyectos():
-    return render_template("docente/proyectos.html")
+    return docente_controller.mostrar_proyectos()
 
 
 @web.route("/docente/integrantes")
 def docente_integrantes():
-    return render_template("docente/integrantes.html")
+    return docente_controller.mostrar_integrantes()
 
 
 @web.route("/docente/solicitudes-vinculacion")
 def docente_solicitudes_vinculacion():
-    return render_template("docente/solicitudes_vinculacion.html")
+    return docente_controller.mostrar_solicitudes_vinculacion()
 
 
 @web.route("/docente/eventos")
 def docente_eventos():
-    return render_template("docente/eventos.html")
+    return docente_controller.mostrar_eventos()
 
 
 @web.route("/docente/convocatorias")
 def docente_convocatorias():
-    return render_template("docente/convocatorias.html")
+    return docente_controller.mostrar_convocatorias()
 
 
 @web.route("/docente/logros")
 def docente_logros():
-    return render_template("docente/logros.html")
+    return docente_controller.mostrar_logros()
+
+
+@web.route("/docente/publicaciones")
+def docente_publicaciones():
+    return docente_controller.mostrar_publicaciones()
+
+
+@web.route("/docente/ranking")
+def docente_ranking():
+    return docente_controller.mostrar_ranking()
 
 
 @web.route("/docente/perfil")
 def docente_perfil():
-    return render_template("docente/perfil.html")
+    return docente_controller.mostrar_perfil()
 
 
 @web.route("/admin")
