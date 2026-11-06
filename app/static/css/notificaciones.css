@@ -1,0 +1,109 @@
+
+/* ==============================
+   PANEL DE NOTIFICACIONES ESTUDIANTE - RIUL
+================================ */
+
+.acciones {
+    position: relative;
+}
+
+.panel-notificaciones {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 30px);
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.panel-notificaciones[hidden] {
+    display: none !important;
+}
+
+.notificaciones-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.notificaciones-cabecera h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #111827;
+}
+
+#marcarTodasLeidas {
+    border: none;
+    background: transparent;
+    color: #d20a35;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#marcarTodasLeidas:hover {
+    text-decoration: underline;
+}
+
+#listaNotificaciones {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.notificacion {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 17px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.notificacion:last-child {
+    border-bottom: none;
+}
+
+.notificacion.no-leida {
+    background: #fffafb;
+}
+
+.notificacion.leida {
+    background: white;
+}
+
+.notificacion-icono {
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.notificacion strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #111827;
+}
+
+.notificacion p {
+    margin: 0 0 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+.notificacion small {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+@media (max-width: 500px) {
+    .panel-notificaciones {
+        right: -10px;
+        width: calc(100vw - 30px);
+    }
+}

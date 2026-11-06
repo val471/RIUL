@@ -1,0 +1,134 @@
+/* ---------- RANKING RIUL ESTUDIANTE ---------- */
+
+#rankingestu .ranking-cab {
+    margin-bottom: 28px;
+}
+
+#rankingestu .ranking-cab h2 {
+    margin: 8px 0;
+    color: #111827;
+    font-size: 27px;
+}
+
+#rankingestu .ranking-cab p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+#rankingestu .etiqueta {
+    color: #d10d32;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* BUSCADOR */
+
+#rankingestu .ranking-buscador {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #94a3b8;
+}
+
+#rankingestu .ranking-buscador svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+
+#rankingestu .ranking-buscador input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #263244;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+#rankingestu .ranking-buscador input::placeholder {
+    color: #94a3b8;
+}
+
+/* TABLA */
+
+#rankingestu .ranking-tabla {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #edf0f4;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(30, 45, 65, .04);
+}
+
+#rankingestu .ranking-tabla .fila {
+    display: grid;
+    grid-template-columns: 15% 23% 32% 15% 15%;
+    align-items: center;
+    min-height: 71px;
+    padding: 0 24px;
+    border-bottom: 1px solid #edf0f4;
+    color: #263244;
+    font-size: 14px;
+}
+
+#rankingestu .ranking-tabla .fila:last-child {
+    border-bottom: none;
+}
+
+#rankingestu .ranking-tabla .fila.cabeza {
+    min-height: 47px;
+    background: #f8f9fb;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* DATOS */
+
+#rankingestu .ranking-tabla .pos {
+    color: #d10d32;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#rankingestu .ranking-tabla .nom {
+    color: #111827;
+    font-weight: 600;
+}
+
+#rankingestu .ranking-tabla .sem {
+    color: #718096;
+}
+
+#rankingestu .ranking-tabla .xpv {
+    color: #111827;
+    font-weight: 600;
+}
+
+#rankingestu .ranking-tabla .niv {
+    color: #ff9800;
+    letter-spacing: 1px;
+}
+
+/* RESALTAR ESTUDIANTE */
+
+#rankingestu .ranking-tabla .fila.yo {
+    background: #fdf4f6;
+}
+
+/* SIN RESULTADOS */
+
+#rankingestu .ranking-tabla .vacio {
+    padding: 25px;
+    color: #718096;
+    text-align: center;
+}

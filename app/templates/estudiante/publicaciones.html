@@ -1,0 +1,50 @@
+
+<section id="contenido-publicaciones">
+
+    <div class="cab publicaciones-cab">
+        <div>
+            <span class="etiqueta">MI EXPERIENCIA RIUL</span>
+            <h2>Publicaciones</h2>
+            <p>Comparte avances, archivos y contenido académico.</p>
+        </div>
+
+        <button type="button" class="boton-publicar" id="btnPublicar">
+            <span data-icon="plus"></span>
+            Publicar
+        </button>
+    </div>
+
+    <!-- FORMULARIO PARA PUBLICAR -->
+    <form id="formPub" class="form-publicacion" hidden>
+
+        <h3>Nueva publicación</h3>
+
+        <textarea
+            id="pubTexto"
+            placeholder="Comparte tus avances o contenido académico..."
+            required
+        ></textarea>
+
+        <label for="pubArchivo">Adjuntar archivo (opcional)</label>
+        <input type="file" id="pubArchivo">
+
+        <button type="submit" class="boton-publicar">
+            Publicar contenido
+        </button>
+
+    </form>
+
+    <!-- BUSCADOR -->
+    <div class="publicaciones-buscador">
+        <span data-icon="search"></span>
+        <input
+            type="text"
+            id="buscarPub"
+            placeholder="Buscar publicaciones..."
+        >
+    </div>
+
+    <!-- LISTA DE PUBLICACIONES -->
+    <div class="publicaciones-lista" id="listaPubs"></div>
+
+</section>

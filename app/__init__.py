@@ -13,8 +13,8 @@ def create_app() :
         __name__,
         static_folder="static",
         template_folder="templates"
-        
-        
+
+
     )
 
 #Cargamos las configuraciones

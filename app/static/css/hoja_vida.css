@@ -1,0 +1,265 @@
+
+#contenido-hoja-vida {
+    width: 100%;
+    padding: 20px 0;
+    color: #172033;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+#contenido-hoja-vida * {
+    box-sizing: border-box;
+}
+
+/* ENCABEZADO */
+
+#contenido-hoja-vida .cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+#contenido-hoja-vida .cab .etiqueta {
+    display: block;
+    color: #d20d35;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+#contenido-hoja-vida .cab h2 {
+    color: #172033;
+    font-size: 27px;
+    font-weight: 800;
+    margin: 0 0 5px;
+}
+
+#contenido-hoja-vida .cab p {
+    color: #8490a5;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* BOTON PDF */
+
+#contenido-hoja-vida .boton {
+    background: #d20d35;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 23px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(210, 13, 53, 0.18);
+    transition: 0.2s ease;
+}
+
+#contenido-hoja-vida .boton:hover {
+    background: #ad092b;
+    transform: translateY(-2px);
+}
+
+/* DISTRIBUCION DE LAS TARJETAS */
+
+#contenido-hoja-vida {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+/* ENCABEZADO OCUPA TODO EL ANCHO */
+
+#contenido-hoja-vida .cab {
+    grid-column: 1 / -1;
+}
+
+/* TARJETAS */
+
+#contenido-hoja-vida .seccion-hv {
+    background: #ffffff;
+    border: 1px solid #e9eaf0;
+    border-radius: 14px;
+    padding: 17px;
+    min-width: 0;
+    box-shadow: 0 2px 4px rgba(20, 30, 50, 0.06);
+    transition: 0.2s ease;
+}
+
+#contenido-hoja-vida .seccion-hv:hover {
+    box-shadow: 0 5px 13px rgba(20, 30, 50, 0.08);
+}
+
+/* TITULOS DE LAS TARJETAS */
+
+#contenido-hoja-vida .seccion-hv h3 {
+    color: #172033;
+    font-size: 14px;
+    font-weight: 800;
+    margin: 0 0 15px;
+}
+
+/* CONTENIDO INTERNO */
+
+#contenido-hoja-vida .seccion-hv > div {
+    width: 100%;
+}
+
+#contenido-hoja-vida .seccion-hv p {
+    color: #8490a5;
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ELEMENTOS DE CADA SECCION */
+
+#contenido-hoja-vida .item-hv {
+    background: #f7f8fa;
+    border-radius: 10px;
+    padding: 13px;
+    margin-bottom: 9px;
+}
+
+#contenido-hoja-vida .item-hv:last-child {
+    margin-bottom: 0;
+}
+
+#contenido-hoja-vida .item-hv h4 {
+    color: #172033;
+    font-size: 12px;
+    font-weight: 800;
+    margin: 0 0 5px;
+}
+
+#contenido-hoja-vida .item-hv p {
+    color: #8490a5;
+    font-size: 11px;
+}
+
+/* INSIGNIAS - ANCHO COMPLETO */
+
+#contenido-hoja-vida .seccion-hv:last-of-type {
+    grid-column: 1 / -1;
+}
+
+/* MENSAJES */
+
+#contenido-hoja-vida #mensajeHojaVida {
+    grid-column: 1 / -1;
+    color: #8490a5;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    #contenido-hoja-vida {
+        grid-template-columns: 1fr;
+        padding: 12px 0;
+    }
+
+    #contenido-hoja-vida .cab {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #contenido-hoja-vida .cab h2 {
+        font-size: 22px;
+    }
+
+    #contenido-hoja-vida .cab .boton {
+        width: 100%;
+    }
+
+    #contenido-hoja-vida .seccion-hv:last-of-type {
+        grid-column: auto;
+    }
+}
+
+/* BANNER DEL ESTUDIANTE */
+
+#contenido-hoja-vida .hv-banner {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 28px 24px;
+    min-height: 130px;
+    border-radius: 18px;
+    background: linear-gradient(110deg, #a9092c, #d20d35);
+    color: white;
+}
+
+#contenido-hoja-vida .hv-avatar {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.17);
+    font-size: 22px;
+    font-weight: 800;
+}
+
+#contenido-hoja-vida .hv-datos-principales {
+    flex: 1;
+}
+
+#contenido-hoja-vida .hv-datos-principales span {
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: 800;
+    color: #ffc4d0;
+}
+
+#contenido-hoja-vida .hv-datos-principales h2 {
+    color: white;
+    font-size: 22px;
+    margin: 7px 0;
+}
+
+#contenido-hoja-vida .hv-datos-principales p {
+    color: white;
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+#contenido-hoja-vida .hv-nivel {
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.13);
+}
+
+#contenido-hoja-vida .hv-estrellas {
+    color: #ffd447;
+    letter-spacing: 2px;
+    margin-bottom: 7px;
+}
+
+#contenido-hoja-vida .hv-nivel strong {
+    font-size: 11px;
+}
+
+#contenido-hoja-vida .hv-nivel p {
+    color: #ffc4d0;
+    font-size: 10px;
+    margin: 6px 0 0;
+}
+
+@media (max-width: 600px) {
+    #contenido-hoja-vida .hv-banner {
+        flex-wrap: wrap;
+    }
+
+    #contenido-hoja-vida .hv-nivel {
+        width: 100%;
+    }
+}

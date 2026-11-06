@@ -4,42 +4,287 @@
 {% block titulo %}Contacto | RIUL{% endblock %}
 
 {% block contenido %}
-<section class="bienvenida">
-    <h1>Contáctanos</h1>
-    <p>¿Tienes preguntas o propuestas? Completa el formulario de contacto.</p>
+
+<section class="contacto-encabezado">
+    <span class="contacto-etiqueta">RIUL · Universidad Libre</span>
+    <h1>Hablemos de investigación</h1>
+    <p>
+        ¿Tienes preguntas, ideas o propuestas?
+        Nos encantará conocerlas.
+    </p>
 </section>
 
-<section class="seccion">
-    <div class="panel-tarjeta" style="max-width:700px;margin:auto;">
-        <h2>Envíanos un mensaje</h2>
+<section class="contacto-contenedor">
+    <div class="contacto-tarjeta">
 
-        <form id="formContacto">
-            <div class="auth-campo">
+        <div class="contacto-intro">
+            <div class="contacto-icono">✉</div>
+            <h2>Envíanos un mensaje</h2>
+            <p>
+                Completa el formulario y cuéntanos cómo podemos ayudarte.
+            </p>
+        </div>
+
+        <form id="formContacto" class="contacto-formulario">
+
+            <div class="contacto-campo">
                 <label for="nombreContacto">Nombre completo</label>
-                <input type="text" id="nombreContacto" required>
+                <input
+                    type="text"
+                    id="nombreContacto"
+                    name="nombre"
+                    placeholder="Escribe tu nombre completo"
+                    autocomplete="name"
+                    required
+                >
             </div>
 
-            <div class="auth-campo">
+            <div class="contacto-campo">
                 <label for="correoContacto">Correo electrónico</label>
-                <input type="email" id="correoContacto" required>
+                <input
+                    type="email"
+                    id="correoContacto"
+                    name="correo"
+                    placeholder="nombre@correo.com"
+                    autocomplete="email"
+                    required
+                >
             </div>
 
-            <div class="auth-campo">
+            <div class="contacto-campo">
                 <label for="asuntoContacto">Asunto</label>
-                <input type="text" id="asuntoContacto" required>
+                <input
+                    type="text"
+                    id="asuntoContacto"
+                    name="asunto"
+                    placeholder="¿Sobre qué deseas consultar?"
+                    required
+                >
             </div>
 
-            <div class="auth-campo">
+            <div class="contacto-campo">
                 <label for="mensajeContacto">Mensaje</label>
-                <textarea id="mensajeContacto" rows="5" required></textarea>
+                <textarea
+                    id="mensajeContacto"
+                    name="mensaje"
+                    rows="5"
+                    placeholder="Escribe aquí tu mensaje..."
+                    required
+                ></textarea>
             </div>
 
-            <button type="submit" class="boton boton-principal">Enviar mensaje</button>
-            <p id="resultadoContacto" role="status" aria-live="polite"></p>
+            <button type="submit"
+                    class="contacto-boton">
+                Enviar mensaje
+                <span aria-hidden="true">→</span>
+            </button>
+
+            <p id="resultadoContacto"
+               class="contacto-resultado"
+               role="status"
+               aria-live="polite"></p>
+
+            <p class="contacto-privacidad">
+                Tu mensaje será tratado con responsabilidad.
+            </p>
+
         </form>
     </div>
 </section>
 
+<style>
+.contacto-encabezado {
+    text-align: center;
+    padding: 48px 20px 30px;
+}
+
+.contacto-etiqueta {
+    display: inline-block;
+    color: #c8102e;
+    background: #fff0f2;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
+.contacto-encabezado h1 {
+    color: #171923;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 750;
+    margin: 0 0 12px;
+}
+
+.contacto-encabezado p {
+    color: #687080;
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.contacto-contenedor {
+    padding: 0 20px 64px;
+}
+
+.contacto-tarjeta {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 38px 42px;
+    background: #fff;
+    border: 1px solid #e7e9ef;
+    border-radius: 22px;
+    box-shadow: 0 12px 40px rgba(24, 30, 45, 0.07);
+}
+
+.contacto-intro {
+    margin-bottom: 30px;
+}
+
+.contacto-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #fff0f2;
+    color: #c8102e;
+    font-size: 25px;
+    margin-bottom: 18px;
+}
+
+.contacto-intro h2 {
+    color: #171923;
+    font-size: 25px;
+    margin: 0 0 10px;
+}
+
+.contacto-intro p {
+    color: #747b89;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.contacto-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.contacto-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.contacto-campo label {
+    color: #292d38;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.contacto-campo input,
+.contacto-campo textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #dfe2e9;
+    border-radius: 11px;
+    background: #fafbfc;
+    color: #20232d;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s,
+                background .2s;
+}
+
+.contacto-campo input {
+    min-height: 50px;
+}
+
+.contacto-campo textarea {
+    min-height: 145px;
+    resize: vertical;
+}
+
+.contacto-campo input::placeholder,
+.contacto-campo textarea::placeholder {
+    color: #a0a5b1;
+}
+
+.contacto-campo input:focus,
+.contacto-campo textarea:focus {
+    border-color: #c8102e;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(200, 16, 46, .09);
+}
+
+.contacto-boton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 11px;
+    background: #c8102e;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background .2s, transform .2s,
+                box-shadow .2s;
+}
+
+.contacto-boton:hover {
+    background: #a90d26;
+    box-shadow: 0 7px 18px rgba(200, 16, 46, .2);
+    transform: translateY(-1px);
+}
+
+.contacto-boton:focus-visible {
+    outline: 3px solid #f3a6b4;
+    outline-offset: 3px;
+}
+
+.contacto-resultado {
+    color: #555d6b;
+    font-size: 14px;
+    margin: 0;
+}
+
+.contacto-privacidad {
+    color: #8b909b;
+    font-size: 12px;
+    text-align: center;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .contacto-encabezado {
+        padding-top: 32px;
+    }
+
+    .contacto-contenedor {
+        padding: 0 14px 40px;
+    }
+
+    .contacto-tarjeta {
+        padding: 26px 20px;
+        border-radius: 17px;
+    }
+
+    .contacto-intro h2 {
+        font-size: 22px;
+    }
+}
+</style>
 
 {% endblock %}
 

@@ -1,6 +1,5 @@
-
-
 from flask import Blueprint, render_template
+from flask import session, redirect, url_for
 
 from app.controllers import visitante_controller
 from app.controllers import admin_controller
@@ -47,10 +46,63 @@ def registro():
     return render_template("auth/registro.html")
 
 
+
+@web.route("/cerrar-sesion")
+def cerrar_sesion():
+    session.clear()
+    return redirect(url_for("web.iniciar_sesion"))
+
+
 # PANEL ESTUDIANTE
 @web.route("/estudiante")
 def panel_estudiante():
     return estudiante_controller.mostrar_panel()
+
+@web.route("/estudiante/perfil")
+def estudiante_perfil():
+    return render_template("estudiante/perfil.html")
+
+
+# SEMILLEROS 
+
+@web.route("/estudiante/semilleros")
+def explorar_semilleros():
+    return render_template("estudiante/semilleros.html")
+
+
+# EVENTOS 
+
+@web.route("/estudiante/eventos")
+def estudiante_eventos():
+    return render_template("estudiante/eventos.html")
+
+#CONVOCATORIAS
+
+@web.route("/estudiante/convocatorias")
+def estudiante_convocatorias():
+    return render_template("estudiante/convocatorias.html")
+
+#PUBLICACIONES
+@web.route("/estudiante/publicaciones")
+def estudiante_publicaciones():
+    return render_template("estudiante/publicaciones.html")
+
+#RANKIG
+@web.route("/estudiante/rankingestu")
+def estudiante_rankingestu():
+    return render_template("estudiante/rankingestu.html")
+
+#NOTIFICACIONES
+@web.route("/estudiante/notificaciones")
+def estudiante_notificaciones():
+    return render_template("estudiante/notificaciones.html")
+
+#HOJA_DE VIDA
+@web.route("/estudiante/hoja-vida")
+def estudiante_hoja_vida():
+    return render_template("estudiante/hoja_vida.html")
+
+
 
 # PANEL DOCENTE
 @web.route("/docente")

@@ -1,0 +1,80 @@
+
+<section class="modulo-contenido" id="contenido-explorar-semilleros">
+
+    <div class="cab">
+        <div>
+            <span class="etiqueta">COMUNIDAD RIUL</span>
+            <h2>Explorar semilleros</h2>
+            <p>Descubre grupos de investigación y encuentra tu próximo espacio para crecer.</p>
+        </div>
+    </div>
+
+    <div class="semilleros-intro">
+        <div class="semilleros-buscador">
+            <span data-icon="search"></span>
+            <input
+                type="text"
+                id="buscarSemillero"
+                placeholder="Buscar semilleros por nombre, línea de investigación o facultad..."
+            >
+        </div>
+    </div>
+
+    <div class="semilleros-grid" id="listaSemilleros">
+
+        <article class="semillero-card">
+            <img src="{{ url_for('static', filename='img/semilleros/inteligencia-artificial.jpg') }}"
+                 alt="Inteligencia artificial">
+            <div class="semillero-info">
+                <span class="semillero-categoria">TECNOLOGÍA</span>
+                <h3>Inteligencia Artificial y Ciencia de Datos</h3>
+                <p>Explora soluciones innovadoras mediante inteligencia artificial, aprendizaje automático y análisis de datos.</p>
+                <div class="semillero-datos">
+                    <span>Facultad de Ingeniería</span>
+                    <span>18 integrantes</span>
+                </div>
+                <div class="semillero-acciones">
+                    <button type="button" class="boton boton-principal">Solicitar vinculación</button>
+                    <button type="button" class="boton">Seguir</button>
+                </div>
+            </div>
+        </article>
+
+        <article class="semillero-card">
+            <img src="{{ url_for('static', filename='img/semilleros/medio-ambiente.jpg') }}"
+                 alt="Medio ambiente">
+            <div class="semillero-info">
+                <span class="semillero-categoria">MEDIO AMBIENTE</span>
+                <h3>Investigación Ambiental y Sostenibilidad</h3>
+                <p>Desarrolla investigaciones enfocadas en el cuidado ambiental y el desarrollo sostenible.</p>
+                <div class="semillero-datos">
+                    <span>Facultad de Ingeniería</span>
+                    <span>15 integrantes</span>
+                </div>
+                <div class="semillero-acciones">
+                    <button type="button" class="boton boton-principal">Solicitar vinculación</button>
+                    <button type="button" class="boton">Seguir</button>
+                </div>
+            </div>
+        </article>
+
+        <article class="semillero-card">
+            <img src="{{ url_for('static', filename='img/semilleros/derecho.jpg') }}"
+                 alt="Investigación jurídica">
+            <div class="semillero-info">
+                <span class="semillero-categoria">CIENCIAS SOCIALES</span>
+                <h3>Derecho, Sociedad y Justicia</h3>
+                <p>Promueve el análisis jurídico y social de los desafíos actuales de nuestra sociedad.</p>
+                <div class="semillero-datos">
+                    <span>Facultad de Derecho</span>
+                    <span>20 integrantes</span>
+                </div>
+                <div class="semillero-acciones">
+                    <button type="button" class="boton boton-principal">Solicitar vinculación</button>
+                    <button type="button" class="boton">Seguir</button>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</section>

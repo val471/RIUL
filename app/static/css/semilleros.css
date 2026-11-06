@@ -1,0 +1,174 @@
+/* ========================================
+   EXPLORAR SEMILLEROS - RIUL
+======================================== */
+
+#semillero .cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+#semillero .cab h2 {
+    font-size: 27px;
+    margin: 8px 0;
+    color: #263244;
+}
+
+#semillero .cab p {
+    color: #718096;
+    font-size: 14px;
+    margin: 0;
+}
+
+#semillero .etiqueta {
+    color: #d10d32;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+}
+
+/* BUSCADOR */
+
+.semilleros-intro {
+    margin-bottom: 25px;
+}
+
+.semilleros-buscador {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-sizing: border-box;
+}
+
+.semilleros-buscador input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    color: #263244;
+}
+
+.semilleros-buscador input::placeholder {
+    color: #9aa5b4;
+}
+
+/* TARJETAS */
+
+.semilleros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.semillero-card {
+    background: #ffffff;
+    border: 1px solid #e8edf2;
+    border-radius: 13px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.semillero-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(30, 45, 65, 0.08);
+}
+
+/* IMAGEN */
+
+.semillero-card img {
+    display: block;
+    width: 100%;
+    height: 175px;
+    object-fit: cover;
+}
+
+/* INFORMACION */
+
+.semillero-info {
+    padding: 18px;
+}
+
+.semillero-categoria {
+    display: inline-block;
+    color: #d10d32;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.semillero-info h3 {
+    color: #263244;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 5px 0 10px;
+}
+
+.semillero-info p {
+    color: #718096;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 62px;
+    margin: 0;
+}
+
+/* DATOS DEL SEMILLERO */
+
+.semillero-datos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    color: #718096;
+    font-size: 11px;
+    border-top: 1px solid #edf0f4;
+    padding-top: 14px;
+    margin-top: 14px;
+}
+
+/* BOTONES */
+
+.semillero-acciones {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.semillero-acciones button {
+    flex: 1;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px 8px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.semillero-acciones .boton-principal {
+    background: #d10d32;
+    color: #ffffff;
+    border: 1px solid #d10d32;
+}
+
+.semillero-acciones .boton-principal:hover {
+    background: #b80b2b;
+}
+
+.semillero-acciones .boton:not(.boton-principal) {
+    background: #ffffff;
+    color: #d10d32;
+    border: 1px solid #d10d32;
+}
+
+.semillero-acciones .boton:not(.boton-principal):hover {
+    background: #fff1f3;
+}

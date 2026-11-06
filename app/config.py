@@ -8,10 +8,16 @@ class config:
     )
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    SECRET_KEY = os.getenv(
+        "SECRET_KEY",
+        "clave-secreta-riul"
+    )
     
     JWT_SECRET_KEY = os.getenv(
         "JWT_SECRET_KEY",
         "suero-clave-secret"
     )
+   
     #3600 segundos = 1 hora
     JWT_ACCESS_TOKEN_EXPIRES = 3600
