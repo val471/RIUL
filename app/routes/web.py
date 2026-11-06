@@ -50,7 +50,7 @@ def registro():
 @web.route("/cerrar-sesion")
 def cerrar_sesion():
     session.clear()
-    return redirect(url_for("web.iniciar_sesion"))
+    return redirect(url_for("web.inicio"))
 
 
 # PANEL ESTUDIANTE
