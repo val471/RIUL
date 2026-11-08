@@ -2,6 +2,7 @@
 Flask==3.1.2
 #ORM
 Flask-SQLAlchemy==3.1.1
+cryptography
 #JWT JSON WEB TOKEN
 Flask-JWT-Extended==4.7.1
 #Validación y serialización de datos

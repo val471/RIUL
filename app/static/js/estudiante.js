@@ -108,6 +108,23 @@ function mostrarModulo(id) {
             });
     }
 
+    // CARGAR LOGROS
+    if (id === "logros" && !modulo.dataset.cargado) {
+        fetch("/estudiante/logros")
+            .then(respuesta => {
+                if (!respuesta.ok) throw new Error("Error al cargar logros");
+                return respuesta.text();
+            })
+            .then(html => {
+                modulo.innerHTML = html;
+                modulo.dataset.cargado = "true";
+                cargarIconos(modulo);
+            })
+            .catch(() => {
+                modulo.innerHTML = "<p>Error al cargar Mis logros.</p>";
+            });
+    }
+
     // CARGAR CONVOCATORIAS
     if (id === "convocatorias") {
         cargarConvocatorias(modulo);
@@ -154,8 +171,8 @@ function mostrarModulo(id) {
     }
 
     // CARGAR HOJA DE VIDA
-if (id === "hoja-vida" && !modulo.dataset.cargado) {
-    fetch("/estudiante/hoja-vida")
+    if (id === "hoja-vida" && !modulo.dataset.cargado) {
+        fetch("/estudiante/hoja-vida")
         .then(respuesta => {
             if (!respuesta.ok) {
                 throw new Error("Error al cargar hoja de vida");
@@ -171,6 +188,23 @@ if (id === "hoja-vida" && !modulo.dataset.cargado) {
         .catch(() => {
             modulo.innerHTML = "<p>Error al cargar la hoja de vida.</p>";
         });
+
+    // CARGAR LOGROS
+    if (id === "logros" && !modulo.dataset.cargado) {
+        fetch("/estudiante/logros")
+            .then(respuesta => {
+                if (!respuesta.ok) throw new Error("Error al cargar logros");
+                return respuesta.text();
+            })
+            .then(html => {
+                modulo.innerHTML = html;
+                modulo.dataset.cargado = "true";
+                cargarIconos(modulo);
+            })
+            .catch(() => {
+                modulo.innerHTML = "<p>Error al cargar Mis logros.</p>";
+            });
+    }
 }
  
    /// BUSCAND A NEMO 

@@ -12,66 +12,92 @@
 <section class="busqueda-seccion">
     <div style="flex:2;min-width:220px;">
         <label for="buscarSemillero">Buscar semillero</label>
-        <input id="buscarSemillero" type="search" placeholder="Nombre o tema de investigación">
+        <input id="buscarSemillero" type="search" placeholder="Nombre o línea de investigación">
     </div>
 
     <div style="flex:1;min-width:180px;">
-        <label for="areaSemillero">Área</label>
+        <label for="areaSemillero">Facultad</label>
         <select id="areaSemillero">
-            <option value="">Todas las áreas</option>
-            <option value="ingenieria">Ingeniería</option>
-            <option value="salud">Salud</option>
-            <option value="derecho">Derecho</option>
-            <option value="economia">Ciencias económicas</option>
+            <option value="">Todas las facultades</option>
         </select>
     </div>
 </section>
 
 <section class="seccion">
-    <div class="contenedor-tarjetas" id="listaSemilleros">
-        <article class="tarjeta" data-nombre="tecnologia e innovacion" data-area="ingenieria">
-            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80" alt="Tecnología y componentes electrónicos">
-            <div class="tarjeta-contenido">
-                <span class="etiqueta-roja">INGENIERÍA</span>
-                <h3>Tecnología e Innovación</h3>
-                <p>Explora soluciones tecnológicas, desarrollo de software e innovación digital.</p>
-                <p><strong>Estado:</strong> <span class="estado estado-activo">Activo</span></p>
-                <a href="{{ url_for('web.iniciar_sesion') }}" class="boton boton-principal">Me interesa</a>
-            </div>
-        </article>
-
-        <article class="tarjeta" data-nombre="investigacion en salud" data-area="salud">
-            <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80" alt="Investigación en salud">
-            <div class="tarjeta-contenido">
-                <span class="etiqueta-roja">SALUD</span>
-                <h3>Investigación en Salud</h3>
-                <p>Promueve el análisis de problemas sanitarios y el desarrollo de soluciones.</p>
-                <p><strong>Estado:</strong> <span class="estado estado-activo">Activo</span></p>
-                <a href="{{ url_for('web.iniciar_sesion') }}" class="boton boton-principal">Me interesa</a>
-            </div>
-        </article>
-
-        <article class="tarjeta" data-nombre="estudios juridicos" data-area="derecho">
-            <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=900&q=80" alt="Libros y estudios jurídicos">
-            <div class="tarjeta-contenido">
-                <span class="etiqueta-roja">DERECHO</span>
-                <h3>Estudios Jurídicos</h3>
-                <p>Analiza temas jurídicos, sociales y normativos desde una perspectiva investigativa.</p>
-                <p><strong>Estado:</strong> <span class="estado estado-activo">Activo</span></p>
-                <a href="{{ url_for('web.iniciar_sesion') }}" class="boton boton-principal">Me interesa</a>
-            </div>
-        </article>
-
-    </div>
+    <div class="contenedor-tarjetas" id="listaSemilleros"></div>
 
     <p id="sinSemilleros" hidden>No se encontraron semilleros con esos criterios.</p>
-</section>
-
-
-
-{% endblock %}
+</section> {% endblock %}
 
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-{% endblock %}
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+    const lista = document.getElementById("listaSemilleros");
+    const selectFacultad = document.getElementById("areaSemillero");
+    const sinSemilleros = document.getElementById("sinSemilleros");
+    const urlLogin = "{{ url_for('web.iniciar_sesion') }}";
+
+    // Quita tildes y mayúsculas, igual que hace main.js
+    function normalizar(texto) {
+        return (texto || "").toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function crearTarjeta(s) {
+        const tarjeta = document.createElement("article");
+        tarjeta.className = "tarjeta";
+        // main.js filtra con estos dos atributos
+        tarjeta.dataset.nombre = s.nombre + " " + (s.linea || "");
+        tarjeta.dataset.area = normalizar(s.facultad);
+
+        const contenido = document.createElement("div");
+        contenido.className = "tarjeta-contenido";
+
+        const etiqueta = document.createElement("span");
+        etiqueta.className = "etiqueta-roja";
+        etiqueta.textContent = s.facultad;
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = s.nombre;
+
+        const linea = document.createElement("p");
+        linea.textContent = "Línea de investigación: " + (s.linea || "No definida");
+
+        const estado = document.createElement("p");
+        estado.innerHTML = '<strong>Estado:</strong> <span class="estado estado-activo">Activo</span>';
+
+        const enlace = document.createElement("a");
+        enlace.className = "boton boton-principal";
+        enlace.href = urlLogin;
+        enlace.textContent = "Me interesa";
+
+        contenido.append(etiqueta, titulo, linea, estado, enlace);
+        tarjeta.append(contenido);
+        return tarjeta;
+    }
+
+    try {
+        const respuesta = await fetch("/api/semilleros");
+        if (!respuesta.ok) throw new Error();
+        const semilleros = await respuesta.json();
+
+        semilleros.forEach(s => lista.append(crearTarjeta(s)));
+
+        // Opciones del filtro: una por cada facultad que tenga semilleros
+        const facultades = [...new Set(semilleros.map(s => s.facultad))];
+        facultades.forEach(nombre => {
+            const opcion = document.createElement("option");
+            opcion.value = normalizar(nombre);
+            opcion.textContent = nombre;
+            selectFacultad.append(opcion);
+        });
+
+        sinSemilleros.hidden = semilleros.length > 0;
+    } catch (error) {
+        sinSemilleros.textContent = "No fue posible cargar los semilleros. Intenta de nuevo.";
+        sinSemilleros.hidden = false;
+    }
+});
+</script> {% endblock %}

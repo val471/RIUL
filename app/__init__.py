@@ -34,7 +34,12 @@ def create_app() :
 
     with app.app_context(): 
         #inicializamos los modelos
+        from app.models.usuario import Usuario
+        from app.models.estudiante_investigador import EstudianteInvestigador
+        from app.models.solicitud_registro import SolicitudRegistro
+        from app.models.docente import Docente
+        from app.models.administrador import Administrador
 
-        #creamos la base de datos
+        
 
         return app

@@ -1,0 +1,56 @@
+<div class="facultades-modulo">
+
+    <p class="eyebrow">GESTION ACADEMICA</p>
+
+    <div class="page-heading">
+        <div>
+            <h1>Facultades y Programas</h1>
+            <p>Administra la estructura academica y sus semilleros.</p>
+        </div>
+        <button class="btn btn-red" onclick="crearFacultad()">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Crear
+        </button>
+    </div>
+
+    <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input class="search" id="searchFacultades" placeholder="Buscar facultad o programa..." oninput="filterFacultades()">
+    </div>
+
+    <div class="facultades-grid" id="listaFacultades">
+
+        <article class="facultad-card">
+            <div class="facultad-top">
+                <div class="facultad-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/></svg></div>
+                <button class="link-editar" onclick="editarFacultad(this)">Editar</button>
+            </div>
+            <h3>Facultad de Ingeniería</h3>
+            <p class="facultad-meta">6 programas · 14 semilleros</p>
+            <button class="btn" onclick="vincularSemillero(this)">Vincular semillero</button>
+        </article>
+
+        <article class="facultad-card">
+            <div class="facultad-top">
+                <div class="facultad-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/></svg></div>
+                <button class="link-editar" onclick="editarFacultad(this)">Editar</button>
+            </div>
+            <h3>Facultad de Derecho</h3>
+            <p class="facultad-meta">4 programas · 8 semilleros</p>
+            <button class="btn" onclick="vincularSemillero(this)">Vincular semillero</button>
+        </article>
+
+        <article class="facultad-card">
+            <div class="facultad-top">
+                <div class="facultad-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/></svg></div>
+                <button class="link-editar" onclick="editarFacultad(this)">Editar</button>
+            </div>
+            <h3>Facultad de Ciencias de la Salud</h3>
+            <p class="facultad-meta">5 programas · 9 semilleros</p>
+            <button class="btn" onclick="vincularSemillero(this)">Vincular semillero</button>
+        </article>
+
+    </div>
+
+    <p class="empty-state" id="sinFacultades" hidden>No se encontraron facultades.</p>
+
+</div>

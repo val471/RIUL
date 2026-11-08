@@ -1,0 +1,61 @@
+<div class="usuarios-modulo">
+
+    <p class="eyebrow">ADMINISTRACIÓN</p>
+
+    <div class="page-heading">
+        <div>
+            <h1>Usuarios</h1>
+            <p>Activa, suspende o cambia el rol de las cuentas.</p>
+        </div>
+        <button class="btn btn-red" onclick="alert('Formulario de nuevo usuario de demostración')">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nuevo usuario
+        </button>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input class="search" id="searchUsers" placeholder="Buscar por nombre o correo..." oninput="filterUsers()">
+        </div>
+        <select class="filter" id="filterRole" onchange="filterUsers()">
+            <option value="">Todos</option>
+            <option>Docente líder</option>
+            <option>Estudiante investigador</option>
+            <option>Administrador</option>
+        </select>
+    </div>
+
+    <section class="admin-card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Usuario</th><th>Programa</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="usersTable">
+                    <tr>
+                        <td><div class="person"><div class="admin-avatar">LG</div><div><strong>Dra. Laura Gómez</strong><small>laura.gomez@unilibre.edu.co</small></div></div></td>
+                        <td>Ingeniería de Sistemas</td>
+                        <td><select class="role-select"><option>Docente líder</option><option>Estudiante investigador</option><option>Administrador</option></select></td>
+                        <td><span class="status">Activo</span></td>
+                        <td><button class="btn btn-soft-red" onclick="toggleUser(this)">Suspender</button></td>
+                    </tr>
+                    <tr>
+                        <td><div class="person"><div class="admin-avatar">AM</div><div><strong>Andrés Martínez</strong><small>andres.martinez@unilibre.edu.co</small></div></div></td>
+                        <td>Ingeniería de Sistemas</td>
+                        <td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td>
+                        <td><span class="status">Activo</span></td>
+                        <td><button class="btn btn-soft-red" onclick="toggleUser(this)">Suspender</button></td>
+                    </tr>
+                    <tr>
+                        <td><div class="person"><div class="admin-avatar">SR</div><div><strong>Sofía Restrepo</strong><small>sofia.restrepo@unilibre.edu.co</small></div></div></td>
+                        <td>Ingeniería Industrial</td>
+                        <td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td>
+                        <td><span class="status suspended">Suspendido</span></td>
+                        <td><button class="btn" onclick="toggleUser(this)">Activar</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>

@@ -6,11 +6,13 @@ class Usuario(db.Model):
     id_usuario = db.Column(db.Integer, primary_key=True)
     nombre_institucional = db.Column(db.String(150), nullable=False)
     correo_institucional = db.Column(
-        db.String(150), unique=True, nullable=False
+        db.String(120), unique=True, nullable=False
     )
     contrasena_hash = db.Column(db.String(255), nullable=False)
+    fecha_nacimiento = db.Column(db.Date, nullable=False)
     rol = db.Column(db.String(20), nullable=False)
     estado = db.Column(db.String(20), nullable=False)
-    fecha_registro = db.Column(db.DateTime)
+    fecha_registro = db.Column(db.DateTime, nullable=False)
     foto_perfil = db.Column(db.String(255))
     telefono = db.Column(db.String(20))
+    fecha_actualizacion = db.Column(db.DateTime)

@@ -296,7 +296,7 @@ textarea {
     width: 100%;
     max-width: 1450px;
     margin: 0 auto;
-    padding: 42px max(5%, calc((100% - 1250px) / 2));
+    padding: 42px 5%;
 }
 
 .titulo-seccion {

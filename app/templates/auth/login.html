@@ -114,8 +114,8 @@
                 </p>
 
                 <p style="font-size:12px; color:#69717D;">
-                    Las cuentas mostradas son de demostración y no
-                    corresponden a usuarios almacenados en MySQL.
+                    Las cuentas mostradas son de demostración y se
+                    validan contra la base de datos.
                 </p>
             </div>
         </section>
@@ -140,39 +140,28 @@
             });
         });
 
-        formulario.addEventListener("submit", (evento) => {
+        formulario.addEventListener("submit", async (evento) => {
             evento.preventDefault();
+            mensaje.hidden = false;
+            mensaje.textContent = "Procesando...";
 
-            const correo = campoCorreo.value.trim().toLowerCase();
-            const clave = campoClave.value;
+            try {
+                const respuesta = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        correo: campoCorreo.value.trim(),
+                        contrasena: campoClave.value
+                    })
+                });
+                const datos = await respuesta.json();
+                mensaje.textContent = datos.mensaje || "";
 
-            const cuentasDemo = {
-                "admin@unilibre.edu.co": {
-                    clave: "Admin123!",
-                    destino: "/admin"
-                },
-                "estudiante@unilibre.edu.co": {
-                    clave: "Estudiante123!",
-                    destino: "/estudiante"
-                },
-                "docente@unilibre.edu.co": {
-                    clave: "Docente123!",
-                    destino: "/docente"
+                if (respuesta.ok && datos.redirect) {
+                    window.location.href = datos.redirect;
                 }
-            };
-
-            const cuenta = cuentasDemo[correo];
-
-            if (cuenta && cuenta.clave === clave) {
-                mensaje.hidden = false;
-                mensaje.textContent = "Acceso de demostración correcto.";
-
-                window.location.href = cuenta.destino;
-            } else {
-                mensaje.hidden = false;
-                mensaje.textContent =
-                    "Las credenciales no coinciden con las cuentas de prueba. " +
-                    "Usa uno de los tres botones de demostración.";
+            } catch (error) {
+                mensaje.textContent = "No fue posible conectar con el servidor.";
             }
         });
     </script>

@@ -1,10 +1,21 @@
 from flask import Blueprint, render_template
 from flask import session, redirect, url_for
+from flask import request, jsonify
+from sqlalchemy import text
+from werkzeug.security import check_password_hash
+from datetime import datetime
+from werkzeug.security import generate_password_hash
+
+
 
 from app.controllers import visitante_controller
 from app.controllers import admin_controller
 from app.controllers import estudiante_controller
 from app.controllers import docente_controller
+from app.models.usuario import Usuario
+from app.models.solicitud_registro import SolicitudRegistro
+from app.extensions import db
+
 
 web = Blueprint("web", __name__)
 
@@ -43,7 +54,23 @@ def iniciar_sesion():
 
 @web.route("/registro")
 def registro():
-    return render_template("auth/registro.html")
+    facultades = db.session.execute(text("""
+        SELECT id_facultad, nombre
+        FROM facultad
+        ORDER BY nombre
+    """)).mappings().all()
+
+    programas = db.session.execute(text("""
+        SELECT id_programa, nombre, id_facultad
+        FROM programa
+        ORDER BY nombre
+    """)).mappings().all()
+
+    return render_template(
+        "auth/registro.html",
+        facultades=facultades,
+        programas=programas
+    )
 
 
 
@@ -75,6 +102,11 @@ def explorar_semilleros():
 @web.route("/estudiante/eventos")
 def estudiante_eventos():
     return render_template("estudiante/eventos.html")
+
+# LOGROS
+@web.route("/estudiante/logros")
+def estudiante_logros():
+    return render_template("estudiante/logros.html")
 
 #CONVOCATORIAS
 
@@ -209,3 +241,118 @@ def admin_reportes():
 @web.route("/admin/solicitudes")
 def admin_solicitudes():
     return admin_controller.mostrar_solicitudes()
+
+
+DESTINOS = {"ADMIN": "/admin", "ESTUDIANTE": "/estudiante", "DOCENTE": "/docente"}
+
+
+@web.route("/api/login", methods=["POST"])
+def api_login():
+    datos = request.get_json(silent=True) or {}
+    correo = (datos.get("correo") or "").strip().lower()
+    clave = datos.get("contrasena") or ""
+
+    usuario = Usuario.query.filter_by(correo_institucional=correo).first()
+
+    if (not usuario or usuario.estado != "ACTIVO"
+            or not check_password_hash(usuario.contrasena_hash, clave)):
+        return jsonify({"mensaje": "Correo o contraseña incorrectos."}), 401
+
+    session["id_usuario"] = usuario.id_usuario
+    session["rol"] = usuario.rol
+    return jsonify({
+        "mensaje": "Acceso correcto.",
+        "redirect": DESTINOS.get(usuario.rol, "/"),
+    })
+
+@web.route("/api/semilleros")
+def api_semilleros():
+    filas = db.session.execute(text("""
+        SELECT s.id_semillero, s.nombre, s.linea_investigacion, s.estado,
+               f.nombre AS facultad
+        FROM semillero s
+        JOIN facultad f ON f.id_facultad = s.id_facultad
+        WHERE s.estado = 'ACTIVO'
+        ORDER BY s.nombre
+    """)).mappings().all()
+    return jsonify([{
+        "id": f["id_semillero"],
+        "nombre": f["nombre"],
+        "linea": f["linea_investigacion"],
+        "facultad": f["facultad"],
+        "estado": f["estado"],
+    } for f in filas])
+
+
+@web.route("/api/registro", methods=["POST"])
+def api_registro():
+    datos = request.get_json(silent=True) or {}
+
+    nombres = (datos.get("nombres") or "").strip()
+    apellidos = (datos.get("apellidos") or "").strip()
+    correo = (datos.get("correo") or "").strip().lower()
+    documento = (datos.get("documento") or "").strip()
+    fecha_nacimiento = datos.get("fecha_nacimiento")
+    rol = datos.get("rol")
+    id_facultad = datos.get("id_facultad")
+    id_programa = datos.get("id_programa")
+    contrasena = datos.get("contrasena") or ""
+
+    if not all([nombres, apellidos, correo, documento,
+                fecha_nacimiento, rol, id_facultad, contrasena]):
+        return jsonify({"mensaje": "Completa todos los campos obligatorios."}), 400
+
+    if not correo.endswith("@unilibre.edu.co"):
+        return jsonify({"mensaje": "Debes utilizar tu correo institucional."}), 400
+
+    if rol not in ["ESTUDIANTE", "DOCENTE"]:
+        return jsonify({"mensaje": "El rol seleccionado no es válido."}), 400
+
+    if rol == "ESTUDIANTE" and not id_programa:
+        return jsonify({"mensaje": "Selecciona tu programa académico."}), 400
+
+    if Usuario.query.filter_by(correo_institucional=correo).first():
+        return jsonify({"mensaje": "Este correo ya está registrado."}), 409
+
+    if SolicitudRegistro.query.filter_by(
+        correo_institucional=correo,
+        estado="PENDIENTE"
+    ).first():
+        return jsonify({"mensaje": "Ya existe una solicitud pendiente con este correo."}), 409
+
+    try:
+        fecha = datetime.strptime(fecha_nacimiento, "%Y-%m-%d").date()
+
+        solicitud = SolicitudRegistro(
+            nombre_completo=f"{nombres} {apellidos}",
+            correo_institucional=correo,
+            fecha_nacimiento=fecha,
+            documento=documento,
+            id_facultad=int(id_facultad),
+            id_programa=int(id_programa) if rol == "ESTUDIANTE" else None,
+            contrasena_hash=generate_password_hash(contrasena),
+            rol_solicitado=rol,
+            estado="PENDIENTE",
+            fecha_solicitud=datetime.now()
+        )
+
+        db.session.add(solicitud)
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Tu solicitud fue enviada y está pendiente de aprobación."
+        }), 201
+
+    except ValueError as error:
+        db.session.rollback()
+        print("ERROR DE VALIDACION:", repr(error))
+        return jsonify({
+            "mensaje": "La fecha o los datos seleccionados no son válidos."
+        }), 400
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL GUARDAR SOLICITUD:", repr(error))
+        return jsonify({
+            "mensaje": "No fue posible guardar la solicitud."
+        }), 500
