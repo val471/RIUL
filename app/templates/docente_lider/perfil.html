@@ -1,0 +1,126 @@
+<div class="perfil-pagina">
+
+    <div class="perfil-encabezado">
+        <p class="perfil-etiqueta">DOCENCIA E INVESTIGACIÓN</p>
+        <h2>Mi perfil</h2>
+        <p>Cambia tu foto y tu contraseña, o solicita la actualización de tus datos personales.</p>
+    </div>
+
+    <!-- DATOS PERSONALES -->
+    <form id="formPerfilDocente" class="perfil-formulario" novalidate>
+
+        <div class="perfil-foto-contenedor">
+            <div class="perfil-foto" id="fotoPerfil">
+                DL
+            </div>
+
+            <label for="nuevaFoto" class="perfil-cambiar-foto">
+                Cambiar foto
+            </label>
+
+            <input type="file"
+                   id="nuevaFoto"
+                   accept="image/png,image/jpeg,image/webp"
+                   hidden>
+        </div>
+
+        <div class="perfil-campos">
+
+            <div class="perfil-campo">
+                <label for="nombrePerfil">Nombre completo</label>
+                <input type="text"
+                       id="nombrePerfil"
+                       name="nombre"
+                       maxlength="150"
+                       readonly>
+                <small class="perfil-estado" id="estadoNombre" hidden></small>
+            </div>
+
+            <div class="perfil-campo">
+                <label for="correoPerfil">Correo institucional</label>
+                <input type="email"
+                       id="correoPerfil"
+                       name="correo"
+                       maxlength="120"
+                       readonly>
+                <small class="perfil-estado" id="estadoCorreo" hidden></small>
+            </div>
+
+            <div class="perfil-campo">
+                <label for="facultadPerfil">Facultad</label>
+                <input type="text"
+                       id="facultadPerfil"
+                       readonly>
+            </div>
+
+        </div>
+
+        <p class="perfil-aviso">
+            Los cambios de nombre y correo quedan como solicitud pendiente
+            hasta que el Administrador los apruebe. La foto se actualiza de inmediato.
+        </p>
+
+        <div class="perfil-acciones">
+            <button type="button" id="btnEditarPerfil" class="btn-secundario">
+                Editar datos
+            </button>
+
+            <button type="button" id="btnCancelarPerfil" class="btn-secundario" hidden>
+                Cancelar
+            </button>
+
+            <button type="submit" id="guardarPerfil" hidden>
+                Enviar solicitud
+            </button>
+        </div>
+
+        <p class="perfil-mensaje" id="mensajePerfil" hidden></p>
+
+    </form>
+
+    <!-- CONTRASEÑA -->
+    <form id="formContrasena" class="perfil-formulario perfil-formulario-simple" novalidate>
+
+        <div class="perfil-seccion-titulo">
+            <h3>Cambiar contraseña</h3>
+            <p>Por seguridad, escribe primero tu contraseña actual.</p>
+        </div>
+
+        <div class="perfil-campos">
+
+            <div class="perfil-campo">
+                <label for="contrasenaActual">Contraseña actual</label>
+                <input type="password"
+                       id="contrasenaActual"
+                       autocomplete="current-password">
+            </div>
+
+            <div class="perfil-campo">
+                <label for="contrasenaNueva">Nueva contraseña</label>
+                <input type="password"
+                       id="contrasenaNueva"
+                       placeholder="Mínimo 8 caracteres"
+                       minlength="8"
+                       autocomplete="new-password">
+            </div>
+
+            <div class="perfil-campo">
+                <label for="contrasenaConfirmar">Confirmar nueva contraseña</label>
+                <input type="password"
+                       id="contrasenaConfirmar"
+                       autocomplete="new-password">
+            </div>
+
+        </div>
+
+        <div class="perfil-acciones">
+            <button type="submit">
+                Actualizar contraseña
+            </button>
+        </div>
+
+        <p class="perfil-mensaje" id="mensajeClave" hidden></p>
+
+    </form>
+
+</div>

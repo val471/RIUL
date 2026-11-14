@@ -1,0 +1,168 @@
+/* ==============================
+   MODULO SOLICITUDES
+================================ */
+
+.solicitudes-pagina {
+    width: 100%;
+    padding: 10px 0;
+    color: #15151a;
+}
+
+/* ENCABEZADO */
+.solicitudes-encabezado {
+    margin-bottom: 25px;
+}
+
+.solicitudes-etiqueta {
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.solicitudes-encabezado h2 {
+    margin: 7px 0;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.solicitudes-encabezado p {
+    margin: 0;
+    color: #6b6f7b;
+    font-size: 14px;
+}
+
+/* RESUMEN */
+.solicitudes-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.solicitudes-resumen-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+}
+
+.solicitudes-resumen-card span {
+    display: block;
+    color: #6b6f7b;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.solicitudes-resumen-card strong {
+    font-size: 28px;
+    color: #15151a;
+}
+
+/* CONTENIDO */
+.solicitudes-contenido {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 14px;
+}
+
+/* TABLA */
+.solicitudes-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.solicitudes-tabla {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.solicitudes-tabla thead {
+    background: #f6f6f7;
+}
+
+.solicitudes-tabla th {
+    padding: 15px;
+    color: #6b6f7b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.solicitudes-tabla td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #ececef;
+    color: #3b3e49;
+    font-size: 13px;
+}
+
+.solicitudes-tabla tbody tr:hover {
+    background: #fafafb;
+}
+
+/* ESTADO */
+.solicitudes-estado {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #fff7e6;
+    color: #b7791f;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ACCIONES */
+.solicitudes-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.solicitudes-acciones button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.btn-aprobar {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.btn-rechazar {
+    background: #fdecec;
+    color: #c03939;
+}
+
+.btn-aprobar:hover {
+    background: #d5eddf;
+}
+
+.btn-rechazar:hover {
+    background: #f9dada;
+}
+
+/* ESTADO VACIO */
+.solicitudes-vacio {
+    padding: 35px !important;
+    text-align: center;
+    color: #6b6f7b !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .solicitudes-contenido {
+        padding: 14px;
+    }
+
+    .solicitudes-encabezado h2 {
+        font-size: 22px;
+    }
+}

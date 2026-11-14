@@ -1,50 +1,76 @@
+# Servicios principales del proyecto
 services:
-  # Aplicación Flask
+
+  # Aplicacion web RIUL
   app:
+    # Construye la imagen usando el Dockerfile del proyecto
     build: .
+
     # Nombre del contenedor
     container_name: RIUL
 
-    # localhost:5000 -> contenedor:5000
+    # Puerto para acceder a la aplicacion desde el navegador
     ports:
       - "5000:5000"
 
+    # Variables de entorno para la aplicacion
     environment:
+      # Conexion de la aplicacion con MySQL
       DATABASE_URL: mysql+pymysql://riul_app:RIUL_AAA@db:3306/riul
+
+      # Clave secreta para manejar los tokens JWT
       JWT_SECRET_KEY: suero-AAA
 
+    # Guarda los archivos subidos aunque se reinicie el contenedor
+    volumes:
+      - uploads_data:/app/app/static/uploads
+
+    # Espera a que MySQL este disponible antes de iniciar la aplicacion
     depends_on:
       db:
         condition: service_healthy
 
+    # Reinicia el contenedor si se detiene inesperadamente
     restart: unless-stopped
 
   # Base de datos MySQL
   db:
+    # Imagen oficial de MySQL
     image: mysql:8.4
+
+    # Nombre del contenedor de la base de datos
     container_name: RIUL_mysql
 
+    # Configuracion inicial de MySQL
     environment:
       MYSQL_DATABASE: riul
       MYSQL_USER: riul_app
       MYSQL_PASSWORD: RIUL_AAA
       MYSQL_ROOT_PASSWORD: RIULRoot_AAA
 
+    # Puerto para acceder a MySQL desde el equipo
     ports:
       - "3307:3306"
 
+    # Conserva los datos de MySQL aunque se reinicie el contenedor
     volumes:
       - mysql_data:/var/lib/mysql
 
+    # Reinicia MySQL si se detiene inesperadamente
     restart: unless-stopped
 
+    # Comprueba que MySQL este funcionando correctamente
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pRIULRoot_AAA"]
       interval: 5s
       timeout: 5s
       retries: 20
 
+# Volumenes persistentes de Docker
 volumes:
+
+  # Almacena la informacion de la base de datos
   mysql_data:
 
-
+  # Almacena los archivos subidos por los usuarios
+  uploads_data:

@@ -11,26 +11,94 @@ const titles = {
     ranking: 'Top 10 de clasificacion'
 };
 
+
 // NAVEGACION ENTRE MODULOS
 document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
-    link.addEventListener('click', event => {
+    link.addEventListener('click', async event => {
         event.preventDefault();
 
         const page = link.dataset.page;
+        const section = document.getElementById('page-' + page);
 
         document.querySelectorAll('.admin-page').forEach(section => {
             section.classList.remove('active-page');
         });
 
-        document.getElementById('page-' + page).classList.add('active-page');
+        section.classList.add('active-page');
 
         document.querySelectorAll('.admin-nav a').forEach(a => {
             a.classList.toggle('active', a === link);
         });
 
         document.getElementById('topTitle').textContent = titles[page];
+          
+        // Modudo facultad
+        if (page === 'facultades' && section.dataset.loaded !== 'true') {
+            section.innerHTML = '<p>Cargando facultades...</p>';
+
+            try {
+                const response = await fetch('/admin/facultades');
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar facultades');
+                }
+
+                section.innerHTML = await response.text();
+                section.dataset.loaded = 'true';
+
+            } catch (error) {
+                console.error(error);
+                section.innerHTML = '<p>No se pudieron cargar las facultades.</p>';
+            }
+        }
+
+
+        // CARGAR MODULO DE SEMILLEROS
+        if (page === 'semilleros' && section.dataset.loaded !== 'true') {
+        section.innerHTML = '<p>Cargando semilleros...</p>';
+
+        try {
+        const response = await fetch('/admin/semilleros');
+
+        if (!response.ok) {
+            throw new Error('Error al cargar semilleros');
+        }
+
+        section.innerHTML = await response.text();
+        section.dataset.loaded = 'true';
+
+        } catch (error) {
+        console.error(error);
+        section.innerHTML = '<p>No se pudieron cargar los semilleros.</p>';
+        }
+        }
+
+        // CARGAR MODULO DE CONVOCATORIAS
+        if (page === 'eventos' && section.dataset.loaded !== 'true') {
+        section.innerHTML = '<p>Cargando convocatorias...</p>';
+
+        try {
+        const response = await fetch('/admin/convocatorias');
+
+        if (!response.ok) {
+            throw new Error('Error al cargar convocatorias');
+        }
+
+        section.innerHTML = await response.text();
+        section.dataset.loaded = 'true';
+
+        } catch (error) {
+        console.error(error);
+        section.innerHTML = '<p>No se pudieron cargar las convocatorias.</p>';
+       }
+       }
+
+
     });
+
+   
 });
+
 
 // RESOLVER SOLICITUDES
 function resolveRequest(button, state) {
@@ -159,4 +227,61 @@ function vincularSemillero(boton) {
         /(\d+) semilleros/,
         (texto, n) => (Number(n) + 1) + ' semilleros'
     );
+
 }
+
+// MOSTRAR U OCULTAR PROGRAMAS Y SEMILLEROS
+function mostrarLista(boton) {
+    const grupo = boton.closest('.facultad-grupo');
+    const lista = grupo.querySelector('.lista-elementos');
+
+    lista.hidden = !lista.hidden;
+
+    if (lista.hidden) {
+        boton.textContent = grupo.querySelector('strong').textContent === 'Programas'
+            ? 'Ver programas'
+            : 'Ver semilleros';
+    } else {
+        boton.textContent = 'Ocultar lista';
+    }
+}
+// BUSCAR SEMILLEROS
+function filtrarSemilleros() {
+    const buscador = document.getElementById('buscarSemilleros');
+
+    if (!buscador) return;
+
+    const texto = buscador.value.toLowerCase().trim();
+    const tarjetas = document.querySelectorAll(
+        '#listaSemilleros .semillero-card'
+    );
+
+    tarjetas.forEach(tarjeta => {
+        tarjeta.hidden = !tarjeta.textContent.toLowerCase().includes(texto);
+    });
+}
+
+// VER DETALLES DE CONVOCATORIA
+function verDetalleConvocatoria(boton) {
+    const id = boton.dataset.id;
+    console.log('Ver convocatoria:', id);
+}
+
+// EDITAR CONVOCATORIA
+function editarConvocatoria(boton) {
+    const id = boton.dataset.id;
+    console.log('Editar convocatoria:', id);
+}
+
+// ELIMINAR CONVOCATORIA
+function eliminarConvocatoria(boton) {
+    const id = boton.dataset.id;
+
+    if (!confirm('¿Deseas eliminar esta convocatoria?')) {
+        return;
+    }
+
+    console.log('Eliminar convocatoria:', id);
+}
+
+

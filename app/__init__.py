@@ -39,7 +39,7 @@ def create_app() :
         from app.models.solicitud_registro import SolicitudRegistro
         from app.models.docente import Docente
         from app.models.administrador import Administrador
-
+        
         
 
         return app

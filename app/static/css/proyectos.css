@@ -1,0 +1,194 @@
+
+/* ==============================
+   MODULO PROYECTOS- DOCENTE
+================================ */
+
+.proyectos-pagina {
+    width: 100%;
+    padding: 10px 0;
+    color: #15151a;
+}
+
+/* ENCABEZADO */
+.proyectos-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.proyectos-etiqueta {
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.proyectos-encabezado h2 {
+    margin: 7px 0;
+    font-size: 26px;
+}
+
+.proyectos-encabezado p {
+    margin: 0;
+    color: #6b6f7b;
+    font-size: 14px;
+}
+
+/* BOTON */
+.btn-cargar-proyecto {
+    padding: 11px 17px;
+    border: none;
+    border-radius: 8px;
+    background: #c8102e;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cargar-proyecto:hover {
+    background: #a50d26;
+}
+
+/* RESUMEN */
+.proyectos-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.proyectos-resumen-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+}
+
+.proyectos-resumen-card span {
+    display: block;
+    margin-bottom: 10px;
+    color: #6b6f7b;
+    font-size: 13px;
+}
+
+.proyectos-resumen-card strong {
+    color: #15151a;
+    font-size: 28px;
+}
+
+/* CONTENIDO */
+.proyectos-contenido {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 14px;
+}
+
+/* TABLA */
+.proyectos-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.proyectos-tabla {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.proyectos-tabla thead {
+    background: #f6f6f7;
+}
+
+.proyectos-tabla th {
+    padding: 15px;
+    color: #6b6f7b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.proyectos-tabla td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #ececef;
+    color: #3b3e49;
+    font-size: 13px;
+}
+
+.proyectos-tabla tbody tr:hover {
+    background: #fafafb;
+}
+
+/* AVANCE */
+.proyectos-avance {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.proyectos-barra {
+    width: 90px;
+    height: 7px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #ececef;
+}
+
+.proyectos-barra span {
+    display: block;
+    height: 100%;
+    border-radius: 10px;
+    background: #c8102e;
+}
+
+/* ESTADOS */
+.proyectos-estado {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.proyectos-estado.activo {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.proyectos-estado.revision {
+    background: #fff7e6;
+    color: #b7791f;
+}
+
+/* ACCIONES */
+.proyectos-acciones {
+    display: flex;
+    gap: 8px;
+}
+
+/* ESTADO VACIO */
+.proyectos-vacio {
+    padding: 40px !important;
+    text-align: center;
+    color: #6b6f7b !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .proyectos-encabezado {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .proyectos-encabezado h2 {
+        font-size: 22px;
+    }
+
+    .proyectos-contenido {
+        padding: 14px;
+    }
+}

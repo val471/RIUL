@@ -1,0 +1,57 @@
+
+<section class="proyectos-pagina" id="contenido-proyectos">
+
+    <div class="proyectos-encabezado">
+        <div>
+            <span class="proyectos-etiqueta">GESTIÓN DE INVESTIGACIÓN</span>
+            <h2>Proyectos</h2>
+            <p>Gestiona proyectos y avances de tu semillero.</p>
+        </div>
+
+        <button type="button" class="btn-cargar-proyecto" id="btnCargarProyecto">
+            + Cargar proyecto
+        </button>
+    </div>
+
+    <div class="proyectos-resumen">
+        <div class="proyectos-resumen-card">
+            <span>Total de proyectos</span>
+            <strong id="totalProyectos">0</strong>
+        </div>
+
+        <div class="proyectos-resumen-card">
+            <span>Proyectos activos</span>
+            <strong id="proyectosActivos">0</strong>
+        </div>
+
+        <div class="proyectos-resumen-card">
+            <span>En revisión</span>
+            <strong id="proyectosRevision">0</strong>
+        </div>
+    </div>
+
+    <div class="proyectos-contenido">
+        <div class="proyectos-tabla-contenedor">
+            <table class="proyectos-tabla">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Fase</th>
+                        <th>Avance</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaProyectos">
+                    <tr>
+                        <td colspan="5" class="proyectos-vacio">
+                            Todavía no has cargado proyectos.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>

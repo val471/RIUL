@@ -1,0 +1,175 @@
+
+/* ==============================
+   MODULO CONVOCATORIAS
+================================ */
+
+.convocatorias-pagina {
+    width: 100%;
+    padding: 10px 0;
+    color: #243247;
+}
+
+/* ENCABEZADO */
+.convocatorias-encabezado {
+    margin-bottom: 25px;
+}
+
+.convocatorias-etiqueta {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.convocatorias-encabezado h2 {
+    margin: 7px 0;
+    font-size: 26px;
+}
+
+.convocatorias-encabezado p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* RESUMEN */
+.convocatorias-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.convocatorias-resumen-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 12px;
+}
+
+.convocatorias-resumen-card span {
+    display: block;
+    margin-bottom: 10px;
+    color: #718096;
+    font-size: 13px;
+}
+
+.convocatorias-resumen-card strong {
+    color: #243247;
+    font-size: 28px;
+}
+
+/* CONTENIDO */
+.convocatorias-contenido {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 14px;
+}
+
+/* TABLA */
+.convocatorias-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.convocatorias-tabla {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.convocatorias-tabla thead {
+    background: #f6f8fb;
+}
+
+.convocatorias-tabla th {
+    padding: 15px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.convocatorias-tabla td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #edf0f4;
+    color: #475569;
+    font-size: 13px;
+}
+
+.convocatorias-tabla tbody tr:hover {
+    background: #fafbfd;
+}
+
+/* ESTADOS */
+.convocatorias-estado {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.convocatorias-estado.activa {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.convocatorias-estado.cerrada {
+    background: #fdecec;
+    color: #c03939;
+}
+
+.convocatorias-estado.pendiente {
+    background: #fff7e6;
+    color: #b7791f;
+}
+
+/* MODALIDAD */
+.convocatorias-modalidad {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ACCIONES */
+.convocatorias-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.convocatorias-acciones button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 7px;
+    background: #e8f0fe;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.convocatorias-acciones button:hover {
+    background: #d7e5fc;
+}
+
+/* TABLA VACIA */
+.convocatorias-vacio {
+    padding: 40px !important;
+    text-align: center;
+    color: #94a3b8 !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .convocatorias-encabezado h2 {
+        font-size: 22px;
+    }
+
+    .convocatorias-contenido {
+        padding: 14px;
+    }
+}

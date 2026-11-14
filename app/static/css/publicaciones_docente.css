@@ -1,0 +1,326 @@
+
+/* =====================================
+   MODULO PUBLICACIONES - DOCENTE LIDER
+===================================== */
+
+.publicaciones-pagina {
+    width: 100%;
+    padding: 25px;
+    color: #15151a;
+}
+
+/* ENCABEZADO */
+
+.publicaciones-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.publicaciones-etiqueta {
+    display: block;
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    margin-bottom: 8px;
+}
+
+.publicaciones-encabezado h2 {
+    font-size: 26px;
+    margin: 0 0 7px;
+    color: #15151a;
+}
+
+.publicaciones-encabezado p {
+    color: #6b6f7b;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* FORMULARIO */
+
+.publicaciones-formulario {
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 12px rgba(20, 35, 60, 0.04);
+}
+
+.publicaciones-formulario h3 {
+    font-size: 17px;
+    margin: 0 0 17px;
+    color: #15151a;
+}
+
+.publicaciones-formulario textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 15px;
+    border: 1px solid #dcdce2;
+    border-radius: 9px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: #15151a;
+    background: #fafafb;
+    box-sizing: border-box;
+}
+
+.publicaciones-formulario textarea:focus {
+    border-color: #c8102e;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.08);
+}
+
+.publicaciones-formulario textarea::placeholder {
+    color: #6b6f7b;
+}
+
+.publicaciones-opciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.publicaciones-adjunto {
+    color: #3b3e49;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.publicaciones-adjunto input {
+    display: block;
+    margin-top: 7px;
+    max-width: 220px;
+    font-size: 12px;
+}
+
+.publicaciones-academica {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #3b3e49;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.publicaciones-academica input {
+    accent-color: #c8102e;
+}
+
+#btnPublicar {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 25px;
+    background: #c8102e;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#btnPublicar:hover {
+    background: #a50d26;
+}
+
+#nombreArchivoPublicacion {
+    color: #6b6f7b;
+    font-size: 12px;
+    margin: 10px 0 0;
+}
+
+/* RESUMEN */
+
+.publicaciones-resumen {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.publicaciones-resumen-card {
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 11px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.publicaciones-resumen-card span {
+    color: #6b6f7b;
+    font-size: 13px;
+}
+
+.publicaciones-resumen-card strong {
+    color: #15151a;
+    font-size: 25px;
+}
+
+/* MURO */
+
+.publicaciones-muro {
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.publicaciones-titulo-seccion {
+    margin-bottom: 20px;
+}
+
+.publicaciones-titulo-seccion h3 {
+    color: #15151a;
+    font-size: 17px;
+    margin: 0 0 6px;
+}
+
+.publicaciones-titulo-seccion p {
+    color: #6b6f7b;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* PUBLICACION VACIA */
+
+.publicaciones-vacio {
+    text-align: center;
+    padding: 45px 15px;
+    color: #6b6f7b;
+    font-size: 13px;
+    background: #fafafb;
+    border: 1px dashed #dcdce2;
+    border-radius: 9px;
+}
+
+/* TARJETAS DE PUBLICACIONES */
+
+.publicacion-card {
+    border: 1px solid #ececef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.publicacion-autor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.publicacion-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #fbe9ec;
+    color: #c8102e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.publicacion-autor-info strong {
+    display: block;
+    color: #15151a;
+    font-size: 13px;
+}
+
+.publicacion-autor-info span {
+    color: #6b6f7b;
+    font-size: 11px;
+}
+
+.publicacion-contenido {
+    color: #3b3e49;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    overflow-wrap: anywhere;
+}
+
+.publicacion-imagen {
+    max-width: 100%;
+    max-height: 350px;
+    object-fit: contain;
+    border-radius: 9px;
+    margin-bottom: 15px;
+}
+
+.publicacion-metricas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 12px 0;
+    border-top: 1px solid #ececef;
+    border-bottom: 1px solid #ececef;
+    color: #6b6f7b;
+    font-size: 12px;
+}
+
+.publicacion-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding-top: 13px;
+}
+
+.publicacion-acciones button {
+    border: none;
+    background: transparent;
+    color: #6b6f7b;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.publicacion-acciones button:hover {
+    color: #c8102e;
+}
+
+.publicacion-academica-etiqueta {
+    display: inline-block;
+    background: #fbe9ec;
+    color: #c8102e;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .publicaciones-pagina {
+        padding: 15px;
+    }
+
+    .publicaciones-resumen {
+        grid-template-columns: 1fr;
+    }
+
+    .publicaciones-opciones {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #btnPublicar {
+        width: 100%;
+    }
+
+    .publicaciones-muro {
+        padding: 15px;
+    }
+}

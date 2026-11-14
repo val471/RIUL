@@ -1,14 +1,108 @@
-<p class="eyebrow">INVESTIGACION</p>
 
-<div class="page-heading">
-    <div>
-        <h1>Semilleros</h1>
-        <p>Consulta y administra los semilleros de investigacion.</p>
+<div class="semilleros-modulo">
+
+    <p class="eyebrow">INVESTIGACIÓN</p>
+
+    <div class="page-heading">
+        <div>
+            <h1>Semilleros de investigación</h1>
+            <p>Consulta y administra los semilleros de investigación de RIUL.</p>
+        </div>
+
+        <button class="btn btn-red" onclick="crearSemillero()">
+            + Crear semillero
+        </button>
     </div>
-    <button class="btn btn-red" onclick="addItem('listaSemilleros','Nombre del semillero')">＋ Nuevo semillero</button>
-</div>
 
-<div class="admin-card card-heading" id="listaSemilleros">
-    <p>Tecnología e Innovación</p>
-    <p>Investigación y Desarrollo</p>
+    <!-- BUSCADOR -->
+    <div class="search-box">
+        <input
+            type="text"
+            id="buscarSemilleros"
+            placeholder="Buscar por semillero, facultad o programa..."
+            oninput="filtrarSemilleros()"
+        >
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen-semilleros">
+
+        <div class="resumen-card">
+            <span>Semilleros</span>
+            <strong>{{ total_semilleros }}</strong>
+        </div>
+
+        <div class="resumen-card">
+            <span>Proyectos</span>
+            <strong>{{ total_proyectos }}</strong>
+        </div>
+
+    </div>
+
+    <!-- DISTRIBUCION POR FACULTAD -->
+    <div class="distribucion-semilleros">
+        <h2>Distribución por facultad</h2>
+
+        <div class="distribucion-lista">
+            {% for facultad in distribucion %}
+            <div class="distribucion-item">
+                <span>{{ facultad.nombre }}</span>
+                <strong>{{ facultad.total }} semilleros</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- TARJETAS DE SEMILLEROS -->
+    <div class="seccion-semilleros">
+        <h2>Semilleros registrados</h2>
+
+        <div class="semilleros-grid" id="listaSemilleros">
+
+            {% for semillero in semilleros %}
+
+            <article class="semillero-card">
+
+                <div class="semillero-card-top">
+                    <h3>{{ semillero.nombre }}</h3>
+                    <span>{{ semillero.estado }}</span>
+                </div>
+
+                <p>{{ semillero.facultad }}</p>
+                <p>{{ semillero.programa }}</p>
+
+                <div class="semillero-datos">
+                    <span>Proyectos: {{ semillero.total_proyectos }}</span>
+                    <span>Integrantes: {{ semillero.total_integrantes }}</span>
+                </div>
+
+                <div class="semillero-acciones">
+                    <button 
+                        class="btn-detalle"
+                        ata-id="{{ semillero.id_semillero }}"
+                        onclick="verDetalleSemillero(this.dataset.id)">
+                        Ver detalles
+                    </button>
+
+                    <button 
+                       data-id="{{ semillero.id_semillero }}"
+                       onclick="editarSemillero(this.dataset.id)">
+                       Editar
+                    </button>
+
+                    <button 
+                       data-id="{{ semillero.id_semillero }}"
+                       onclick="eliminarSemillero(this.dataset.id)">
+                       Eliminar
+                    </button>
+                </div>
+
+            </article>
+
+            {% else %}
+            <p>No hay semilleros registrados.</p>
+            {% endfor %}
+
+        </div>
+    </div>
 </div>

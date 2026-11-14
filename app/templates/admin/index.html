@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/usuarios.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/facultades.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/Convocatorias.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/convocatorias_admi.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/reportes.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/Semilleros.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/semilleros_admi.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/solicitudes.css') }}">
 </head>
 <body>
@@ -106,35 +106,17 @@
                 <section class="admin-card">
                     <div class="card-heading">
                         <h2>Solicitudes de registro</h2>
-                        <p>Aprueba o rechaza el acceso a RIUL.</p>
+                        <p>Revisa las solicitudes pendientes de acceso a RIUL.</p>
                     </div>
 
-                    <div class="request-list" id="requestsList">
-                        <article class="request-item">
-                            <div class="admin-avatar">VR</div>
-                            <div class="request-info">
-                                <strong>Valentina Rojas</strong>
-                                <small>Registro como estudiante investigador · Hoy, 08:42</small>
-                            </div>
-                            <span class="status pendiente">Pendiente</span>
-                            <div class="request-actions">
-                                <button class="btn" onclick="resolveRequest(this,'Rechazada')">Rechazar</button>
-                                <button class="btn btn-red" onclick="resolveRequest(this,'Aprobada')">Aprobar</button>
-                            </div>
-                        </article>
-
-                        <article class="request-item">
-                            <div class="admin-avatar">JP</div>
-                            <div class="request-info">
-                                <strong>Juan Pérez</strong>
-                                <small>Registro como docente líder · Hoy, 09:15</small>
-                            </div>
-                            <span class="status pendiente">Pendiente</span>
-                            <div class="request-actions">
-                                <button class="btn" onclick="resolveRequest(this,'Rechazada')">Rechazar</button>
-                                <button class="btn btn-red" onclick="resolveRequest(this,'Aprobada')">Aprobar</button>
-                            </div>
-                        </article>
+                    <div class="request-list">
+                        <p>Consulta y gestiona todas las solicitudes desde el modulo Solicitudes.</p>
+                        
+                        <a href="#solicitudes"
+                           class="btn btn-red"
+                           data-page="solicitudes">
+                           ver solicitudes
+                        </a>
                     </div>
                 </section>
             </section>

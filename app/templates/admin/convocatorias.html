@@ -1,13 +1,90 @@
-<p class="eyebrow">AGENDA INSTITUCIONAL</p>
 
-<div class="page-heading">
-    <div>
-        <h1>Convocatorias y Eventos</h1>
-        <p>Consulta las actividades de investigacion.</p>
+<div class="convocatorias-modulo">
+
+    <p class="eyebrow">AGENDA INSTITUCIONAL</p>
+
+    <div class="page-heading">
+        <div>
+            <h1>Convocatorias y Eventos</h1>
+            <p>Consulta y administra las convocatorias de investigación.</p>
+        </div>
+
+        <button class="btn btn-red" onclick="crearConvocatoria()">
+            + Nueva convocatoria
+        </button>
     </div>
-    <button class="btn btn-red" onclick="addItem('listaEventos','Nombre del evento o convocatoria')">＋ Nuevo evento</button>
-</div>
 
-<div class="admin-card card-heading" id="listaEventos">
-    <p>Encuentro de investigación universitaria · Noviembre de 2026</p>
+    <!-- BUSCADOR -->
+    <div class="search-box">
+        <input
+            type="text"
+            id="buscarConvocatorias"
+            placeholder="Buscar convocatoria..."
+            oninput="filtrarConvocatorias()"
+        >
+    </div>
+
+    <!-- LISTADO -->
+    <div class="convocatorias-grid" id="listaConvocatorias">
+
+        {% for convocatoria in convocatorias %}
+
+        <article class="convocatoria-card">
+
+            <div class="convocatoria-card-top">
+                <h3>{{ convocatoria.titulo }}</h3>
+                <span class="convocatoria-estado">
+                    {{ convocatoria.estado }}
+                </span>
+            </div>
+
+            <p class="convocatoria-modalidad">
+                Modalidad: {{ convocatoria.modalidad }}
+            </p>
+
+            <p>
+                Inicio: {{ convocatoria.fecha_inicio.strftime('%d/%m/%Y') }}
+            </p>
+
+            <p>
+                Cierre: {{ convocatoria.fecha_cierre.strftime('%d/%m/%Y') }}
+            </p>
+
+            <p class="convocatoria-descripcion">
+                {{ convocatoria.descripcion or 'Sin descripción registrada.' }}
+            </p>
+
+            <div class="convocatoria-acciones">
+                <button 
+                    class="btn-detalles"
+                    data-id="{{ convocatoria.id_convocatoria }}"
+                    onclick="verDetalleConvocatoria(this)">
+                    Ver detalles
+                </button>
+
+                <button 
+                    class="btn-editar"
+                    data-id="{{ convocatoria.id_convocatoria }}"
+                    onclick="editarConvocatoria(this)">  
+                    Editar
+                </button>
+
+                <button 
+                class="btn-eliminar"
+                data-id="{{ convocatoria.id_convocatoria }}"
+                onclick="eliminarConvocatoria(this)">
+               Eliminar
+                </button>
+            </div>
+
+        </article>
+
+        {% else %}
+
+        <p>No hay convocatorias registradas.</p>
+
+        {% endfor %}
+
+    </div>
+
 </div>

@@ -1,0 +1,94 @@
+
+/* =====================================
+   ADAPTACION DOCENTE LIDER
+===================================== */
+
+.semilleros-pagina {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    color: #15151a;
+}
+
+.semilleros-pagina .pagina-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.semilleros-pagina .pagina-encabezado h2 {
+    font-size: 26px;
+    margin: 0 0 8px;
+}
+
+.semilleros-pagina .pagina-encabezado p {
+    color: #6b6f7b;
+    font-size: 14px;
+}
+
+.semilleros-pagina .resumen-semilleros {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.semilleros-pagina .seccion-listado-semilleros {
+    padding: 21px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+}
+
+.semilleros-pagina .lista-semilleros {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.semilleros-pagina .btn-crear-sem {
+    background: #c8102e;
+}
+
+.semilleros-pagina .btn-crear-sem:hover {
+    background: #a50d26;
+}
+
+.semilleros-pagina .semillero-detalle-item {
+    padding: 17px 0;
+    border-bottom: 1px solid #ececef;
+}
+
+.semilleros-pagina .semillero-detalle-item:last-child {
+    border-bottom: none;
+}
+
+.semilleros-pagina .semillero-detalle-item span {
+    display: block;
+    color: #6b6f7b;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.semilleros-pagina .semillero-detalle-item strong,
+.semilleros-pagina .semillero-detalle-item p {
+    color: #15151a;
+    font-size: 14px;
+    margin: 0;
+}
+
+@media (max-width: 1050px) {
+    .semilleros-pagina .resumen-semilleros {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .semilleros-pagina .resumen-semilleros {
+        grid-template-columns: 1fr;
+    }
+
+    .semilleros-pagina .seccion-listado-semilleros {
+        padding: 15px;
+    }
+}

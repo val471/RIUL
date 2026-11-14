@@ -1,15 +1,71 @@
+
 <p class="eyebrow">SOLICITUDES</p>
 
 <div class="page-heading">
     <div>
         <h1>Solicitudes</h1>
-        <p>Revisa las solicitudes de acceso a RIUL.</p>
+        <p>Revisa y gestiona las solicitudes de acceso a RIUL.</p>
     </div>
 </div>
 
 <div class="admin-card">
     <div class="card-heading">
         <h2>Solicitudes de registro</h2>
-        <p>Aprueba o rechaza las solicitudes pendientes desde Inicio.</p>
+        <p>Solicitudes pendientes de aprobación.</p>
+    </div>
+
+    <div class="request-list" id="requestsList">
+
+        {% if solicitudes %}
+
+            {% for solicitud in solicitudes %}
+
+                <article class="request-item">
+
+                    <div class="admin-avatar">
+                        {{ solicitud.nombre_completo[:2]|upper }}
+                    </div>
+
+                    <div class="request-info">
+                        <strong>{{ solicitud.nombre_completo }}</strong>
+
+                        <small>
+                            {{ solicitud.correo_institucional }}
+                        </small>
+
+                        <small>
+                            {{ solicitud.rol_solicitado }}
+                            {% if solicitud.facultad %}
+                                · {{ solicitud.facultad }}
+                            {% endif %}
+                            {% if solicitud.programa %}
+                                · {{ solicitud.programa }}
+                            {% endif %}
+                        </small>
+
+                        <small>
+                            Documento: {{ solicitud.documento or 'No registrado' }}
+                        </small>
+
+                        <small>
+                            Fecha:
+                            {{ solicitud.fecha_solicitud.strftime('%d/%m/%Y %H:%M') }}
+                        </small>
+                    </div>
+
+                    <span class="status pendiente">
+                        {{ solicitud.estado }}
+                    </span>
+
+                </article>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p>No hay solicitudes pendientes.</p>
+
+        {% endif %}
+
     </div>
 </div>

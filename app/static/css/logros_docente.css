@@ -1,0 +1,293 @@
+
+/* =====================================
+   MODULO LOGROS - DOCENTE LIDER
+===================================== */
+
+.logros-pagina {
+    width: 100%;
+    padding: 10px 0;
+    color: #243247;
+}
+
+/* ENCABEZADO */
+.logros-encabezado {
+    margin-bottom: 25px;
+}
+
+.logros-etiqueta {
+    color: #a94444;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.logros-encabezado h2 {
+    margin: 7px 0;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.logros-encabezado p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* RESUMEN */
+.logros-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.logros-resumen-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #eee5e5;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logros-resumen-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(120, 35, 35, 0.07);
+}
+
+.logros-resumen-card span {
+    display: block;
+    margin-bottom: 7px;
+    color: #718096;
+    font-size: 12px;
+}
+
+.logros-resumen-card strong {
+    color: #243247;
+    font-size: 25px;
+}
+
+/* ICONOS DEL RESUMEN */
+.logros-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.logros-icono.pendiente {
+    background: #fff0e6;
+    color: #c46b35;
+}
+
+.logros-icono.revision {
+    background: #fff5d9;
+    color: #b88923;
+}
+
+.logros-icono.aprobados {
+    background: #fce9eb;
+    color: #a93445;
+}
+
+.logros-icono.rechazados {
+    background: #f1eeee;
+    color: #7b5151;
+}
+
+/* CONTENIDO */
+.logros-contenido {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #eee5e5;
+    border-radius: 14px;
+}
+
+/* TITULO DE SECCION */
+.logros-titulo-seccion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.logros-titulo-seccion h3 {
+    margin: 0 0 6px;
+    color: #243247;
+    font-size: 17px;
+}
+
+.logros-titulo-seccion p {
+    margin: 0;
+    color: #8793a3;
+    font-size: 13px;
+}
+
+/* FILTROS */
+.logros-filtros {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.logros-filtros input,
+.logros-filtros select {
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+}
+
+.logros-filtros input {
+    flex: 1;
+    min-width: 180px;
+}
+
+.logros-filtros select {
+    min-width: 180px;
+}
+
+.logros-filtros input:focus,
+.logros-filtros select:focus {
+    border-color: #b84a54;
+    box-shadow: 0 0 0 3px rgba(184, 74, 84, 0.09);
+}
+
+/* TABLA */
+.logros-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.logros-tabla {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.logros-tabla thead {
+    background: #faf5f5;
+}
+
+.logros-tabla th {
+    padding: 15px;
+    color: #815151;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.logros-tabla td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #f0eaea;
+    color: #475569;
+    font-size: 13px;
+}
+
+.logros-tabla tbody tr:hover {
+    background: #fdf9f9;
+}
+
+/* ESTADOS */
+.logros-estado {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.logros-estado.pendiente {
+    background: #fff0e6;
+    color: #bd6b35;
+}
+
+.logros-estado.revision {
+    background: #fff5d9;
+    color: #a77c20;
+}
+
+.logros-estado.aprobado {
+    background: #fce9eb;
+    color: #a93445;
+}
+
+.logros-estado.rechazado {
+    background: #f1eeee;
+    color: #875454;
+}
+
+/* CALIDAD */
+.logros-calidad {
+    color: #a93445;
+    font-weight: 700;
+}
+
+/* ACCIONES */
+.logros-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logros-acciones button {
+    padding: 7px 11px;
+    border: none;
+    border-radius: 7px;
+    background: #fce9eb;
+    color: #a93445;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.logros-acciones button:hover {
+    background: #f5d5d9;
+}
+
+/* TABLA VACIA */
+.logros-vacio {
+    padding: 40px !important;
+    text-align: center;
+    color: #94a3b8 !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+
+    .logros-encabezado h2 {
+        font-size: 22px;
+    }
+
+    .logros-contenido {
+        padding: 14px;
+    }
+
+    .logros-filtros {
+        flex-direction: column;
+    }
+
+    .logros-filtros input,
+    .logros-filtros select {
+        width: 100%;
+    }
+
+    .logros-resumen {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,84 @@
+
+<section class="publicaciones-pagina" id="contenido-publicaciones">
+
+    <!-- ENCABEZADO -->
+    <div class="publicaciones-encabezado">
+        <div>
+            <span class="publicaciones-etiqueta">COMUNIDAD INVESTIGATIVA</span>
+            <h2>Publicaciones</h2>
+            <p>Comparte ideas, conocimientos y avances de investigación.</p>
+        </div>
+    </div>
+
+    <!-- FORMULARIO PARA PUBLICAR -->
+    <div class="publicaciones-formulario">
+        <h3>Crear publicación</h3>
+
+        <form id="formPublicacion">
+
+            <textarea
+                id="contenidoPublicacion"
+                placeholder="¿Qué deseas compartir con la comunidad?"
+                required
+            ></textarea>
+
+            <div class="publicaciones-opciones">
+                <label class="publicaciones-adjunto">
+                    <span>Adjuntar archivo</span>
+                    <input
+                        type="file"
+                        id="archivoPublicacion"
+                        accept="image/*,.pdf"
+                    >
+                </label>
+
+                <label class="publicaciones-academica">
+                    <input
+                        type="checkbox"
+                        id="publicacionAcademica"
+                    >
+                    Publicación académica
+                </label>
+
+                <button type="submit" id="btnPublicar">
+                    Publicar
+                </button>
+            </div>
+
+            <p id="nombreArchivoPublicacion"></p>
+
+        </form>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="publicaciones-resumen">
+        <div class="publicaciones-resumen-card">
+            <span>Total de publicaciones</span>
+            <strong id="totalPublicaciones">0</strong>
+        </div>
+
+        <div class="publicaciones-resumen-card">
+            <span>Publicaciones académicas</span>
+            <strong id="totalAcademicas">0</strong>
+        </div>
+    </div>
+
+    <!-- MURO DE PUBLICACIONES -->
+    <div class="publicaciones-muro">
+        <div class="publicaciones-titulo-seccion">
+            <div>
+                <h3>Muro de publicaciones</h3>
+                <p>Conoce lo que comparte la comunidad investigativa.</p>
+            </div>
+        </div>
+
+        <div id="listaPublicaciones">
+
+            <div class="publicaciones-vacio">
+                Todavía no hay publicaciones disponibles.
+            </div>
+
+        </div>
+    </div>
+
+</section>

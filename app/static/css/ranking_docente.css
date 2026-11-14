@@ -1,0 +1,238 @@
+
+/* =====================================
+   MODULO RANKING - DOCENTE LIDER
+===================================== */
+
+.ranking-pagina {
+    width: 100%;
+    padding: 25px;
+    color: #15151a;
+}
+
+/* ENCABEZADO */
+
+.ranking-encabezado {
+    margin-bottom: 25px;
+}
+
+.ranking-etiqueta {
+    display: block;
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    margin-bottom: 8px;
+}
+
+.ranking-encabezado h2 {
+    font-size: 26px;
+    color: #15151a;
+    margin: 0 0 7px;
+}
+
+.ranking-encabezado p {
+    color: #6b6f7b;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* RESUMEN */
+
+.ranking-resumen {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.ranking-resumen-card {
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 11px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ranking-resumen-card span {
+    color: #6b6f7b;
+    font-size: 13px;
+}
+
+.ranking-resumen-card strong {
+    color: #15151a;
+    font-size: 25px;
+}
+
+/* CONTENIDO */
+
+.ranking-contenido {
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 3px 12px rgba(20, 35, 60, 0.04);
+}
+
+/* PESTAÑAS */
+
+.ranking-pestanas {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #ececef;
+    margin-bottom: 20px;
+}
+
+.ranking-pestana {
+    border: none;
+    background: transparent;
+    color: #6b6f7b;
+    padding: 12px 17px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: 0.2s;
+}
+
+.ranking-pestana:hover {
+    color: #c8102e;
+}
+
+.ranking-pestana.activa {
+    color: #c8102e;
+    border-bottom-color: #c8102e;
+}
+
+/* LISTAS */
+
+.ranking-lista {
+    display: none;
+}
+
+.ranking-lista.activa {
+    display: block;
+}
+
+/* TABLA */
+
+.ranking-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ranking-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.ranking-tabla thead {
+    background: #fafafb;
+}
+
+.ranking-tabla th {
+    padding: 14px 13px;
+    text-align: left;
+    color: #6b6f7b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ranking-tabla td {
+    padding: 15px 13px;
+    border-bottom: 1px solid #ececef;
+    color: #3b3e49;
+    font-size: 13px;
+}
+
+.ranking-tabla tbody tr:hover {
+    background: #fafafb;
+}
+
+/* POSICIONES */
+
+.ranking-posicion {
+    font-weight: 700;
+    color: #15151a;
+}
+
+.ranking-posicion.primero {
+    color: #d69e18;
+}
+
+.ranking-posicion.segundo {
+    color: #8a8f9c;
+}
+
+.ranking-posicion.tercero {
+    color: #b77946;
+}
+
+/* NIVEL Y ESTRELLAS */
+
+.ranking-nivel {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: #fbe9ec;
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ranking-estrellas {
+    color: #f59e0b;
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+/* XP */
+
+.ranking-xp {
+    color: #c8102e;
+    font-weight: 700;
+}
+
+/* INSIGNIAS */
+
+.ranking-insignias {
+    color: #6b6f7b;
+    font-size: 12px;
+}
+
+/* ESTADO VACIO */
+
+.ranking-vacio {
+    text-align: center;
+    padding: 35px 15px !important;
+    color: #6b6f7b !important;
+    background: #fafafb;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .ranking-pagina {
+        padding: 15px;
+    }
+
+    .ranking-resumen {
+        grid-template-columns: 1fr;
+    }
+
+    .ranking-contenido {
+        padding: 15px;
+    }
+
+    .ranking-pestanas {
+        overflow-x: auto;
+    }
+
+    .ranking-pestana {
+        white-space: nowrap;
+    }
+}

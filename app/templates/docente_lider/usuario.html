@@ -1,0 +1,76 @@
+
+<section class="usuario-pagina" id="contenido-usuario">
+
+    <!-- ENCABEZADO -->
+    <div class="usuario-encabezado">
+        <div>
+            <span class="usuario-etiqueta">GESTIÓN DEL SEMILLERO</span>
+            <h2>Integrantes</h2>
+            <p id="descripcionSemillero">
+                Equipo actual del semillero de investigación.
+            </p>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="usuario-resumen">
+        <div class="usuario-resumen-card">
+            <span>Total de integrantes</span>
+            <strong id="totalIntegrantes">0</strong>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="usuario-contenido">
+
+        <!-- BUSCADOR Y FILTRO -->
+        <div class="usuario-filtros">
+
+            <div class="usuario-buscador">
+                <input
+                    type="search"
+                    id="buscarIntegrante"
+                    placeholder="Buscar por nombre o programa..."
+                >
+            </div>
+
+            <select id="filtroRol">
+                <option value="">Todos los roles</option>
+                <option value="Investigador">Investigador</option>
+                <option value="Coinvestigador">Coinvestigador</option>
+            </select>
+
+        </div>
+
+        <!-- TABLA DE INTEGRANTES -->
+        <div class="usuario-tabla-contenedor">
+
+            <table class="usuario-tabla">
+
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Programa</th>
+                        <th>Rol</th>
+                        <th>Nivel</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaIntegrantes">
+
+                    <tr>
+                        <td colspan="5" class="usuario-vacio">
+                            Los integrantes aparecerán aquí.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>

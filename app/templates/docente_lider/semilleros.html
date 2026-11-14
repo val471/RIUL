@@ -1,0 +1,103 @@
+
+<section class="semilleros-pagina" id="contenido-semilleros">
+
+    <!-- ENCABEZADO -->
+    <div class="pagina-encabezado">
+        <div>
+            <p class="eyebrow">GESTION DE INVESTIGACION</p>
+            <h2>Mi semillero</h2>
+            <p>Consulta y administra la información de tu semillero de investigación.</p>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen-semilleros">
+
+        <article class="tarjeta-resumen-sem">
+            <div class="resumen-icono">📚</div>
+            <div>
+                <span>Mi semillero</span>
+                <h3 id="nombreMiSemillero">--</h3>
+            </div>
+        </article>
+
+        <article class="tarjeta-resumen-sem">
+            <div class="resumen-icono">👥</div>
+            <div>
+                <span>Total de integrantes</span>
+                <h3 id="totalIntegrantesSemillero">0</h3>
+            </div>
+        </article>
+
+        <article class="tarjeta-resumen-sem">
+            <div class="resumen-icono">📁</div>
+            <div>
+                <span>Total de proyectos</span>
+                <h3 id="totalProyectosSemillero">0</h3>
+            </div>
+        </article>
+
+        <article class="tarjeta-resumen-sem">
+            <div class="resumen-icono">✓</div>
+            <div>
+                <span>Estado del semillero</span>
+                <h3 id="estadoMiSemillero">--</h3>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- INFORMACION DEL SEMILLERO -->
+    <div class="seccion-listado-semilleros">
+
+        <div class="encabezado-listado-sem">
+            <div>
+                <h3>Información del semillero</h3>
+                <p>Consulta los datos generales de tu semillero asignado.</p>
+            </div>
+
+            <button
+                type="button"
+                id="btnEditarSemillero"
+                class="btn-crear-sem">
+                Editar información
+            </button>
+        </div>
+
+        <div class="lista-semilleros">
+
+            <div class="estado-vacio-sem" id="estadoVacioSemilleros">
+                <div class="vacio-icono">📚</div>
+                <h3>No hay un semillero asignado</h3>
+                <p>Cuando tengas un semillero asignado, su información aparecerá en esta sección.</p>
+            </div>
+
+            <div id="detalleMiSemillero" hidden>
+
+                <div class="semillero-detalle-item">
+                    <span>Nombre</span>
+                    <strong id="detalleNombreSemillero">--</strong>
+                </div>
+
+                <div class="semillero-detalle-item">
+                    <span>Facultad</span>
+                    <strong id="detalleFacultadSemillero">--</strong>
+                </div>
+
+                <div class="semillero-detalle-item">
+                    <span>Línea de investigación</span>
+                    <strong id="detalleLineaSemillero">--</strong>
+                </div>
+
+                <div class="semillero-detalle-item">
+                    <span>Descripción</span>
+                    <p id="detalleDescripcionSemillero">--</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Docente Líder | RIUL</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/docentelider.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/perfil_docentelider.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/semillero.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/convocatorias_docente.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/publicaciones_docente.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/eventos_docente.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proyectos.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/usuario.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ranking_docente.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/solicitudes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/logros_docente.css') }}">
+</head>
+
+<body>
+<div class="layout">
+
+    <!-- MENU LATERAL -->
+    <aside class="sidebar" id="sidebar">
+
+        <a href="/" class="marca">
+            <span class="marca-logo">R</span>
+            <span>
+                <b>RIUL</b>
+                <small>Sistema de Investigación</small>
+            </span>
+        </a>
+
+        <nav class="menu">
+
+            <a href="#inicio" class="activo"
+               data-modulo="inicio" data-icon="home">
+                Inicio
+            </a>
+
+            <a href="#perfil"
+               data-modulo="perfil" data-icon="user">
+                Mi perfil
+            </a>
+
+            <a href="#semilleros"
+               data-modulo="semilleros" data-icon="shield">
+                Semilleros
+            </a>
+
+            <a href="#usuarios"
+               data-modulo="usuarios" data-icon="users">
+                Usuario
+            </a>
+
+            <a href="#solicitudes"
+               data-modulo="solicitudes" data-icon="clipboard">
+                Solicitudes
+            </a>
+
+            <a href="#proyectos"
+               data-modulo="proyectos" data-icon="folder">
+                Proyectos
+            </a>
+
+            <a href="#convocatorias"
+               data-modulo="convocatorias" data-icon="mega">
+                Convocatorias
+            </a>
+
+            <a href="#eventos"
+               data-modulo="eventos" data-icon="cal">
+                Eventos
+            </a>
+
+            <a href="#logros"
+               data-modulo="logros" data-icon="check">
+                Logros
+            </a>
+
+            <a href="#publicaciones"
+               data-modulo="publicaciones" data-icon="book">
+                Publicaciones
+            </a>
+
+            <a href="#ranking"
+               data-modulo="ranking" data-icon="chart">
+                Ranking
+            </a>
+
+        </nav>
+
+        <!-- USUARIO LATERAL -->
+        <div class="usuario">
+
+            <span class="avatar" id="avatarIniciales">DL</span>
+
+            <span class="usuario-info">
+                <b id="nombreLateral">Docente Líder</b>
+                <small>Docente Líder</small>
+            </span>
+
+            <a href="/cerrar-sesion"
+               class="cerrar-sesion"
+               title="Cerrar sesión"
+               aria-label="Cerrar sesión">
+                <span data-icon="out"></span>
+                Cerrar sesión
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="principal">
+
+        <!-- ENCABEZADO -->
+        <header class="encabezado">
+
+            <div style="display:flex;align-items:center;gap:12px">
+
+                <button class="menu-movil"
+                        type="button"
+                        onclick="document.getElementById('sidebar').classList.toggle('abierto')">
+                    ☰
+                </button>
+
+                <div>
+                    <h1 id="tituloModulo">Inicio</h1>
+                    <p>Universidad Libre · RIUL</p>
+                </div>
+
+            </div>
+
+            <div class="acciones">
+
+                <!-- NOTIFICACIONES -->
+                <button class="campana"
+                        type="button"
+                        id="btnNotificaciones"
+                        aria-label="Notificaciones"
+                        aria-expanded="false"
+                        data-icon="bell">
+
+                    <span class="badge" id="badgeNotif">0</span>
+
+                </button>
+
+                <!-- PANEL DE NOTIFICACIONES -->
+                <div id="panelNotificaciones"
+                     class="panel-notificaciones"
+                     hidden>
+
+                    <div class="notificaciones-cabecera">
+                        <h3>Notificaciones</h3>
+
+                        <button type="button"
+                                id="marcarTodasLeidas">
+                            Marcar todas como leídas
+                        </button>
+                    </div>
+
+                    <div id="listaNotificaciones">
+                    </div>
+
+                </div>
+
+                <span class="avatar"
+                      id="avatarEncabezado"
+                      style="width:44px;height:44px">
+                    DL
+                </span>
+
+            </div>
+
+        </header>
+
+        <!-- MODULOS -->
+        <div class="contenido">
+
+            <!-- INICIO -->
+            <section id="inicio" class="modulo">
+
+                <div class="saludo">
+                    <span class="etiqueta">Gestión de investigación</span>
+
+                    <h2>
+                        Bienvenido, <span id="nombreSaludo">Docente</span>
+                    </h2>
+
+                    <p>
+                        Este es tu espacio de gestión como docente líder
+                        de investigación.
+                    </p>
+                </div>
+
+                <!-- RESUMEN -->
+                <div class="stats">
+
+                    <div class="tarjeta stat">
+                        <span class="ico" data-icon="shield"></span>
+                        <div>
+                            <strong id="totalSemilleros">0</strong>
+                            <span>Semilleros liderados</span>
+                        </div>
+                    </div>
+
+                    <div class="tarjeta stat">
+                        <span class="ico" data-icon="users"></span>
+                        <div>
+                            <strong id="totalUsuario">0</strong>
+                            <span>Usuario</span>
+                        </div>
+                    </div>
+
+                    <div class="tarjeta stat">
+                        <span class="ico" data-icon="clipboard"></span>
+                        <div>
+                            <strong id="totalSolicitudes">0</strong>
+                            <span>Solicitudes pendientes</span>
+                        </div>
+                    </div>
+
+                    <div class="tarjeta stat">
+                        <span class="ico" data-icon="folder"></span>
+                        <div>
+                            <strong id="totalProyectos">0</strong>
+                            <span>Proyectos</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- PERFIL -->
+            <section id="perfil" class="modulo" hidden></section>
+
+            <!-- SEMILLEROS -->
+            <section id="semilleros" class="modulo" hidden></section>
+
+            <!-- USUARIO -->
+            <section id="usuarios" class="modulo" hidden></section>
+
+            <!-- SOLICITUDES -->
+            <section id="solicitudes" class="modulo" hidden></section>
+
+            <!-- PROYECTOS -->
+            <section id="proyectos" class="modulo" hidden></section>
+
+            <!-- CONVOCATORIAS -->
+            <section id="convocatorias" class="modulo" hidden></section>
+
+            <!-- EVENTOS -->
+            <section id="eventos" class="modulo" hidden></section>
+
+            <!-- LOGROS -->
+            <section id="logros" class="modulo" hidden></section>
+
+            <!-- PUBLICACIONES -->
+            <section id="publicaciones" class="modulo" hidden></section>
+
+            <!-- RANKING -->
+            <section id="ranking" class="modulo" hidden></section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/docentelider.js') }}?v=3"></script>
+
+<!-- MODAL CERRAR SESION -->
+<div id="modalCerrarSesion" class="modal-cerrar" hidden>
+
+    <div class="modal-cerrar-contenido">
+
+        <div class="modal-cerrar-icono">
+            <span data-icon="out"></span>
+        </div>
+
+        <h2>¿Cerrar sesión?</h2>
+
+        <p>
+            ¿Estás seguro de que deseas salir de tu cuenta RIUL?
+        </p>
+
+        <div class="modal-cerrar-botones">
+
+            <button type="button" id="cancelarCerrarSesion">
+                Cancelar
+            </button>
+
+            <button type="button" id="confirmarCerrarSesion">
+                Sí, cerrar sesión
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

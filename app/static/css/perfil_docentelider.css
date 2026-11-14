@@ -1,0 +1,309 @@
+
+/* ========================================
+   PERFIL - DOCENTE LIDER
+======================================== */
+
+.perfil-pagina {
+    width: 100%;
+}
+
+/* ENCABEZADO */
+
+.perfil-encabezado {
+    margin-bottom: 20px;
+}
+
+.perfil-etiqueta {
+    margin: 0 0 6px;
+    color: #C8102E;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.perfil-encabezado h2 {
+    margin: 0 0 5px;
+    color: #202433;
+    font-size: 25px;
+    font-weight: 750;
+}
+
+.perfil-encabezado > p:last-child {
+    margin: 0;
+    color: #788196;
+    font-size: 13px;
+}
+
+/* TARJETA DEL PERFIL */
+
+.perfil-formulario {
+    display: grid;
+    grid-template-columns: 65px minmax(0, 1fr);
+    gap: 18px;
+    padding: 22px 20px;
+    background: #FFFFFF;
+    border: 1px solid #E8E8EC;
+    border-radius: 13px;
+    box-shadow: 0 8px 25px rgba(20, 25, 40, 0.05);
+}
+
+/* FOTO */
+
+.perfil-foto-contenedor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #C8102E;
+    color: #FFFFFF;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.perfil-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.perfil-cambiar-foto {
+    color: #C8102E;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+.perfil-cambiar-foto:hover {
+    text-decoration: underline;
+}
+
+/* CAMPOS */
+
+.perfil-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px 12px;
+}
+
+.perfil-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.perfil-campo label {
+    color: #202433;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.perfil-campo input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #E0E3E9;
+    border-radius: 9px;
+    outline: none;
+    background: #F8F9FB;
+    color: #202433;
+    font-family: inherit;
+    font-size: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.perfil-campo input:focus {
+    border-color: #C8102E;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.08);
+}
+
+.perfil-campo input::placeholder {
+    color: #9299A6;
+}
+
+.perfil-campo input[readonly] {
+    background: #F1F2F4;
+    cursor: default;
+}
+
+/* BOTON GUARDAR */
+
+.perfil-acciones {
+    grid-column: 2;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+.perfil-acciones button {
+    min-width: 125px;
+    height: 38px;
+    padding: 0 17px;
+    border: none;
+    border-radius: 9px;
+    background: #C8102E;
+    color: #FFFFFF;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.perfil-acciones button:hover {
+    background: #A80D26;
+    transform: translateY(-1px);
+}
+
+.perfil-acciones button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+
+    .perfil-formulario {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .perfil-foto-contenedor {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .perfil-campos {
+        grid-template-columns: 1fr;
+    }
+
+    .perfil-acciones {
+        grid-column: 1;
+    }
+
+    .perfil-acciones button {
+        width: 100%;
+    }
+
+}
+
+
+/* ========================================
+   PERFIL - ESTADO DE SOLICITUDES, AVISOS Y CONTRASEÑA
+======================================== */
+
+.perfil-aviso {
+    grid-column: 2;
+    margin: 0;
+    color: #6b6f7b;
+    font-size: 12px;
+}
+
+.perfil-estado {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.perfil-estado.pendiente {
+    color: #b7791f;
+}
+
+.perfil-estado.aprobada {
+    color: #25834b;
+}
+
+.perfil-estado.rechazada {
+    color: #c03939;
+}
+
+.perfil-mensaje {
+    grid-column: 2;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.perfil-mensaje.exito {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.perfil-mensaje.error {
+    background: #fdecec;
+    color: #c03939;
+}
+
+.perfil-acciones {
+    gap: 10px;
+}
+
+.perfil-acciones .btn-secundario {
+    background: #ffffff;
+    border: 1px solid #c8102e;
+    color: #c8102e;
+}
+
+.perfil-acciones .btn-secundario:hover {
+    background: #fbe9ec;
+}
+
+.perfil-acciones .btn-secundario:disabled {
+    border-color: #dcdce2;
+    color: #6b6f7b;
+    background: #f6f6f7;
+}
+
+.perfil-campo input:not([readonly]) {
+    background: #ffffff;
+}
+
+/* TARJETA DE CONTRASEÑA */
+
+.perfil-formulario-simple {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+}
+
+.perfil-formulario-simple .perfil-acciones,
+.perfil-formulario-simple .perfil-mensaje {
+    grid-column: 1;
+}
+
+.perfil-seccion-titulo h3 {
+    margin: 0 0 4px;
+    color: #15151a;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.perfil-seccion-titulo p {
+    margin: 0;
+    color: #6b6f7b;
+    font-size: 12px;
+}
+
+@media (max-width: 700px) {
+    .perfil-aviso,
+    .perfil-mensaje {
+        grid-column: 1;
+    }
+
+    .perfil-acciones {
+        flex-direction: column;
+    }
+}

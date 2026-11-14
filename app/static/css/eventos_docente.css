@@ -1,0 +1,175 @@
+
+/* ==============================
+   MODULO EVENTOS - DOCENTE LIDER
+================================ */
+
+.eventos-pagina {
+    width: 100%;
+    padding: 10px 0;
+    color: #243247;
+}
+
+/* ENCABEZADO */
+.eventos-encabezado {
+    margin-bottom: 25px;
+}
+
+.eventos-etiqueta {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.eventos-encabezado h2 {
+    margin: 7px 0;
+    font-size: 26px;
+}
+
+.eventos-encabezado p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* RESUMEN */
+.eventos-resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.eventos-resumen-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 12px;
+}
+
+.eventos-resumen-card span {
+    display: block;
+    margin-bottom: 10px;
+    color: #718096;
+    font-size: 13px;
+}
+
+.eventos-resumen-card strong {
+    color: #243247;
+    font-size: 28px;
+}
+
+/* CONTENIDO */
+.eventos-contenido {
+    padding: 22px;
+    background: #ffffff;
+    border: 1px solid #e5eaf0;
+    border-radius: 14px;
+}
+
+/* TABLA */
+.eventos-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.eventos-tabla {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.eventos-tabla thead {
+    background: #f6f8fb;
+}
+
+.eventos-tabla th {
+    padding: 15px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.eventos-tabla td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #edf0f4;
+    color: #475569;
+    font-size: 13px;
+}
+
+.eventos-tabla tbody tr:hover {
+    background: #fafbfd;
+}
+
+/* ESTADOS */
+.eventos-estado {
+    display: inline-flex;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.eventos-estado.confirmado {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.eventos-estado.abierto {
+    background: #e8f0fe;
+    color: #2563eb;
+}
+
+.eventos-estado.finalizado {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* MODALIDAD */
+.eventos-modalidad {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ACCIONES */
+.eventos-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.eventos-acciones button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 7px;
+    background: #e8f0fe;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.eventos-acciones button:hover {
+    background: #d7e5fc;
+}
+
+/* TABLA VACIA */
+.eventos-vacio {
+    padding: 40px !important;
+    text-align: center;
+    color: #94a3b8 !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+    .eventos-encabezado h2 {
+        font-size: 22px;
+    }
+
+    .eventos-contenido {
+        padding: 14px;
+    }
+}

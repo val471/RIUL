@@ -1,0 +1,102 @@
+
+<section class="ranking-pagina" id="contenido-ranking">
+
+    <div class="ranking-encabezado">
+        <div>
+            <span class="ranking-etiqueta">GAMIFICACIÓN RIUL</span>
+            <h2>Ranking</h2>
+            <p>Conoce a los investigadores y semilleros más destacados.</p>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="ranking-resumen">
+
+        <div class="ranking-resumen-card">
+            <span>Mi posición como semillero</span>
+            <strong id="posicionSemillero">--</strong>
+        </div>
+
+        <div class="ranking-resumen-card">
+            <span>XP acumulados</span>
+            <strong id="xpSemillero">0</strong>
+        </div>
+
+    </div>
+
+    <!-- PESTAÑAS -->
+    <div class="ranking-contenido">
+
+        <div class="ranking-pestanas">
+            <button type="button"
+                    class="ranking-pestana activa"
+                    data-ranking="estudiantes">
+                Top 10 Investigadores
+            </button>
+
+            <button type="button"
+                    class="ranking-pestana"
+                    data-ranking="semilleros">
+                Top 10 Semilleros
+            </button>
+        </div>
+
+        <!-- RANKING ESTUDIANTES -->
+        <div class="ranking-lista activa" id="rankingEstudiantes">
+
+            <div class="ranking-tabla-contenedor">
+                <table class="ranking-tabla">
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Investigador</th>
+                            <th>Nivel</th>
+                            <th>Estrellas</th>
+                            <th>XP</th>
+                            <th>Insignias</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaRankingEstudiantes">
+                        <tr>
+                            <td colspan="6" class="ranking-vacio">
+                                No hay investigadores en el ranking.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- RANKING SEMILLEROS -->
+        <div class="ranking-lista" id="rankingSemilleros">
+
+            <div class="ranking-tabla-contenedor">
+                <table class="ranking-tabla">
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Semillero</th>
+                            <th>Nivel</th>
+                            <th>Estrellas</th>
+                            <th>XP</th>
+                            <th>Insignias</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaRankingSemilleros">
+                        <tr>
+                            <td colspan="6" class="ranking-vacio">
+                                No hay semilleros en el ranking.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

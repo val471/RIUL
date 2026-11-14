@@ -1,0 +1,120 @@
+
+<section class="logros-pagina" id="contenido-logros">
+
+    <!-- ENCABEZADO -->
+    <div class="logros-encabezado">
+        <div>
+            <span class="logros-etiqueta">GAMIFICACIÓN E INVESTIGACIÓN</span>
+            <h2>Logros</h2>
+            <p>Evalúa los logros y reconoce el progreso investigativo de tu semillero.</p>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="logros-resumen">
+
+        <div class="logros-resumen-card">
+            <div class="logros-icono pendiente">
+                <span>◷</span>
+            </div>
+            <div>
+                <span>Por revisar</span>
+                <strong id="totalLogrosPendientes">0</strong>
+            </div>
+        </div>
+
+        <div class="logros-resumen-card">
+            <div class="logros-icono revision">
+                <span>◎</span>
+            </div>
+            <div>
+                <span>En validación</span>
+                <strong id="totalLogrosRevision">0</strong>
+            </div>
+        </div>
+
+        <div class="logros-resumen-card">
+            <div class="logros-icono aprobados">
+                <span>★</span>
+            </div>
+            <div>
+                <span>Aprobados</span>
+                <strong id="totalLogrosAprobados">0</strong>
+            </div>
+        </div>
+
+        <div class="logros-resumen-card">
+            <div class="logros-icono rechazados">
+                <span>!</span>
+            </div>
+            <div>
+                <span>Rechazados</span>
+                <strong id="totalLogrosRechazados">0</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLA DE LOGROS -->
+    <div class="logros-contenido">
+
+        <div class="logros-titulo-seccion">
+            <div>
+                <h3>Logros de los integrantes</h3>
+                <p>Revisa las actividades y evidencias registradas.</p>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="logros-filtros">
+
+            <input
+                type="search"
+                id="buscarLogro"
+                placeholder="Buscar por estudiante o logro..."
+            >
+
+            <select id="filtroEstadoLogro">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En validación">En validación</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Rechazado">Rechazado</option>
+            </select>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="logros-tabla-contenedor">
+
+            <table class="logros-tabla">
+
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Logro</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Calidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaLogros">
+
+                    <tr>
+                        <td colspan="7" class="logros-vacio">
+                            Todavía no hay logros registrados.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
