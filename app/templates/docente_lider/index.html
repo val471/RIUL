@@ -275,7 +275,50 @@
 
 </div>
 
+<!-- VENTANA NUEVA CONVOCATORIA -->
+<div id="modalConvocatoria" class="modal-cerrar" hidden>
+    <div class="modal-cerrar-contenido modal-formulario">
+        <h2 id="tituloModalConvocatoria">Nueva convocatoria</h2>
+
+        <form id="formConvocatoria" novalidate>
+            <label>Título
+                <input type="text" id="convTitulo" maxlength="150">
+            </label>
+
+            <label>Descripción
+                <textarea id="convDescripcion" rows="3"></textarea>
+            </label>
+
+            <div class="form-fila">
+                <label>Fecha de inicio
+                    <input type="date" id="convInicio">
+                </label>
+                <label>Fecha de cierre
+                    <input type="date" id="convCierre">
+                </label>
+            </div>
+
+            <label>Modalidad de participación
+                <select id="convModalidad">
+                    <option value="">Selecciona una opción</option>
+                    <option value="semillero">Solo semilleros</option>
+                    <option value="individual">Solo individual</option>
+                    <option value="ambas">Ambas</option>
+                </select>
+            </label>
+
+            <p id="mensajeConvocatoria" class="mensaje-formulario"></p>
+
+            <div class="modal-cerrar-botones">
+                <button type="button" id="cancelarConvocatoria">Cancelar</button>
+                <button type="submit" id="guardarConvocatoria">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/docentelider.js') }}?v=3"></script>
+<script src="{{ url_for('static', filename='js/inactividad.js') }}"></script>
 
 <!-- MODAL CERRAR SESION -->
 <div id="modalCerrarSesion" class="modal-cerrar" hidden>

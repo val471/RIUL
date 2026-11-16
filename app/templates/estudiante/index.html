@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notificaciones.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hoja_vida.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/logros_estudiante.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proyectos_estudiante.css') }}">
 </head>
 
 <body>
@@ -39,6 +40,7 @@
             <a href="#hoja-vida" data-modulo="hoja-vida" data-icon="clip">Hoja de vida investigativa</a>
             <a href="#logros" data-modulo="logros" data-icon="check">Mis logros</a>
             <a href="#semillero" data-modulo="semillero" data-icon="shield">Semilleros</a>
+            <a href="#proyectos" data-modulo="proyectos" data-icon="folder"> Mis proyectos</a>
             <a href="#eventos" data-modulo="eventos" data-icon="cal">Eventos</a>
             <a href="#convocatorias" data-modulo="convocatorias" data-icon="mega">Convocatorias</a>
             <a href="#publicaciones" data-modulo="publicaciones" data-icon="book">Publicaciones</a>
@@ -235,6 +237,9 @@
             <!-- SEMILLEROS -->
             <section id="semillero" class="modulo" hidden></section>
 
+            <!-- MIS PROYECTOS -->
+            <section id="proyectos" class="modulo" hidden></section>
+
             <!-- HOJA DE VIDA -->
             <section id="hoja-vida" class="modulo" hidden></section>
             
@@ -257,9 +262,7 @@
     </main>
 </div>
 
-<script src="{{ url_for('static', filename='js/estudiante.js') }}"></script>
-
-<!-- VENTANA CERRAR SESION -->
+<!-- MODAL CERRAR SESION -->
 <div id="modalCerrarSesion" class="modal-cerrar" hidden>
 
     <div class="modal-cerrar-contenido">
@@ -269,7 +272,10 @@
         </div>
 
         <h2>¿Cerrar sesión?</h2>
-        <p>¿Estás seguro de que deseas salir de tu cuenta RIUL?</p>
+
+        <p>
+            ¿Estás seguro de que deseas salir de tu cuenta RIUL?
+        </p>
 
         <div class="modal-cerrar-botones">
 
@@ -282,8 +288,11 @@
             </button>
 
         </div>
+
     </div>
 </div>
+<script src="{{ url_for('static', filename='js/inactividad.js') }}"></script>
+<script src="{{ url_for('static', filename='js/estudiante.js') }}"></script>
 </body>
 </html>
 

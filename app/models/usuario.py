@@ -15,4 +15,6 @@ class Usuario(db.Model):
     fecha_registro = db.Column(db.DateTime, nullable=False)
     foto_perfil = db.Column(db.String(255))
     telefono = db.Column(db.String(20))
+    intentos_fallidos = db.Column(db.Integer, nullable=False, default=0)
+    bloqueado_hasta = db.Column(db.DateTime, nullable=True)
     fecha_actualizacion = db.Column(db.DateTime)

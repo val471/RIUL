@@ -820,3 +820,82 @@ tbody tr:last-child td {
         width: 100%;
     }
 }
+
+
+/* AVISO EN SOLICITUDES */
+.aviso-solicitudes {
+    margin: 0 28px 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.aviso-solicitudes.exito {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.aviso-solicitudes.error {
+    background: #fdecec;
+    color: #c03939;
+}
+
+/* VENTANA CERRAR SESION */
+.modal-cerrar[hidden] { display: none !important; }
+
+.modal-cerrar {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-cerrar-contenido {
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    background: var(--blanco);
+    border-radius: 22px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+}
+
+.modal-cerrar-icono {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--rosa);
+    color: var(--rojo);
+}
+
+.modal-cerrar h2 { margin-bottom: 10px; font-size: 23px; }
+.modal-cerrar p { color: var(--gris); font-size: 14px; }
+
+.modal-cerrar-botones {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.modal-cerrar-botones button {
+    padding: 11px 18px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--blanco);
+    cursor: pointer;
+}
+
+#confirmarCerrarSesion {
+    background: var(--rojo);
+    border-color: var(--rojo);
+    color: #fff;
+}
+

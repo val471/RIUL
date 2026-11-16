@@ -5,77 +5,220 @@
 
         <div class="perfil-header">
             <h2>Mi perfil</h2>
-            <p>Consulta y administra tu información personal.</p>
+            <p>Consulta tu informacion personal y academica.</p>
         </div>
 
         <div class="perfil-card">
 
-            <div class="perfil-foto">
-                <img src="/static/img/avatar.png"
-                     alt="Foto de perfil"
-                     id="fotoPerfil">
+            <!-- FOTO DE PERFIL -->
+            <div class="perfil-seccion perfil-seccion-foto">
+                <h3>Foto de perfil</h3>
 
-                <label for="cambiarFoto">Cambiar foto</label>
-                <input type="file" id="cambiarFoto"
-                       accept="image/*" hidden>
+                <div class="perfil-foto">
+                    <img src="{{ url_for('static', filename=perfil.foto_perfil) if perfil.foto_perfil else url_for('static', filename='img/avatar.png') }}"
+                         alt="Foto de perfil"
+                         id="fotoPerfil">
+                </div>
+
+                <p>Para modificar tu foto debes enviar una solicitud de cambio.</p>
             </div>
 
-            <div class="perfil-datos">
+            <!-- INFORMACION PERSONAL -->
+            <div class="perfil-seccion">
+                <h3>Información personal</h3>
+                <p>Consulta tus datos personales registrados.</p>
 
-                <div class="campo">
-                    <label>Nombre completo</label>
-                    <input type="text" id="nombre"
-                           placeholder="Nombre del estudiante" readonly>
+                <div class="perfil-datos">
+
+                    <div class="campo">
+                        <label>Nombre completo</label>
+                        <input type="text" id="nombre"
+                               value="{{ perfil.nombre_institucional or '' }}" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Correo institucional</label>
+                        <input type="email" id="correo"
+                               value="{{ perfil.correo_institucional or '' }}" readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Fecha de nacimiento</label>
+                        <input type="date" id="fechaNacimiento"
+                               value="{{ perfil.fecha_nacimiento.strftime('%Y-%m-%d') if perfil.fecha_nacimiento else '' }}"
+                               readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Teléfono</label>
+                        <input type="tel" id="telefono"
+                               value="{{ perfil.telefono or '' }}"
+                               readonly>
+                    </div>
+
                 </div>
-
-                <div class="campo">
-                    <label>Correo institucional</label>
-                    <input type="email" id="correo"
-                           placeholder="Correo institucional" readonly>
-                </div>
-
-                <div class="campo">
-                    <label>Programa académico</label>
-                    <input type="text" id="programa"
-                           placeholder="Programa académico" readonly>
-                </div>
-
-                <div class="campo">
-                    <label>Semestre</label>
-                    <input type="text" id="semestre"
-                           placeholder="Semestre" readonly>
-                </div>
-
-                <div class="campo">
-                    <label>Fecha de nacimiento</label>
-                    <input type="date" id="fechaNacimiento">
-                </div>
-
-                <div class="campo">
-                    <label>Nueva contraseña</label>
-                    <input type="password" id="nuevaContrasena"
-                           placeholder="Ingresa una nueva contraseña">
-                </div>
-
-                <div class="campo">
-                    <label>Confirmar contraseña</label>
-                    <input type="password" id="confirmarContrasena"
-                           placeholder="Confirma tu contraseña">
-                </div>
-
             </div>
 
-            <div class="perfil-acciones">
+            <!-- INFORMACION ACADEMICA -->
+            <div class="perfil-seccion">
+                <h3>Información académica</h3>
+                <p>Consulta tu información académica registrada.</p>
+
+                <div class="perfil-datos">
+
+                    <div class="campo">
+                        <label>Facultad</label>
+                        <input type="text" id="facultad"
+                               value="{{ perfil.facultad or 'Pendiente de registro' }}"
+                               readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Programa académico</label>
+                        <input type="text" id="programa"
+                               value="{{ perfil.programa or 'Pendiente de registro' }}"
+                               readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Código estudiantil</label>
+                        <input type="text" id="codigoEstudiantil"
+                               value="{{ perfil.codigo_estudiantil or 'Pendiente de registro' }}"
+                               readonly>
+                    </div>
+
+                    <div class="campo">
+                        <label>Semestre</label>
+                        <input type="text" id="semestre"
+                               value="{{ perfil.semestre or 'Pendiente de registro' }}"
+                               readonly>
+                    </div>
+
+                </div>
+
                 <button type="button" id="solicitarCambio">
-                    Solicitar cambio académico
+                    Solicitar cambio de datos
                 </button>
+            </div>
+
+            <!-- SEGURIDAD -->
+            <div class="perfil-seccion">
+                <h3>Seguridad</h3>
+                <p>Esta es la única información que puedes modificar directamente.</p>
+
+                <div class="perfil-datos">
+
+                    <div class="campo">
+                        <label>Contraseña actual</label>
+                        <input type="password" id="contrasenaActual"
+                               placeholder="Ingresa tu contraseña actual">
+                    </div>
+
+                    <div class="campo">
+                        <label>Nueva contraseña</label>
+                        <input type="password" id="nuevaContrasena"
+                               placeholder="Ingresa una nueva contraseña">
+                    </div>
+
+                    <div class="campo">
+                        <label>Confirmar contraseña</label>
+                        <input type="password" id="confirmarContrasena"
+                               placeholder="Confirma tu contraseña">
+                    </div>
+
+                </div>
 
                 <button type="button" id="guardarPerfil">
-                    Guardar cambios
+                    Cambiar contraseña
                 </button>
             </div>
 
         </div>
     </div>
+
+    <!-- VENTANA EMERGENTE DE SOLICITUD -->
+    <div id="modalSolicitud" class="modal-solicitud" hidden>
+
+        <div class="modal-solicitud-contenido">
+
+            <button type="button" id="cerrarModalSolicitud"
+                    class="cerrar-modal">
+                &times;
+            </button>
+
+            <h3>Solicitud de cambio de datos</h3>
+
+            <p>
+                Describe qué información deseas modificar.
+                Tu solicitud será enviada al administrador para su revisión.
+            </p>
+
+            <div class="campo">
+                <label for="campoSolicitud">Dato que deseas cambiar</label>
+
+                <select id="campoSolicitud">
+                    <option value="">Selecciona un dato</option>
+                    <option value="nombre">Nombre completo</option>
+                    <option value="correo">Correo institucional</option>
+                    <option value="fecha_nacimiento">Fecha de nacimiento</option>
+                    <option value="telefono">Teléfono</option>
+                    <option value="foto_perfil">Foto de perfil</option>
+                    <option value="facultad">Facultad</option>
+                    <option value="programa">Programa académico</option>
+                    <option value="codigo_estudiantil">Código estudiantil</option>
+                    <option value="semestre">Semestre</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="valorNuevoSolicitud">
+                   Nuevo dato que solicitas
+                </label>
+
+             <input type="text"
+             id="valorNuevoSolicitud"
+            placeholder="Escribe el nuevo dato que deseas registrar">
+        </div>
+
+        <div class="campo">
+        <label for="descripcionSolicitud">
+        Motivo de la solicitud
+        </label>
+        <textarea id="descripcionSolicitud"
+              rows="5"
+              placeholder="Explica por qué necesitas realizar este cambio."></textarea>
+            </div>
+
+            <div class="modal-solicitud-acciones">
+
+                <button type="button" id="enviarSolicitud">
+                    Enviar solicitud
+                </button>
+
+                <button type="button" id="cancelarSolicitud">
+                    Cancelar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NOTIFICACION DE SOLICITUD -->
+<div id="notificacionPerfil" class="notificacion-perfil" hidden>
+    <div class="notificacion-contenido">
+        <div class="notificacion-icono">✓</div>
+
+        <h3 id="tituloNotificacion">Solicitud enviada</h3>
+
+        <p id="mensajeNotificacion">
+            Tu solicitud fue enviada correctamente.
+        </p>
+
+        <button type="button" id="cerrarNotificacion">
+            Aceptar
+        </button>
+    </div>
+</div>
 
 </section>

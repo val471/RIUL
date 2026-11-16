@@ -1,15 +1,58 @@
-<section id="contenido-logros">
 
-    <div class="cab">
+<section id="contenido-logros" class="lg-pagina">
+
+    <div class="lg-tarjeta">
         <div>
             <span class="etiqueta">MI EXPERIENCIA RIUL</span>
-            <h2>Mis logros</h2>
+            <h3>Mis logros</h3>
             <p>Consulta tus logros y el estado de validación.</p>
         </div>
+
+        <button type="button" class="lg-btn lg-btn-principal"
+                id="btnMostrarFormulario">
+            Registrar logro
+        </button>
     </div>
 
-    <div id="listaLogros">
-        <p>Aún no tienes logros registrados.</p>
+    <div id="listaLogros" class="lg-lista">
+        <p class="lg-vacio">Aún no tienes logros registrados.</p>
     </div>
+
+    <form id="formRegistrarLogro"
+      action="/estudiante/logros/registrar"
+      method="POST"
+      enctype="multipart/form-data"
+      hidden>
+
+        <label>Tipo de logro</label>
+        <select name="id_tipo_logro" required>
+            <option value="">Selecciona un tipo</option>
+            {% for tipo in tipos_logro %}
+                <option value="{{ tipo.id_tipo_logro }}">
+                    {{ tipo.nombre }} - {{ tipo.xp_otorgado }} XP
+                </option>
+            {% endfor %}
+        </select>
+
+        <label>Título</label>
+        <input type="text" name="titulo" maxlength="150" required>
+
+        <label>Descripción</label>
+        <textarea name="descripcion"></textarea>
+
+        <label>Evidencia (PDF o PNG)</label>
+        <input type="file" name="evidencia"
+               accept=".pdf,.png" required>
+
+        <button type="submit" class="lg-btn lg-btn-principal">
+            Enviar logro
+        </button>
+
+        <button type="button" class="lg-btn" id="btnCancelarLogro">
+            Cancelar
+        </button>
+    </form>
+
+    <p id="mensajeLogro"></p>
 
 </section>

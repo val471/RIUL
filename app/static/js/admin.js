@@ -92,6 +92,11 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
         section.innerHTML = '<p>No se pudieron cargar las convocatorias.</p>';
        }
        }
+       
+        // CARGAR MODULO DE SOLICITUDES (se recarga cada vez que se abre)
+        if (page === 'solicitudes') {
+            await cargarSolicitudes(section);
+        }
 
 
     });
@@ -100,15 +105,86 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
 });
 
 
-// RESOLVER SOLICITUDES
-function resolveRequest(button, state) {
-    const item = button.closest('.request-item');
-    const estado = item.querySelector('.status');
+// BOTONES "VER SOLICITUDES" DEL INICIO
+document.querySelectorAll('.admin-page a[data-page]').forEach(enlace => {
+    enlace.addEventListener('click', event => {
+        event.preventDefault();
 
-    estado.textContent = state;
-    estado.className = 'status' + (state === 'Rechazada' ? ' suspended' : '');
+        const menu = document.querySelector(
+            '.admin-nav a[data-page="' + enlace.dataset.page + '"]'
+        );
 
-    item.querySelector('.request-actions').remove();
+        if (menu) {
+            menu.click();
+        }
+    });
+});
+
+// SOLICITUDES DE REGISTRO
+async function cargarSolicitudes(section) {
+    section = section || document.getElementById('page-solicitudes');
+
+    section.innerHTML = '<p>Cargando solicitudes...</p>';
+
+    try {
+        const response = await fetch('/admin/solicitudes');
+
+        if (!response.ok) {
+            throw new Error('Error ' + response.status);
+        }
+
+        section.innerHTML = await response.text();
+
+    } catch (error) {
+        console.error(error);
+        section.innerHTML = '<p>No se pudieron cargar las solicitudes.</p>';
+    }
+}
+
+function mostrarAvisoSolicitud(texto, tipo) {
+    const aviso = document.getElementById('avisoSolicitudes');
+
+    if (!aviso) {
+        return;
+    }
+
+    aviso.textContent = texto;
+    aviso.className = 'aviso-solicitudes ' + tipo;
+    aviso.hidden = false;
+}
+
+async function resolverSolicitud(boton, accion) {
+    const item = boton.closest('.request-item');
+    const id = boton.dataset.id;
+
+    if (accion === 'rechazar' &&
+        !confirm('¿Deseas rechazar esta solicitud? La cuenta no será creada.')) {
+        return;
+    }
+
+    item.querySelectorAll('button').forEach(b => b.disabled = true);
+
+    try {
+        const response = await fetch(
+            '/admin/api/solicitudes/' + id + '/' + accion,
+            { method: 'POST' }
+        );
+
+        const resultado = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                resultado.mensaje || 'No fue posible completar la acción.'
+            );
+        }
+
+        await cargarSolicitudes();
+        mostrarAvisoSolicitud(resultado.mensaje, 'exito');
+
+    } catch (error) {
+        item.querySelectorAll('button').forEach(b => b.disabled = false);
+        mostrarAvisoSolicitud(error.message, 'error');
+    }
 }
 
 // FILTRAR USUARIOS
@@ -267,21 +343,147 @@ function verDetalleConvocatoria(boton) {
     console.log('Ver convocatoria:', id);
 }
 
-// EDITAR CONVOCATORIA
-function editarConvocatoria(boton) {
-    const id = boton.dataset.id;
-    console.log('Editar convocatoria:', id);
+// CONVOCATORIAS: CREAR, EDITAR Y ELIMINAR (RF-02)
+const modalConvocatoria = document.getElementById('modalConvocatoria');
+const formConvocatoria = document.getElementById('formConvocatoria');
+const mensajeConvocatoria = document.getElementById('mensajeConvocatoria');
+const tituloModalConvocatoria = document.getElementById('tituloModalConvocatoria');
+
+// null = se está creando; con un número = se está editando esa convocatoria
+let convocatoriaEditando = null;
+
+function abrirFormularioConvocatoria() {
+    formConvocatoria.reset();
+    mensajeConvocatoria.textContent = '';
+    modalConvocatoria.hidden = false;
+}
+function crearConvocatoria() {
+    convocatoriaEditando = null;
+    tituloModalConvocatoria.textContent = 'Nueva convocatoria';
+    abrirFormularioConvocatoria();
 }
 
-// ELIMINAR CONVOCATORIA
-function eliminarConvocatoria(boton) {
-    const id = boton.dataset.id;
+async function editarConvocatoria(boton) {
+    try {
+        const respuesta = await fetch('/admin/api/convocatorias/' + boton.dataset.id);
+        const c = await respuesta.json();
 
+        if (!respuesta.ok) {
+            alert(c.mensaje || 'No fue posible cargar la convocatoria.');
+            return;
+        }
+
+        convocatoriaEditando = boton.dataset.id;
+        tituloModalConvocatoria.textContent = 'Editar convocatoria';
+        abrirFormularioConvocatoria();
+
+        document.getElementById('convTitulo').value = c.titulo;
+        document.getElementById('convDescripcion').value = c.descripcion;
+        document.getElementById('convInicio').value = c.fecha_inicio;
+        document.getElementById('convCierre').value = c.fecha_cierre;
+        document.getElementById('convModalidad').value = c.modalidad;
+
+    } catch (error) {
+        alert('No fue posible cargar la convocatoria.');
+    }
+}
+
+async function eliminarConvocatoria(boton) {
     if (!confirm('¿Deseas eliminar esta convocatoria?')) {
         return;
     }
 
-    console.log('Eliminar convocatoria:', id);
+    try {
+        const respuesta = await fetch(
+            '/admin/api/convocatorias/' + boton.dataset.id,
+            { method: 'DELETE' }
+        );
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(resultado.mensaje || 'No fue posible eliminar la convocatoria.');
+            return;
+        }
+
+        await recargarConvocatorias();
+
+    } catch (error) {
+        alert('No fue posible eliminar la convocatoria.');
+    }
 }
+
+async function recargarConvocatorias() {
+    const section = document.getElementById('page-eventos');
+    const response = await fetch('/admin/convocatorias');
+
+    if (response.ok) {
+        section.innerHTML = await response.text();
+    }
+}
+
+document.getElementById('cancelarConvocatoria').addEventListener('click', function () {
+    modalConvocatoria.hidden = true;
+});
+
+formConvocatoria.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    mensajeConvocatoria.textContent = 'Guardando...';
+
+    const datos = {
+        titulo: document.getElementById('convTitulo').value,
+        descripcion: document.getElementById('convDescripcion').value,
+        fecha_inicio: document.getElementById('convInicio').value,
+        fecha_cierre: document.getElementById('convCierre').value,
+        modalidad: document.getElementById('convModalidad').value
+    };
+
+    const editando = convocatoriaEditando !== null;
+    const url = editando
+        ? '/admin/api/convocatorias/' + convocatoriaEditando
+        : '/admin/api/convocatorias';
+
+    try {
+        const respuesta = await fetch(url, {
+            method: editando ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            mensajeConvocatoria.textContent =
+                resultado.mensaje || 'No fue posible guardar la convocatoria.';
+            return;
+        }
+
+        modalConvocatoria.hidden = true;
+        await recargarConvocatorias();
+
+    } catch (error) {
+        mensajeConvocatoria.textContent = 'No fue posible guardar la convocatoria.';
+    }
+
+});
+
+
+// VENTANA CERRAR SESION
+const modalCerrarSesion = document.getElementById('modalCerrarSesion');
+const enlaceCerrarSesion = document.querySelector('.admin-logout');
+
+enlaceCerrarSesion?.addEventListener('click', function (e) {
+    e.preventDefault();
+    modalCerrarSesion.hidden = false;
+});
+
+document.getElementById('cancelarCerrarSesion')?.addEventListener('click', function () {
+    modalCerrarSesion.hidden = true;
+});
+
+document.getElementById('confirmarCerrarSesion')?.addEventListener('click', function () {
+    window.location.href = '/cerrar-sesion';
+});
+
+
+
 
 

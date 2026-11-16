@@ -167,3 +167,320 @@
     background: #ad0929;
     transform: translateY(-1px);
 }
+
+/* =================================
+   SECCIONES DEL PERFIL ESTUDIANTE
+================================= */
+
+#page-perfil .perfil-card {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* SECCIONES */
+#page-perfil .perfil-seccion {
+    width: 100%;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e8ebef;
+}
+
+#page-perfil .perfil-seccion h3 {
+    margin: 0 0 8px;
+    color: #111827;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+#page-perfil .perfil-seccion > p {
+    margin: 0 0 22px;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* FOTO DE PERFIL */
+#page-perfil .perfil-seccion-foto .perfil-foto {
+    align-items: flex-start;
+    margin-top: 18px;
+}
+
+/* CAMPOS */
+#page-perfil .perfil-datos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+/* BOTON DE SOLICITUD ACADEMICA */
+#page-perfil #solicitarCambio {
+    margin-top: 22px;
+}
+
+/* ACCIONES */
+#page-perfil .perfil-acciones {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    grid-column: auto;
+}
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+
+    #page-perfil {
+        padding: 15px;
+    }
+
+    #page-perfil .perfil-card {
+        padding: 20px;
+    }
+
+    #page-perfil .perfil-datos {
+        grid-template-columns: 1fr;
+    }
+
+    #page-perfil .perfil-acciones {
+        flex-direction: column;
+    }
+
+    #page-perfil .perfil-acciones button {
+        width: 100%;
+    }
+}
+
+
+/* ===== VENTANA DE SOLICITUD DE CAMBIO ===== */
+
+.modal-solicitud[hidden] {
+    display: none !important;
+}
+
+.modal-solicitud {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.60);
+}
+
+.modal-solicitud-contenido {
+    position: relative;
+    width: 100%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.20);
+}
+
+.modal-solicitud-contenido h3 {
+    margin: 0 35px 10px 0;
+    color: #172554;
+    font-size: 21px;
+}
+
+.modal-solicitud-contenido p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.modal-solicitud-contenido .campo {
+    margin-bottom: 18px;
+}
+
+.modal-solicitud-contenido .campo label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.modal-solicitud-contenido input,
+.modal-solicitud-contenido select,
+.modal-solicitud-contenido textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font: inherit;
+    outline: none;
+}
+
+.modal-solicitud-contenido input:focus,
+.modal-solicitud-contenido select:focus,
+.modal-solicitud-contenido textarea:focus {
+    border-color: #eb2525;
+}
+
+.modal-solicitud-contenido textarea {
+    resize: vertical;
+}
+
+.cerrar-modal {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.modal-solicitud-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.modal-solicitud-acciones button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#enviarSolicitud {
+    background: #eb2525;
+    color: #ffffff;
+}
+
+#cancelarSolicitud {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+@media (max-width: 600px) {
+    .modal-solicitud-contenido {
+        padding: 22px;
+    }
+
+    .modal-solicitud-acciones {
+        flex-direction: column;
+    }
+
+    .modal-solicitud-acciones button {
+        width: 100%;
+    }
+}
+
+/* =====================================
+   NOTIFICACION EMERGENTE DEL PERFIL
+===================================== */
+
+.notificacion-perfil[hidden] {
+    display: none !important;
+}
+
+.notificacion-perfil {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.60);
+    animation: aparecerNotificacion 0.25s ease;
+}
+
+.notificacion-contenido {
+    width: 100%;
+    max-width: 420px;
+    padding: 35px 30px;
+    background: #ffffff;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.20);
+    animation: subirNotificacion 0.3s ease;
+}
+
+.notificacion-icono {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background: #e8f7ee;
+    color: #16a34a;
+    font-size: 35px;
+    font-weight: 700;
+}
+
+.notificacion-contenido h3 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.notificacion-contenido p {
+    margin: 0 0 25px;
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+#cerrarNotificacion {
+    width: 100%;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 12px;
+    background: #d10d32;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#cerrarNotificacion:hover {
+    background: #ad0929;
+    transform: translateY(-1px);
+}
+
+/* ANIMACIONES */
+
+@keyframes aparecerNotificacion {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes subirNotificacion {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 500px) {
+    .notificacion-contenido {
+        padding: 28px 22px;
+    }
+
+    .notificacion-contenido h3 {
+        font-size: 19px;
+    }
+}
+
+

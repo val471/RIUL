@@ -1,14 +1,12 @@
 import os
 import re
 import time
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, current_app
 from flask import session, redirect, url_for
 from flask import request, jsonify
 from sqlalchemy import text
 from werkzeug.security import check_password_hash, generate_password_hash
-
-
-
+from werkzeug.utils import secure_filename
 
 
 from app.controllers import visitante_controller
@@ -18,13 +16,17 @@ from app.controllers import docentelider_controller
 from app.models.usuario import Usuario
 from app.models.solicitud_registro import SolicitudRegistro
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.models.solicitud_actualizacion import SolicitudActualizacion
 
 
 web = Blueprint("web", __name__)
+#FOTO PERFIL
 EXTENSIONES_FOTO = {"png", "jpg", "jpeg", "webp"}
 PESO_MAX_FOTO = 2 * 1024 * 1024  # 2 MB
+#EVIDENCIAS
+EXTENSIONES_EVIDENCIA = {"pdf", "png"}
+PESO_MAX_EVIDENCIA = 5 * 1024 * 1024  # 5 MB
 
 
 # PÁGINAS PÚBLICAS
@@ -88,13 +90,21 @@ def cerrar_sesion():
 
 
 # PANEL ESTUDIANTE
+@web.before_request
+def proteger_panel_estudiante():
+    """Solo un usuario con rol ESTUDIANTE puede entrar a /estudiante/..."""
+    if (request.path == "/estudiante" or request.path.startswith("/estudiante/")) \
+            and session.get("rol") != "ESTUDIANTE":
+        return redirect(url_for("web.iniciar_sesion"))
+
 @web.route("/estudiante")
 def panel_estudiante():
     return estudiante_controller.mostrar_panel()
 
+# perfil
 @web.route("/estudiante/perfil")
 def estudiante_perfil():
-    return render_template("estudiante/perfil.html")
+    return estudiante_controller.mostrar_perfil()
 
 
 # SEMILLEROS 
@@ -102,6 +112,17 @@ def estudiante_perfil():
 @web.route("/estudiante/semilleros")
 def explorar_semilleros():
     return render_template("estudiante/semilleros.html")
+
+# PROYECTOS DEL ESTUDIANTE
+
+@web.route("/estudiante/proyectos")
+def estudiante_proyectos():
+    return render_template("estudiante/proyectos.html")
+
+
+@web.route("/estudiante/proyectos/datos")
+def estudiante_proyectos_datos():
+    return estudiante_controller.obtener_mis_proyectos()
 
 
 # EVENTOS 
@@ -111,9 +132,13 @@ def estudiante_eventos():
     return render_template("estudiante/eventos.html")
 
 # LOGROS
-@web.route("/estudiante/logros-estudiante")
+@web.route("/estudiante/logros")
 def estudiante_logros():
-    return render_template("estudiante/logros.html")
+    return estudiante_controller.mostrar_logros()
+
+@web.route("/estudiante/logros/registrar", methods=["POST"])
+def registrar_logro():
+    return estudiante_controller.registrar_logro()
 
 #CONVOCATORIAS
 
@@ -141,15 +166,14 @@ def estudiante_notificaciones():
 def estudiante_hoja_vida():
     return render_template("estudiante/hoja_vida.html")
 
+@web.route("/estudiante/hoja-vida/datos")
+def estudiante_hoja_vida_datos():
+    return estudiante_controller.obtener_hoja_vida()
+
 def _usuario_actual():
     return db.session.get(Usuario, session.get("id_usuario"))
 
-
-
-# PANEL DOCENTE
-
-
-# PANEL DOCENTE
+# PANEL  DOCENTE
 @web.before_request
 def proteger_panel_docente():
     """Solo un usuario con rol DOCENTE puede entrar a /docentelider/..."""
@@ -214,6 +238,16 @@ def docente_perfil():
 
 
 # PANEL DE ADMINISTRADOR
+
+@web.before_request
+def proteger_panel_admin():
+    """Solo un usuario con rol ADMIN puede entrar a /admin/..."""
+    if (request.path == "/admin" or request.path.startswith("/admin/")) \
+            and session.get("rol") != "ADMIN":
+        if request.path.startswith("/admin/api"):
+            return jsonify({"mensaje": "No autorizado"}), 401
+        return redirect(url_for("web.iniciar_sesion"))
+
 @web.route("/admin")
 def panel_administrador():
     return admin_controller.mostrar_panel()
@@ -268,7 +302,8 @@ def admin_solicitudes():
 
 DESTINOS = {"ADMIN": "/admin", "ESTUDIANTE": "/estudiante", "DOCENTE": "/docentelider"}
 
-
+MAX_INTENTOS = 5
+MINUTOS_BLOQUEO = 15
 @web.route("/api/login", methods=["POST"])
 def api_login():
     datos = request.get_json(silent=True) or {}
@@ -277,10 +312,40 @@ def api_login():
 
     usuario = Usuario.query.filter_by(correo_institucional=correo).first()
 
+    # 1. ¿La cuenta está bloqueada temporalmente?
+    if usuario and usuario.bloqueado_hasta and usuario.bloqueado_hasta > datetime.now():
+        restante = (usuario.bloqueado_hasta - datetime.now()).total_seconds()
+        minutos = int(restante // 60) + 1
+        return jsonify({
+            "mensaje": (
+                "Cuenta bloqueada temporalmente por varios intentos fallidos. "
+                f"Intenta de nuevo en {minutos} minuto(s)."
+            )
+        }), 423
+
+    # 2. Credenciales incorrectas
     if (not usuario or usuario.estado != "ACTIVO"
             or not check_password_hash(usuario.contrasena_hash, clave)):
+
+        if usuario and usuario.estado == "ACTIVO":
+            usuario.intentos_fallidos = (usuario.intentos_fallidos or 0) + 1
+
+            if usuario.intentos_fallidos >= MAX_INTENTOS:
+                usuario.bloqueado_hasta = (
+                    datetime.now() + timedelta(minutes=MINUTOS_BLOQUEO)
+                )
+                usuario.intentos_fallidos = 0
+
+            db.session.commit()
+
         return jsonify({"mensaje": "Correo o contraseña incorrectos."}), 401
 
+    # 3. Ingreso correcto: se reinicia el contador
+    usuario.intentos_fallidos = 0
+    usuario.bloqueado_hasta = None
+    db.session.commit()
+
+    session.permanent = True
     session["id_usuario"] = usuario.id_usuario
     session["rol"] = usuario.rol
     return jsonify({
@@ -571,3 +636,567 @@ def docente_cambiar_foto():
         db.session.rollback()
         print("ERROR AL GUARDAR FOTO:", repr(error))
         return jsonify({"mensaje": "No fue posible guardar la foto."}), 500
+
+@web.route("/admin/api/solicitudes/<int:id_solicitud>/aprobar", methods=["POST"])
+def admin_aprobar_solicitud(id_solicitud):
+    return admin_controller.aprobar_solicitud_registro(id_solicitud)
+
+
+@web.route("/admin/api/solicitudes/<int:id_solicitud>/rechazar", methods=["POST"])
+def admin_rechazar_solicitud(id_solicitud):
+    return admin_controller.rechazar_solicitud_registro(id_solicitud)
+
+# ==============================
+# ESTUDIANTE: LISTA DE SEMILLEROS (RF-26, RF-27)
+# ==============================
+
+@web.route("/estudiante/api/semilleros")
+def estudiante_api_semilleros():
+    filas = db.session.execute(text("""
+        SELECT
+            s.id_semillero,
+            s.nombre,
+            s.descripcion,
+            s.linea_investigacion,
+            s.cupo_maximo,
+            f.nombre AS facultad,
+            (
+                SELECT COUNT(*)
+                FROM membresiasemillero m
+                WHERE m.id_semillero = s.id_semillero
+                  AND m.fecha_salida IS NULL
+            ) AS integrantes,
+            (
+                SELECT sv.estado
+                FROM solicitudvinculacion sv
+                WHERE sv.id_estudiante = :estudiante
+                  AND sv.id_semillero = s.id_semillero
+                ORDER BY sv.fecha_solicitud DESC
+                LIMIT 1
+            ) AS mi_solicitud
+        FROM semillero s
+        INNER JOIN facultad f
+            ON f.id_facultad = s.id_facultad
+        WHERE s.estado = 'ACTIVO'
+        ORDER BY s.nombre
+    """), {"estudiante": session.get("id_usuario")}).mappings().all()
+
+    return jsonify([{
+        "id": f["id_semillero"],
+        "nombre": f["nombre"],
+        "descripcion": f["descripcion"],
+        "linea": f["linea_investigacion"],
+        "facultad": f["facultad"],
+        "cupo_maximo": f["cupo_maximo"],
+        "integrantes": f["integrantes"],
+        "mi_solicitud": f["mi_solicitud"],
+    } for f in filas])
+
+# ==============================
+# ESTUDIANTE: SOLICITAR VINCULACIÓN A UN SEMILLERO (RF-27, RF-37)
+# ==============================
+
+@web.route("/estudiante/api/semilleros/<int:id_semillero>/solicitar",
+           methods=["POST"])
+def estudiante_solicitar_vinculacion(id_semillero):
+    id_estudiante = session.get("id_usuario")
+
+    # 1. El estudiante debe estar activo
+    estudiante = db.session.execute(text("""
+        SELECT u.estado
+        FROM usuario u
+        INNER JOIN estudianteinvestigador e
+            ON e.id_usuario = u.id_usuario
+        WHERE u.id_usuario = :id
+    """), {"id": id_estudiante}).mappings().first()
+
+    if not estudiante or estudiante["estado"] != "ACTIVO":
+        return jsonify({"mensaje": "Tu cuenta no está activa."}), 403
+
+    # 2. El semillero debe existir, estar activo y tener cupo
+    semillero = db.session.execute(text("""
+        SELECT
+            s.estado,
+            s.cupo_maximo,
+            (
+                SELECT COUNT(*)
+                FROM membresiasemillero m
+                WHERE m.id_semillero = s.id_semillero
+                  AND m.fecha_salida IS NULL
+            ) AS integrantes
+        FROM semillero s
+        WHERE s.id_semillero = :id
+    """), {"id": id_semillero}).mappings().first()
+
+    if not semillero or semillero["estado"] != "ACTIVO":
+        return jsonify({"mensaje": "El semillero no está disponible."}), 404
+
+    if semillero["integrantes"] >= semillero["cupo_maximo"]:
+        return jsonify({"mensaje": "El semillero no tiene cupo disponible."}), 409
+
+    # 3. No puede estar ya en un semillero
+    ya_miembro = db.session.execute(text("""
+        SELECT 1
+        FROM membresiasemillero
+        WHERE id_estudiante = :id
+          AND fecha_salida IS NULL
+    """), {"id": id_estudiante}).first()
+
+    if ya_miembro:
+        return jsonify({"mensaje": "Ya perteneces a un semillero."}), 409
+
+    # 4. No puede repetir una solicitud pendiente al mismo semillero
+    repetida = db.session.execute(text("""
+        SELECT 1
+        FROM solicitudvinculacion
+        WHERE id_estudiante = :est
+          AND id_semillero = :sem
+          AND estado = 'PENDIENTE'
+    """), {"est": id_estudiante, "sem": id_semillero}).first()
+
+    if repetida:
+        return jsonify({
+            "mensaje": "Ya tienes una solicitud pendiente en este semillero."
+        }), 409
+
+    # 5. Se guarda la solicitud
+    try:
+        db.session.execute(text("""
+            INSERT INTO solicitudvinculacion
+                (id_estudiante, id_semillero, estado, fecha_solicitud, tipo)
+            VALUES
+                (:est, :sem, 'PENDIENTE', NOW(), 'SOLICITUD')
+        """), {"est": id_estudiante, "sem": id_semillero})
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Solicitud enviada. Queda pendiente de respuesta."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL SOLICITAR VINCULACION:", repr(error))
+        return jsonify({"mensaje": "No fue posible enviar la solicitud."}), 500
+
+    # ==============================
+# DOCENTE LÍDER: SOLICITUDES DE INGRESO AL SEMILLERO (RF-14)
+# ==============================
+
+def _semillero_del_docente():
+    fila = db.session.execute(text("""
+        SELECT id_semillero_liderado
+        FROM docentelider
+        WHERE id_usuario = :id
+    """), {"id": session.get("id_usuario")}).first()
+
+    return fila[0] if fila else None
+
+
+@web.route("/docentelider/api/vinculaciones")
+def docente_api_vinculaciones():
+    id_semillero = _semillero_del_docente()
+
+    if not id_semillero:
+        return jsonify([])
+
+    filas = db.session.execute(text("""
+        SELECT
+            sv.id_solicitud_vinc,
+            u.nombre_institucional AS nombre,
+            p.nombre AS programa,
+            ei.semestre,
+            sv.fecha_solicitud
+        FROM solicitudvinculacion sv
+        INNER JOIN estudianteinvestigador ei
+            ON ei.id_usuario = sv.id_estudiante
+        INNER JOIN usuario u
+            ON u.id_usuario = sv.id_estudiante
+        INNER JOIN programa p
+            ON p.id_programa = ei.id_programa
+        WHERE sv.id_semillero = :semillero
+          AND sv.estado = 'PENDIENTE'
+          AND sv.tipo = 'SOLICITUD'
+        ORDER BY sv.fecha_solicitud
+    """), {"semillero": id_semillero}).mappings().all()
+
+    return jsonify([{
+        "id": f["id_solicitud_vinc"],
+        "nombre": f["nombre"],
+        "programa": f["programa"],
+        "semestre": f["semestre"],
+        "fecha": f["fecha_solicitud"].strftime("%d/%m/%Y"),
+    } for f in filas])
+
+
+def _resolver_vinculacion(id_solicitud, aceptar):
+    id_docente = session.get("id_usuario")
+    id_semillero = _semillero_del_docente()
+
+    solicitud = db.session.execute(text("""
+        SELECT id_solicitud_vinc, id_estudiante, id_semillero, estado
+        FROM solicitudvinculacion
+        WHERE id_solicitud_vinc = :id
+    """), {"id": id_solicitud}).mappings().first()
+
+    # Solo puede resolver solicitudes de SU semillero
+    if not solicitud or solicitud["id_semillero"] != id_semillero:
+        return jsonify({"mensaje": "La solicitud no existe."}), 404
+
+    if solicitud["estado"] != "PENDIENTE":
+        return jsonify({"mensaje": "Esta solicitud ya fue resuelta."}), 409
+
+    id_estudiante = solicitud["id_estudiante"]
+
+    try:
+        if aceptar:
+            semillero = db.session.execute(text("""
+                SELECT
+                    s.cupo_maximo,
+                    (
+                        SELECT COUNT(*)
+                        FROM membresiasemillero m
+                        WHERE m.id_semillero = s.id_semillero
+                          AND m.fecha_salida IS NULL
+                    ) AS integrantes
+                FROM semillero s
+                WHERE s.id_semillero = :id
+            """), {"id": id_semillero}).mappings().first()
+
+            if semillero["integrantes"] >= semillero["cupo_maximo"]:
+                return jsonify({
+                    "mensaje": "El semillero no tiene cupo disponible."
+                }), 409
+
+            ya_miembro = db.session.execute(text("""
+                SELECT 1
+                FROM membresiasemillero
+                WHERE id_estudiante = :id
+                  AND fecha_salida IS NULL
+            """), {"id": id_estudiante}).first()
+
+            if ya_miembro:
+                return jsonify({
+                    "mensaje": "El estudiante ya pertenece a un semillero."
+                }), 409
+
+            db.session.execute(text("""
+                INSERT INTO membresiasemillero
+                    (id_estudiante, id_semillero, fecha_ingreso)
+                VALUES
+                    (:est, :sem, NOW())
+            """), {"est": id_estudiante, "sem": id_semillero})
+
+            db.session.execute(text("""
+                UPDATE estudianteinvestigador
+                SET id_semillero = :sem,
+                    fecha_actualizacion = NOW()
+                WHERE id_usuario = :est
+            """), {"est": id_estudiante, "sem": id_semillero})
+
+        nuevo_estado = "ACEPTADA" if aceptar else "RECHAZADA"
+
+        db.session.execute(text("""
+            UPDATE solicitudvinculacion
+            SET estado = :estado,
+                id_docente_revisor = :docente,
+                fecha_resolucion = NOW()
+            WHERE id_solicitud_vinc = :id
+        """), {
+            "estado": nuevo_estado,
+            "docente": id_docente,
+            "id": id_solicitud
+        })
+
+        db.session.execute(text("""
+            INSERT INTO historial
+                (id_usuario, accion, tabla_afectada, id_registro,
+                 valor_anterior, valor_nuevo, fecha)
+            VALUES
+                (:usuario, :accion, 'solicitudvinculacion', :registro,
+                 'PENDIENTE', :nuevo, NOW())
+        """), {
+            "usuario": id_docente,
+            "accion": "ACEPTAR_VINCULACION" if aceptar else "RECHAZAR_VINCULACION",
+            "registro": id_solicitud,
+            "nuevo": nuevo_estado
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Solicitud aceptada." if aceptar else "Solicitud rechazada."
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL RESOLVER VINCULACION:", repr(error))
+        return jsonify({"mensaje": "No fue posible procesar la solicitud."}), 500
+
+
+@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/aceptar",
+           methods=["POST"])
+def docente_aceptar_vinculacion(id_solicitud):
+    return _resolver_vinculacion(id_solicitud, True)
+
+
+@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/rechazar",
+           methods=["POST"])
+def docente_rechazar_vinculacion(id_solicitud):
+    return _resolver_vinculacion(id_solicitud, False)
+
+# ==============================
+# ADMIN: CREAR CONVOCATORIA (RF-02)
+# ==============================
+
+@web.route("/admin/api/convocatorias", methods=["POST"])
+def admin_crear_convocatoria():
+    datos = request.get_json(silent=True) or {}
+
+    titulo = (datos.get("titulo") or "").strip()
+    descripcion = (datos.get("descripcion") or "").strip()
+    modalidad = datos.get("modalidad")
+
+    if not titulo:
+        return jsonify({"mensaje": "El título es obligatorio."}), 400
+
+    if len(titulo) > 150:
+        return jsonify({
+            "mensaje": "El título no puede superar los 150 caracteres."
+        }), 400
+
+    if modalidad not in ("semillero", "individual", "ambas"):
+        return jsonify({"mensaje": "Selecciona una modalidad de participación."}), 400
+
+    try:
+        inicio = datetime.strptime(datos.get("fecha_inicio") or "", "%Y-%m-%d").date()
+        cierre = datetime.strptime(datos.get("fecha_cierre") or "", "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({
+            "mensaje": "Las fechas de inicio y de cierre son obligatorias."
+        }), 400
+
+    if cierre < inicio:
+        return jsonify({
+            "mensaje": "La fecha de cierre no puede ser anterior a la fecha de inicio."
+        }), 400
+
+    id_admin = session.get("id_usuario")
+
+    try:
+        db.session.execute(text("""
+            INSERT IGNORE INTO administrador (id_usuario) VALUES (:id)
+        """), {"id": id_admin})
+
+        nueva = db.session.execute(text("""
+            INSERT INTO convocatoria
+                (titulo, descripcion, fecha_inicio, fecha_cierre,
+                 modalidad, estado, id_admin_creador, fecha_actualizacion)
+            VALUES
+                (:titulo, :descripcion, :inicio, :cierre,
+                 :modalidad, 'ACTIVA', :admin, NOW())
+        """), {
+            "titulo": titulo,
+            "descripcion": descripcion or None,
+            "inicio": inicio,
+            "cierre": cierre,
+            "modalidad": modalidad,
+            "admin": id_admin
+        })
+
+        db.session.execute(text("""
+            INSERT INTO historial
+                (id_usuario, accion, tabla_afectada, id_registro,
+                 valor_anterior, valor_nuevo, fecha)
+            VALUES
+                (:usuario, 'CREAR_CONVOCATORIA', 'convocatoria', :registro,
+                 NULL, :nuevo, NOW())
+        """), {
+            "usuario": id_admin,
+            "registro": nueva.lastrowid,
+            "nuevo": titulo
+        })
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Convocatoria creada correctamente."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL CREAR CONVOCATORIA:", repr(error))
+        return jsonify({"mensaje": "No fue posible crear la convocatoria."}), 500
+
+    # ==============================
+# ADMIN: VER, EDITAR Y ELIMINAR CONVOCATORIA (RF-02)
+# ==============================
+
+def _leer_convocatoria(datos):
+    """Valida los datos del formulario. Devuelve (valores, mensaje_de_error)."""
+    titulo = (datos.get("titulo") or "").strip()
+    descripcion = (datos.get("descripcion") or "").strip()
+    modalidad = datos.get("modalidad")
+
+    if not titulo:
+        return None, "El título es obligatorio."
+
+    if len(titulo) > 150:
+        return None, "El título no puede superar los 150 caracteres."
+
+    if modalidad not in ("semillero", "individual", "ambas"):
+        return None, "Selecciona una modalidad de participación."
+
+    try:
+        inicio = datetime.strptime(datos.get("fecha_inicio") or "", "%Y-%m-%d").date()
+        cierre = datetime.strptime(datos.get("fecha_cierre") or "", "%Y-%m-%d").date()
+    except ValueError:
+        return None, "Las fechas de inicio y de cierre son obligatorias."
+
+    if cierre < inicio:
+        return None, "La fecha de cierre no puede ser anterior a la fecha de inicio."
+
+    return {
+        "titulo": titulo,
+        "descripcion": descripcion or None,
+        "inicio": inicio,
+        "cierre": cierre,
+        "modalidad": modalidad
+    }, None
+
+
+def _buscar_convocatoria(id_convocatoria):
+    return db.session.execute(text("""
+        SELECT id_convocatoria, titulo, descripcion,
+               fecha_inicio, fecha_cierre, modalidad
+        FROM convocatoria
+        WHERE id_convocatoria = :id
+    """), {"id": id_convocatoria}).mappings().first()
+
+
+def _resumen_convocatoria(titulo, modalidad, inicio, cierre):
+    return f"{titulo} | {modalidad} | {inicio} a {cierre}"
+
+
+@web.route("/admin/api/convocatorias/<int:id_convocatoria>")
+def admin_ver_convocatoria(id_convocatoria):
+    c = _buscar_convocatoria(id_convocatoria)
+
+    if not c:
+        return jsonify({"mensaje": "La convocatoria no existe."}), 404
+
+    return jsonify({
+        "titulo": c["titulo"],
+        "descripcion": c["descripcion"] or "",
+        "fecha_inicio": c["fecha_inicio"].isoformat(),
+        "fecha_cierre": c["fecha_cierre"].isoformat(),
+        "modalidad": c["modalidad"],
+    })
+
+
+@web.route("/admin/api/convocatorias/<int:id_convocatoria>", methods=["PUT"])
+def admin_editar_convocatoria(id_convocatoria):
+    anterior = _buscar_convocatoria(id_convocatoria)
+
+    if not anterior:
+        return jsonify({"mensaje": "La convocatoria no existe."}), 404
+
+    valores, error = _leer_convocatoria(request.get_json(silent=True) or {})
+
+    if error:
+        return jsonify({"mensaje": error}), 400
+
+    try:
+        db.session.execute(text("""
+            UPDATE convocatoria
+            SET titulo = :titulo,
+                descripcion = :descripcion,
+                fecha_inicio = :inicio,
+                fecha_cierre = :cierre,
+                modalidad = :modalidad,
+                fecha_actualizacion = NOW()
+            WHERE id_convocatoria = :id
+        """), {**valores, "id": id_convocatoria})
+
+        db.session.execute(text("""
+            INSERT INTO historial
+                (id_usuario, accion, tabla_afectada, id_registro,
+                 valor_anterior, valor_nuevo, fecha)
+            VALUES
+                (:usuario, 'EDITAR_CONVOCATORIA', 'convocatoria', :registro,
+                 :anterior, :nuevo, NOW())
+        """), {
+            "usuario": session.get("id_usuario"),
+            "registro": id_convocatoria,
+            "anterior": _resumen_convocatoria(
+                anterior["titulo"], anterior["modalidad"],
+                anterior["fecha_inicio"], anterior["fecha_cierre"]
+            ),
+            "nuevo": _resumen_convocatoria(
+                valores["titulo"], valores["modalidad"],
+                valores["inicio"], valores["cierre"]
+            )
+        })
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Convocatoria actualizada correctamente."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL EDITAR CONVOCATORIA:", repr(error))
+        return jsonify({"mensaje": "No fue posible actualizar la convocatoria."}), 500
+
+
+@web.route("/admin/api/convocatorias/<int:id_convocatoria>", methods=["DELETE"])
+def admin_eliminar_convocatoria(id_convocatoria):
+    anterior = _buscar_convocatoria(id_convocatoria)
+
+    if not anterior:
+        return jsonify({"mensaje": "La convocatoria no existe."}), 404
+
+    con_inscripciones = db.session.execute(text("""
+        SELECT 1
+        FROM inscripcionconvocatoria
+        WHERE id_convocatoria = :id
+        LIMIT 1
+    """), {"id": id_convocatoria}).first()
+
+    if con_inscripciones:
+        return jsonify({
+            "mensaje": "No se puede eliminar: la convocatoria ya tiene inscripciones."
+        }), 409
+
+    try:
+        db.session.execute(text("""
+            DELETE FROM convocatoria WHERE id_convocatoria = :id
+        """), {"id": id_convocatoria})
+
+        db.session.execute(text("""
+            INSERT INTO historial
+                (id_usuario, accion, tabla_afectada, id_registro,
+                 valor_anterior, valor_nuevo, fecha)
+            VALUES
+                (:usuario, 'ELIMINAR_CONVOCATORIA', 'convocatoria', :registro,
+                 :anterior, NULL, NOW())
+        """), {
+            "usuario": session.get("id_usuario"),
+            "registro": id_convocatoria,
+            "anterior": _resumen_convocatoria(
+                anterior["titulo"], anterior["modalidad"],
+                anterior["fecha_inicio"], anterior["fecha_cierre"]
+            )
+        })
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Convocatoria eliminada."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL ELIMINAR CONVOCATORIA:", repr(error))
+        return jsonify({"mensaje": "No fue posible eliminar la convocatoria."}), 500
+
+@web.route("/estudiante/api/perfil/solicitud", methods=["POST"])
+def estudiante_solicitar_cambio_perfil():
+    return estudiante_controller.solicitar_cambio_perfil()
+
+@web.route("/estudiante/api/perfil/contrasena", methods=["POST"])
+def estudiante_cambiar_contrasena():
+    return estudiante_controller.cambiar_contraseña()

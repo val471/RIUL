@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 class config:
     
@@ -18,6 +19,9 @@ class config:
         "JWT_SECRET_KEY",
         "suero-clave-secret"
     )
+    
+    # La sesión expira a los 10 minutos sin actividad 
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)
    
     #3600 segundos = 1 hora
     JWT_ACCESS_TOKEN_EXPIRES = 3600

@@ -1,0 +1,302 @@
+
+/* ========================================
+   MODULO DE USUARIOS - ADMINISTRADOR RIUL
+======================================== */
+
+.usuarios-admin {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ENCABEZADO */
+
+.usuarios-admin .page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.usuarios-admin .eyebrow {
+    color: #a52b32;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.usuarios-admin .page-heading h1 {
+    color: #20232b;
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 7px;
+}
+
+.usuarios-admin .page-heading p {
+    color: #777d89;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* BOTONES */
+
+.usuarios-admin .btn {
+    border: none;
+    border-radius: 9px;
+    padding: 11px 17px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.usuarios-admin .btn-primary {
+    background: #a52b32;
+    color: #fff;
+}
+
+.usuarios-admin .btn-primary:hover {
+    background: #842128;
+    transform: translateY(-1px);
+}
+
+.usuarios-admin .btn-secondary {
+    background: #f1f2f5;
+    color: #444b57;
+}
+
+.usuarios-admin .btn-secondary:hover {
+    background: #e4e6eb;
+}
+
+/* TARJETAS DE RESUMEN */
+
+.usuarios-admin .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.usuarios-admin .stat-card {
+    background: #fff;
+    border: 1px solid #e9eaf0;
+    border-radius: 13px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 3px 12px rgba(25, 30, 45, 0.035);
+}
+
+.usuarios-admin .stat-card strong {
+    color: #20232b;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.usuarios-admin .stat-card span {
+    color: #737987;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.usuarios-admin .stat-card small {
+    color: #a52b32;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* CONTENEDOR PRINCIPAL */
+
+.usuarios-admin .admin-card {
+    background: #fff;
+    border: 1px solid #e9eaf0;
+    border-radius: 13px;
+    padding: 23px;
+    box-shadow: 0 3px 12px rgba(25, 30, 45, 0.035);
+}
+
+.usuarios-admin .card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.usuarios-admin .card-heading h2 {
+    color: #252832;
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.usuarios-admin .card-heading p {
+    color: #858a95;
+    font-size: 12px;
+    margin: 5px 0 0;
+}
+
+/* BUSQUEDA Y FILTROS */
+
+.usuarios-admin .filters-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.usuarios-admin .search-box {
+    flex: 1;
+    min-width: 220px;
+}
+
+.usuarios-admin input,
+.usuarios-admin select {
+    width: 100%;
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid #e1e3e9;
+    border-radius: 8px;
+    background: #fff;
+    color: #343944;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.usuarios-admin input:focus,
+.usuarios-admin select:focus {
+    border-color: #a52b32;
+    box-shadow: 0 0 0 3px rgba(165, 43, 50, 0.08);
+}
+
+.usuarios-admin input::placeholder {
+    color: #a3a7b0;
+}
+
+.usuarios-admin .filters-bar select {
+    width: auto;
+    min-width: 165px;
+}
+
+/* TABLA DE USUARIOS */
+
+.usuarios-admin .table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.usuarios-admin table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+.usuarios-admin thead {
+    background: #f7f7f9;
+}
+
+.usuarios-admin th {
+    padding: 14px 15px;
+    color: #777d89;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #eceef2;
+}
+
+.usuarios-admin td {
+    padding: 15px;
+    color: #454a55;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f1f4;
+}
+
+.usuarios-admin tbody tr:hover {
+    background: #fafafb;
+}
+
+.usuarios-admin tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ESTADOS */
+
+.usuarios-admin .status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #e8f7ee;
+    color: #25834b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.usuarios-admin .status.suspended {
+    background: #fff0f0;
+    color: #b52e36;
+}
+
+/* ACCIONES */
+
+.usuarios-admin .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.usuarios-admin .btn-action {
+    border: 1px solid #e5e6eb;
+    border-radius: 7px;
+    padding: 7px 10px;
+    background: #fff;
+    color: #555b67;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.usuarios-admin .btn-action:hover {
+    border-color: #a52b32;
+    color: #a52b32;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+    .usuarios-admin .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .usuarios-admin .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .usuarios-admin .admin-card {
+        padding: 15px;
+    }
+
+    .usuarios-admin .page-heading h1 {
+        font-size: 22px;
+    }
+
+    .usuarios-admin .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .usuarios-admin .filters-bar select {
+        width: 100%;
+    }
+}

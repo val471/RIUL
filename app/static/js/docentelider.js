@@ -755,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO SOLICITUDES
     // ========================================
 
-    function configurarModuloSolicitudes() {
+        async function configurarModuloSolicitudes() {
 
         const tablaSolicitudes = document.getElementById("tablaSolicitudes");
         const totalSolicitudes = document.getElementById("totalSolicitudesPendientes");
@@ -764,13 +764,104 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const filas = tablaSolicitudes.querySelectorAll("tr[data-solicitud]");
+        const escaparHTML = texto => String(texto ?? "").replace(
+            /[&<>"']/g,
+            c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+        );
 
-        if (totalSolicitudes) {
-            totalSolicitudes.textContent = filas.length;
+        async function dibujarSolicitudes() {
+
+            tablaSolicitudes.innerHTML = `
+                <tr>
+                    <td colspan="5" class="solicitudes-vacio">Cargando solicitudes...</td>
+                </tr>`;
+
+            try {
+                const respuesta = await fetch("/docentelider/api/vinculaciones");
+
+                if (!respuesta.ok) {
+                    throw new Error("Error " + respuesta.status);
+                }
+
+                const solicitudes = await respuesta.json();
+
+                if (totalSolicitudes) {
+                    totalSolicitudes.textContent = solicitudes.length;
+                }
+
+                if (solicitudes.length === 0) {
+                    tablaSolicitudes.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="solicitudes-vacio">
+                                No hay solicitudes pendientes.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                tablaSolicitudes.innerHTML = solicitudes.map(s => `
+                    <tr data-solicitud="${s.id}">
+                        <td>${escaparHTML(s.nombre)}</td>
+                        <td>${escaparHTML(s.programa)} · Semestre ${escaparHTML(s.semestre)}</td>
+                        <td>Ingreso al semillero · ${escaparHTML(s.fecha)}</td>
+                        <td><span class="solicitudes-estado">Pendiente</span></td>
+                        <td>
+                            <div class="solicitudes-acciones">
+                                <button type="button" class="btn-aprobar"
+                                        data-accion="aceptar" data-id="${s.id}">Aceptar</button>
+                                <button type="button" class="btn-rechazar"
+                                        data-accion="rechazar" data-id="${s.id}">Rechazar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join("");
+
+            } catch (error) {
+                console.error("No se pudieron cargar las solicitudes:", error);
+                tablaSolicitudes.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="solicitudes-vacio">
+                            No fue posible cargar las solicitudes.
+                        </td>
+                    </tr>`;
+            }
         }
-    }
 
+        tablaSolicitudes.onclick = async function (evento) {
+
+            const boton = evento.target.closest("button[data-accion]");
+
+            if (!boton) {
+                return;
+            }
+
+            if (boton.dataset.accion === "rechazar" &&
+                !confirm("¿Deseas rechazar esta solicitud?")) {
+                return;
+            }
+
+            boton.disabled = true;
+
+            try {
+                const respuesta = await fetch(
+                    "/docentelider/api/vinculaciones/" +
+                    boton.dataset.id + "/" + boton.dataset.accion,
+                    { method: "POST" }
+                );
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    alert(resultado.mensaje || "No fue posible procesar la solicitud.");
+                }
+            } catch (error) {
+                alert("No fue posible procesar la solicitud.");
+            }
+
+            dibujarSolicitudes();
+        };
+
+        dibujarSolicitudes();
+    }
     // ========================================
     // MODULO CONVOCATORIAS
     // ========================================

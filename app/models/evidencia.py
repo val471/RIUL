@@ -27,3 +27,8 @@ class Evidencia(db.Model):
         nullable=False,
         default=datetime.now
     )
+
+    archivo = db.Column(
+        db.String(255),
+        nullable=True
+    )

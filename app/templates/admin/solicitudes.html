@@ -14,6 +14,8 @@
         <p>Solicitudes pendientes de aprobación.</p>
     </div>
 
+    <p class="aviso-solicitudes" id="avisoSolicitudes" hidden></p>
+
     <div class="request-list" id="requestsList">
 
         {% if solicitudes %}
@@ -57,6 +59,22 @@
                         {{ solicitud.estado }}
                     </span>
 
+                    <div class="request-actions">
+                        <button type="button"
+                                class="btn btn-red"
+                                data-id="{{ solicitud.id_solicitud }}"
+                                onclick="resolverSolicitud(this, 'aprobar')">
+                            Aprobar
+                        </button>
+
+                        <button type="button"
+                                class="btn"
+                                data-id="{{ solicitud.id_solicitud }}"
+                                onclick="resolverSolicitud(this, 'rechazar')">
+                            Rechazar
+                        </button>
+                    </div>
+
                 </article>
 
             {% endfor %}
@@ -68,4 +86,6 @@
         {% endif %}
 
     </div>
-</div>
+
+
+ </div>
