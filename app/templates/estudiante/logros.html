@@ -15,9 +15,42 @@
     </div>
 
     <div id="listaLogros" class="lg-lista">
-        <p class="lg-vacio">Aún no tienes logros registrados.</p>
-    </div>
 
+    {% if mis_logros %}
+
+        {% for logro in mis_logros %}
+
+            <article class="lg-item">
+
+                <h4>{{ logro.titulo }}</h4>
+
+                <p>{{ logro.tipo_logro }}</p>
+
+                <p>{{ logro.descripcion or 'Sin descripción' }}</p>
+
+                <span>{{ logro.xp_otorgado }} XP</span>
+
+                <span class="lg-estado">
+                    {{ logro.estado }}
+                </span>
+
+                <small>
+                    {{ logro.fecha_registro.strftime('%d/%m/%Y') }}
+                </small>
+
+            </article>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="lg-vacio">
+            Aún no tienes logros registrados.
+        </p>
+
+    {% endif %}
+
+  </div>
     <form id="formRegistrarLogro"
       action="/estudiante/logros/registrar"
       method="POST"

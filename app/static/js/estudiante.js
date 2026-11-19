@@ -266,23 +266,33 @@ async function cargarSemillerosReales() {
 
         lista.innerHTML = semilleros.map(s => {
             const sinCupo = s.integrantes >= s.cupo_maximo;
-            let botonPrincipal;
+let botonPrincipal;
 
-                if (s.mi_solicitud === "PENDIENTE" || s.mi_solicitud === "ACEPTADA") {
-                botonPrincipal =
-                    '<button type="button" class="boton boton-principal" disabled>' +
-                    "Solicitud " + esc(s.mi_solicitud.toLowerCase()) +
-                    "</button>";
-            } else if (sinCupo) {
-                botonPrincipal =
-                    '<button type="button" class="boton boton-principal" disabled>' +
-                    "Sin cupo</button>";
-            } else {
-                botonPrincipal =
-                    '<button type="button" class="boton boton-principal btn-solicitar" ' +
-                    'data-id="' + s.id + '">Solicitar vinculación</button>';
-            }
+if (s.mi_solicitud === "PENDIENTE") {
+    botonPrincipal =
+        '<button type="button" class="boton boton-principal" disabled>' +
+        'Solicitud pendiente</button>';
 
+} else if (s.mi_solicitud === "ACEPTADA") {
+    botonPrincipal =
+        '<button type="button" class="boton boton-principal" disabled>' +
+        'Solicitud aceptada</button>';
+
+} else if (!s.es_mi_facultad) {
+    botonPrincipal =
+        '<button type="button" class="boton boton-principal" disabled>' +
+        'Otra facultad</button>';
+
+} else if (sinCupo) {
+    botonPrincipal =
+        '<button type="button" class="boton boton-principal" disabled>' +
+        'Sin cupo</button>';
+
+} else {
+    botonPrincipal =
+        '<button type="button" class="boton boton-principal btn-solicitar" ' +
+        'data-id="' + s.id + '">Solicitar vinculación</button>';
+}
             return (
                 '<article class="semillero-card">' +
                     '<div class="semillero-info">' +
@@ -325,7 +335,11 @@ document.addEventListener("click", async e => {
 
         if (!respuesta.ok) {
             alert(resultado.mensaje || "No fue posible enviar la solicitud.");
-        }
+            } else {
+              alert(resultado.mensaje || "Solicitud enviada correctamente.");
+         }
+
+        
     } catch (error) {
         alert("No fue posible enviar la solicitud.");
     }
@@ -514,10 +528,25 @@ document.addEventListener("submit", async function(e) {
             throw new Error(resultado.mensaje || "No se pudo registrar el logro.");
         }
 
+        
         mensaje.textContent = resultado.mensaje;
-
         formulario.reset();
         formulario.hidden = true;
+
+// Actualizar la lista de logros
+const respuestaLista = await fetch("/estudiante/logros");
+
+if (respuestaLista.ok) {
+    const html = await respuestaLista.text();
+    const documento = new DOMParser().parseFromString(html, "text/html");
+
+    const nuevaLista = documento.getElementById("listaLogros");
+    const listaActual = document.getElementById("listaLogros");
+
+    if (nuevaLista && listaActual) {
+        listaActual.innerHTML = nuevaLista.innerHTML;
+    } 
+    }  
 
     } catch (error) {
 
@@ -657,13 +686,9 @@ function cargarHojaVida() {
 }
 
 function descargarHojaVida() {
-    const mensaje = document.getElementById("mensajeHojaVida");
-
-    if (mensaje) {
-        mensaje.textContent =
-            "La descarga del PDF estará disponible próximamente.";
-    }
+    window.print();
 }
+
 
 
 

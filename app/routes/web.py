@@ -119,13 +119,7 @@ def explorar_semilleros():
 def estudiante_proyectos():
     return render_template("estudiante/proyectos.html")
 
-
-@web.route("/estudiante/proyectos/datos")
-def estudiante_proyectos_datos():
-    return estudiante_controller.obtener_mis_proyectos()
-
-
-# EVENTOS 
+#  EVENTOS 
 
 @web.route("/estudiante/eventos")
 def estudiante_eventos():
@@ -300,6 +294,7 @@ def admin_solicitudes():
 
 
 
+
 DESTINOS = {"ADMIN": "/admin", "ESTUDIANTE": "/estudiante", "DOCENTE": "/docentelider"}
 
 MAX_INTENTOS = 5
@@ -353,22 +348,57 @@ def api_login():
         "redirect": DESTINOS.get(usuario.rol, "/"),
     })
 
-@web.route("/api/semilleros")
-def api_semilleros():
+
+@web.route("/estudiante/api/semilleros")
+def estudiante_api_semilleros():
+    facultad_estudiante = db.session.execute(text("""
+        SELECT p.id_facultad
+        FROM estudianteinvestigador ei
+        INNER JOIN programa p
+            ON p.id_programa = ei.id_programa
+        WHERE ei.id_usuario = :id
+    """), {"id": session.get("id_usuario")}).scalar()
+
     filas = db.session.execute(text("""
-        SELECT s.id_semillero, s.nombre, s.linea_investigacion, s.estado,
-               f.nombre AS facultad
+        SELECT
+            s.id_semillero,
+            s.id_facultad,
+            s.nombre,
+            s.descripcion,
+            s.linea_investigacion,
+            s.cupo_maximo,
+            f.nombre AS facultad,
+            (
+                SELECT COUNT(*)
+                FROM membresiasemillero m
+                WHERE m.id_semillero = s.id_semillero
+                  AND m.fecha_salida IS NULL
+            ) AS integrantes,
+            (
+                SELECT sv.estado
+                FROM solicitudvinculacion sv
+                WHERE sv.id_estudiante = :estudiante
+                  AND sv.id_semillero = s.id_semillero
+                ORDER BY sv.fecha_solicitud DESC
+                LIMIT 1
+            ) AS mi_solicitud
         FROM semillero s
-        JOIN facultad f ON f.id_facultad = s.id_facultad
+        INNER JOIN facultad f
+            ON f.id_facultad = s.id_facultad
         WHERE s.estado = 'ACTIVO'
         ORDER BY s.nombre
-    """)).mappings().all()
+    """), {"estudiante": session.get("id_usuario")}).mappings().all()
+
     return jsonify([{
         "id": f["id_semillero"],
         "nombre": f["nombre"],
+        "descripcion": f["descripcion"],
         "linea": f["linea_investigacion"],
         "facultad": f["facultad"],
-        "estado": f["estado"],
+        "cupo_maximo": f["cupo_maximo"],
+        "integrantes": f["integrantes"],
+        "mi_solicitud": f["mi_solicitud"],
+        "es_mi_facultad": f["id_facultad"] == facultad_estudiante,
     } for f in filas])
 
 
@@ -393,8 +423,8 @@ def api_registro():
     if not correo.endswith("@unilibre.edu.co"):
         return jsonify({"mensaje": "Debes utilizar tu correo institucional."}), 400
 
-    if rol not in ["ESTUDIANTE", "DOCENTE"]:
-        return jsonify({"mensaje": "El rol seleccionado no es válido."}), 400
+    if rol not in ["ESTUDIANTE", "DOCENTE", "DOCENTE_LIDER"]:
+       return jsonify({"mensaje": "El rol seleccionado no es válido."}), 400
 
     if rol == "ESTUDIANTE" and not id_programa:
         return jsonify({"mensaje": "Selecciona tu programa académico."}), 400
@@ -646,51 +676,7 @@ def admin_aprobar_solicitud(id_solicitud):
 def admin_rechazar_solicitud(id_solicitud):
     return admin_controller.rechazar_solicitud_registro(id_solicitud)
 
-# ==============================
-# ESTUDIANTE: LISTA DE SEMILLEROS (RF-26, RF-27)
-# ==============================
 
-@web.route("/estudiante/api/semilleros")
-def estudiante_api_semilleros():
-    filas = db.session.execute(text("""
-        SELECT
-            s.id_semillero,
-            s.nombre,
-            s.descripcion,
-            s.linea_investigacion,
-            s.cupo_maximo,
-            f.nombre AS facultad,
-            (
-                SELECT COUNT(*)
-                FROM membresiasemillero m
-                WHERE m.id_semillero = s.id_semillero
-                  AND m.fecha_salida IS NULL
-            ) AS integrantes,
-            (
-                SELECT sv.estado
-                FROM solicitudvinculacion sv
-                WHERE sv.id_estudiante = :estudiante
-                  AND sv.id_semillero = s.id_semillero
-                ORDER BY sv.fecha_solicitud DESC
-                LIMIT 1
-            ) AS mi_solicitud
-        FROM semillero s
-        INNER JOIN facultad f
-            ON f.id_facultad = s.id_facultad
-        WHERE s.estado = 'ACTIVO'
-        ORDER BY s.nombre
-    """), {"estudiante": session.get("id_usuario")}).mappings().all()
-
-    return jsonify([{
-        "id": f["id_semillero"],
-        "nombre": f["nombre"],
-        "descripcion": f["descripcion"],
-        "linea": f["linea_investigacion"],
-        "facultad": f["facultad"],
-        "cupo_maximo": f["cupo_maximo"],
-        "integrantes": f["integrantes"],
-        "mi_solicitud": f["mi_solicitud"],
-    } for f in filas])
 
 # ==============================
 # ESTUDIANTE: SOLICITAR VINCULACIÓN A UN SEMILLERO (RF-27, RF-37)
@@ -713,10 +699,11 @@ def estudiante_solicitar_vinculacion(id_semillero):
     if not estudiante or estudiante["estado"] != "ACTIVO":
         return jsonify({"mensaje": "Tu cuenta no está activa."}), 403
 
-    # 2. El semillero debe existir, estar activo y tener cupo
+    # 2. El semillero debe existir y estar activo
     semillero = db.session.execute(text("""
         SELECT
             s.estado,
+            s.id_facultad,
             s.cupo_maximo,
             (
                 SELECT COUNT(*)
@@ -731,10 +718,28 @@ def estudiante_solicitar_vinculacion(id_semillero):
     if not semillero or semillero["estado"] != "ACTIVO":
         return jsonify({"mensaje": "El semillero no está disponible."}), 404
 
+    # 3. Solo puede solicitar vinculación en su propia facultad
+    facultad_estudiante = db.session.execute(text("""
+        SELECT p.id_facultad
+        FROM estudianteinvestigador ei
+        INNER JOIN programa p
+            ON p.id_programa = ei.id_programa
+        WHERE ei.id_usuario = :id
+    """), {"id": id_estudiante}).scalar()
+
+    if semillero["id_facultad"] != facultad_estudiante:
+        return jsonify({
+            "mensaje": (
+                "Solo puedes solicitar vinculación a semilleros de tu "
+                "facultad. Los de otras facultades puedes seguirlos."
+            )
+        }), 403
+
+    # 4. El semillero debe tener cupo
     if semillero["integrantes"] >= semillero["cupo_maximo"]:
         return jsonify({"mensaje": "El semillero no tiene cupo disponible."}), 409
 
-    # 3. No puede estar ya en un semillero
+    # 5. No puede estar ya en un semillero
     ya_miembro = db.session.execute(text("""
         SELECT 1
         FROM membresiasemillero
@@ -745,7 +750,7 @@ def estudiante_solicitar_vinculacion(id_semillero):
     if ya_miembro:
         return jsonify({"mensaje": "Ya perteneces a un semillero."}), 409
 
-    # 4. No puede repetir una solicitud pendiente al mismo semillero
+    # 6. No puede repetir una solicitud pendiente al mismo semillero
     repetida = db.session.execute(text("""
         SELECT 1
         FROM solicitudvinculacion
@@ -759,7 +764,7 @@ def estudiante_solicitar_vinculacion(id_semillero):
             "mensaje": "Ya tienes una solicitud pendiente en este semillero."
         }), 409
 
-    # 5. Se guarda la solicitud
+    # 7. Se guarda la solicitud
     try:
         db.session.execute(text("""
             INSERT INTO solicitudvinculacion
@@ -1200,3 +1205,47 @@ def estudiante_solicitar_cambio_perfil():
 @web.route("/estudiante/api/perfil/contrasena", methods=["POST"])
 def estudiante_cambiar_contrasena():
     return estudiante_controller.cambiar_contraseña()
+
+@web.route("/admin/solicitudes/actualizaciones")
+def admin_solicitudes_actualizaciones():
+    solicitudes = admin_controller.mostrar_solicitudes_actualizacion()
+
+    return jsonify([
+        {
+            "id": s["id_solicitud_act"],
+            "nombre": s["nombre_institucional"],
+            "correo": s["correo_institucional"],
+            "campo": s["campo_modificado"],
+            "valor_anterior": s["valor_anterior"],
+            "valor_nuevo": s["valor_nuevo"],
+            "descripcion": s["descripcion_solicitud"],
+            "fecha": s["fecha_solicitud"].strftime("%d/%m/%Y %H:%M")
+        }
+        for s in solicitudes
+    ])
+@web.route(
+    "/admin/solicitudes/actualizaciones/<int:id_solicitud>/aprobar",
+    methods=["POST"]
+)
+def admin_aprobar_solicitud_actualizacion(id_solicitud):
+    return admin_controller.aprobar_solicitud_actualizacion(
+        id_solicitud
+    )
+@web.route(
+    "/admin/solicitudes/actualizaciones/<int:id_solicitud>/rechazar",
+    methods=["POST"]
+)
+def admin_rechazar_solicitud_actualizacion(id_solicitud):
+
+    datos = request.get_json(silent=True) or {}
+    motivo = datos.get("motivo", "").strip()
+
+    if not motivo:
+        return jsonify({
+            "mensaje": "Debes indicar el motivo del rechazo."
+        }), 400
+
+    return admin_controller.rechazar_solicitud_actualizacion(
+        id_solicitud,
+        motivo
+    )

@@ -1,5 +1,5 @@
 /* ==============================
-   MODULO SOLICITUDES
+   MODULO SOLICITUDES ADMIN
 ================================ */
 
 .solicitudes-pagina {
@@ -164,5 +164,186 @@
 
     .solicitudes-encabezado h2 {
         font-size: 22px;
+    }
+}
+
+/* PESTANAS DE SOLICITUDES */
+.tabs-solicitudes {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+.tab-solicitud {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: 0.2s ease;
+}
+
+.tab-solicitud:hover {
+    color: #eb2535;
+}
+
+.tab-solicitud.activa {
+    color: #eb2549;
+    border-bottom-color: #eb252f;
+}
+
+/* CONTENIDO DE LAS PESTAÑAS */
+.panel-solicitudes {
+    width: 100%;
+}
+
+.panel-solicitudes[hidden] {
+    display: none;
+}
+
+/* ==============================
+   MODAL DE RECHAZO
+================================ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal-contenido {
+    width: 100%;
+    max-width: 450px;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+    animation: aparecerModal 0.2s ease;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #15151a;
+    font-size: 20px;
+}
+
+.modal-header button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f1f3;
+    color: #555;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.modal-contenido > p {
+    color: #6b6f7b;
+    font-size: 13px;
+}
+
+.modal-contenido textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 12px;
+    border: 1px solid #dfe1e6;
+    border-radius: 9px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.modal-contenido textarea:focus {
+    border-color: #c8102e;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.08);
+}
+
+.mensaje-error {
+    color: #c03939 !important;
+    font-size: 12px !important;
+}
+
+.modal-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-acciones button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#cancelarRechazo {
+    background: #f1f1f3;
+    color: #555;
+}
+
+#confirmarRechazo {
+    background: #c8102e;
+    color: #ffffff;
+}
+
+#confirmarRechazo:hover {
+    background: #a80d26;
+}
+
+#confirmarRechazo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes aparecerModal {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-contenido {
+        padding: 20px;
+    }
+
+    .modal-acciones {
+        flex-direction: column-reverse;
+    }
+
+    .modal-acciones button {
+        width: 100%;
     }
 }

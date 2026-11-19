@@ -49,10 +49,10 @@
         </nav>
 
         <div class="usuario">
-            <span class="avatar" id="avatarIniciales">AM</span>
+            <span class="avatar" id="avatarIniciales">{{ iniciales }}</span>
 
             <span class="usuario-info">
-                <b id="nombreLateral">Andrés Martínez</b>
+                <b id="nombreLateral">{{ nombre_completo }}</b>
                 <small>Estudiante investigador</small>
             </span>
 
@@ -133,7 +133,7 @@
                     </div>
                 </div>
 
-                <span class="avatar" style="width:44px;height:44px">AM</span>
+                <span class="avatar" style="width:44px;height:44px">{{ iniciales }}</span>
 
             </div>
         </header>
@@ -145,7 +145,7 @@
 
                 <div class="saludo">
                     <span class="etiqueta">Mi experiencia RIUL</span>
-                    <h2>Hola, <span id="nombreSaludo">Andrés</span></h2>
+                    <h2>Hola, <span id="nombreSaludo">{{ primer_nombre }}</span></h2>
                     <p>Este es tu panorama como estudiante investigador.</p>
                 </div>
 
@@ -155,16 +155,16 @@
                         <div class="hero-texto">
                             <span class="etiqueta">Nivel investigador</span>
 
-                            <div class="estrellas" aria-label="3 de 5 estrellas">
-                                ★★★<span class="vacia">★★</span>
+                            <div class="estrellas" aria-label="{{ estrellas }} de 5 estrellas">
+                                {{ "★" * estrellas }}<span class="vacia">{{ "★" * (5 - estrellas) }}</span>
                             </div>
 
                             <h3>
-                                <span id="totalInsignias">7</span> insignias obtenidas
+                                <span id="totalInsignias">{{ total_insignias }}</span> insignias obtenidas
                             </h3>
 
                             <p>
-                                <span id="faltanInsignias">2</span>
+                                <span id="faltanInsignias">{{ faltan_insignias }}</span>
                                 insignias para alcanzar el siguiente nivel.
                             </p>
 
@@ -191,7 +191,7 @@
 
                     <div class="tarjeta xp">
                         <span class="etiqueta" style="color:var(--gris)">XP aprobado</span>
-                        <div class="num" id="xpTotal">50</div>
+                        <div class="num" id="xpTotal">{{ xp_total }}</div>
                         <p>El nivel depende de tus insignias, no del XP.</p>
 
                         <div class="reto">
@@ -207,7 +207,7 @@
                     <div class="tarjeta stat">
                         <span class="ico" data-icon="check"></span>
                         <div>
-                            <strong id="totalLogros">3</strong>
+                            <strong id="totalLogros">{{ total_logros }}</strong>
                             <span>Logros activos</span>
                         </div>
                     </div>
@@ -215,7 +215,7 @@
                     <div class="tarjeta stat">
                         <span class="ico" data-icon="shield"></span>
                         <div>
-                            <strong id="totalSemilleros">1</strong>
+                            <strong id="totalSemilleros">{{ total_semilleros }}</strong>
                             <span>Semilleros seguidos</span>
                         </div>
                     </div>

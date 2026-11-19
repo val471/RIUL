@@ -153,21 +153,42 @@ function mostrarAvisoSolicitud(texto, tipo) {
     aviso.hidden = false;
 }
 
-async function resolverSolicitud(boton, accion) {
+let cambioPendienteRechazo = null;
+
+function resolverSolicitud(boton, accion) {
     const item = boton.closest('.request-item');
     const id = boton.dataset.id;
 
-    if (accion === 'rechazar' &&
-        !confirm('¿Deseas rechazar esta solicitud? La cuenta no será creada.')) {
+    if (accion === 'rechazar') {
+        solicitudPendienteRechazo = {
+            id: id,
+            item: item
+        };
+
+        document.getElementById('motivoRechazo').value = '';
+        document.getElementById('errorMotivoRechazo').hidden = true;
+        document.getElementById('modalRechazoCambio').hidden = false;
+
         return;
     }
 
+    procesarSolicitudRegistro(item, id, accion);
+}
+
+
+async function procesarSolicitudRegistro(item, id, accion, motivo = '') {
     item.querySelectorAll('button').forEach(b => b.disabled = true);
 
     try {
         const response = await fetch(
             '/admin/api/solicitudes/' + id + '/' + accion,
-            { method: 'POST' }
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ motivo: motivo })
+            }
         );
 
         const resultado = await response.json().catch(() => ({}));
@@ -179,13 +200,180 @@ async function resolverSolicitud(boton, accion) {
         }
 
         await cargarSolicitudes();
+
         mostrarAvisoSolicitud(resultado.mensaje, 'exito');
+
+        return true;
 
     } catch (error) {
         item.querySelectorAll('button').forEach(b => b.disabled = false);
+
         mostrarAvisoSolicitud(error.message, 'error');
+
+        return false;
     }
 }
+// Mostrat solicitudes de cambio de datos 
+function mostrarTipoSolicitud(tipo, boton) {
+
+    document.getElementById("panel-registro").hidden = tipo !== "registro";
+    document.getElementById("panel-cambios").hidden = tipo !== "cambios";
+
+    document.querySelectorAll(".tab-solicitud").forEach(tab => {
+        tab.classList.remove("activa");
+    });
+
+    boton.classList.add("activa");
+
+    if (tipo === "cambios") {
+        cargarSolicitudesCambios();
+    }
+}
+
+async function cargarSolicitudesCambios() {
+
+    const contenedor = document.getElementById("requestsCambios");
+
+    try {
+        const respuesta = await fetch("/admin/solicitudes/actualizaciones");
+        const solicitudes = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las solicitudes.");
+        }
+
+        if (solicitudes.length === 0) {
+            contenedor.innerHTML = "<p>No hay solicitudes pendientes.</p>";
+            return;
+        }
+
+        contenedor.innerHTML = solicitudes.map(solicitud => `
+    <article class="request-item">
+
+        <div class="request-info">
+            <strong>${solicitud.nombre}</strong>
+            <small>${solicitud.correo}</small>
+            <small>Dato solicitado: ${solicitud.campo}</small>
+            <small>Valor anterior: ${solicitud.valor_anterior || "No registrado"}</small>
+            <small>Nuevo valor: ${solicitud.valor_nuevo}</small>
+            <small>Motivo: ${solicitud.descripcion || "Sin descripción"}</small>
+            <small>Fecha: ${solicitud.fecha}</small>
+        </div>
+
+        <span class="status pendiente">PENDIENTE</span>
+
+        <div class="request-actions">
+            <button onclick="aprobarCambio(${solicitud.id})">
+                Aprobar
+            </button>
+            <button onclick="rechazarCambio(${solicitud.id})">
+                Rechazar
+            </button>
+        </div>
+
+    </article>
+     `).join("");
+
+    } catch (error) {
+        console.error(error);
+        contenedor.innerHTML = "<p>Error al cargar las solicitudes.</p>";
+    }
+}
+
+
+// BOTONES DEL MODAL DE RECHAZO
+
+const modalRechazo = document.getElementById('modalRechazoCambio');
+const motivoRechazo = document.getElementById('motivoRechazo');
+const errorMotivo = document.getElementById('errorMotivoRechazo');
+const botonConfirmarRechazo = document.getElementById('confirmarRechazo');
+
+
+
+function cerrarModalRechazo() {
+    modalRechazo.hidden = true;
+    motivoRechazo.value = '';
+    errorMotivo.hidden = true;
+    
+    solicitudPendienteRechazo = null;
+    cambioPendienteRechazo = null;
+}
+
+document.getElementById('cerrarModalRechazo')
+    .addEventListener('click', cerrarModalRechazo);
+
+document.getElementById('cancelarRechazo')
+    .addEventListener('click', cerrarModalRechazo);
+
+botonConfirmarRechazo.addEventListener('click', async () => {
+
+    const motivo = motivoRechazo.value.trim();
+
+    if (!motivo) {
+        errorMotivo.textContent = 'Debes escribir el motivo del rechazo.';
+        errorMotivo.hidden = false;
+        return;
+    }
+
+    botonConfirmarRechazo.disabled = true;
+
+    try {
+
+        // RECHAZAR SOLICITUD DE REGISTRO
+        if (solicitudPendienteRechazo) {
+
+            const solicitud = solicitudPendienteRechazo;
+
+            const exito = await procesarSolicitudRegistro(
+                solicitud.item,
+                solicitud.id,
+                'rechazar',
+                motivo
+            );
+
+            if (!exito) return;
+
+            cerrarModalRechazo();
+            return;
+        }
+
+        // RECHAZAR CAMBIO DE DATOS
+        if (cambioPendienteRechazo) {
+
+            const respuesta = await fetch(
+                `/admin/solicitudes/actualizaciones/${cambioPendienteRechazo.id}/rechazar`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ motivo: motivo })
+                }
+            );
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(resultado.mensaje);
+            }
+
+            cerrarModalRechazo();
+            await cargarSolicitudesCambios();
+        }
+
+    } catch (error) {
+
+        errorMotivo.textContent =
+            error.message || 'No se pudo rechazar la solicitud.';
+
+        errorMotivo.hidden = false;
+
+    } finally {
+        botonConfirmarRechazo.disabled = false;
+    }
+});
+
+
 
 // FILTRAR USUARIOS
 function filterUsers() {
@@ -464,6 +652,46 @@ formConvocatoria.addEventListener('submit', async function (e) {
     }
 
 });
+
+async function aprobarCambio(id) {
+
+    const confirmar = confirm("¿Deseas aprobar esta solicitud?");
+
+    if (!confirmar) return;
+
+    try {
+        const respuesta = await fetch(
+            `/admin/solicitudes/actualizaciones/${id}/aprobar`,
+            {
+                method: "POST"
+            }
+        );
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(resultado.mensaje);
+        }
+
+        alert(resultado.mensaje);
+        cargarSolicitudesCambios();
+
+    } catch (error) {
+        console.error(error);
+        alert(error.message || "No se pudo aprobar la solicitud.");
+    }
+}
+
+function rechazarCambio(id) {
+
+    cambioPendienteRechazo = {
+        id: id
+    };
+
+    document.getElementById('motivoRechazo').value = '';
+    document.getElementById('errorMotivoRechazo').hidden = true;
+    document.getElementById('modalRechazoCambio').hidden = false;
+}
 
 
 // VENTANA CERRAR SESION

@@ -4,88 +4,159 @@
 <div class="page-heading">
     <div>
         <h1>Solicitudes</h1>
-        <p>Revisa y gestiona las solicitudes de acceso a RIUL.</p>
+        <p>Revisa y gestiona las solicitudes de acceso y cambios de datos en RIUL.</p>
     </div>
 </div>
 
-<div class="admin-card">
-    <div class="card-heading">
-        <h2>Solicitudes de registro</h2>
-        <p>Solicitudes pendientes de aprobación.</p>
+<!-- PESTAÑAS -->
+<div class="solicitudes-tabs">
+    <button type="button"
+            class="tab-solicitud activa"
+            onclick="mostrarTipoSolicitud('registro', this)">
+        Registro
+    </button>
+
+    <button type="button"
+            class="tab-solicitud"
+            onclick="mostrarTipoSolicitud('cambios', this)">
+        Cambios de datos
+    </button>
+</div>
+
+<!-- SOLICITUDES DE REGISTRO -->
+<div id="panel-registro" class="panel-solicitudes">
+
+    <div class="admin-card">
+        <div class="card-heading">
+            <h2>Solicitudes de registro</h2>
+            <p>Solicitudes pendientes de aprobación.</p>
+        </div>
+
+        <p class="aviso-solicitudes" id="avisoSolicitudes" hidden></p>
+
+        <div class="request-list" id="requestsList">
+
+            {% if solicitudes %}
+
+                {% for solicitud in solicitudes %}
+
+                    <article class="request-item">
+
+                        <div class="admin-avatar">
+                            {{ solicitud.nombre_completo[:2]|upper }}
+                        </div>
+
+                        <div class="request-info">
+                            <strong>{{ solicitud.nombre_completo }}</strong>
+
+                            <small>
+                                {{ solicitud.correo_institucional }}
+                            </small>
+
+                            <small>
+                                {{ solicitud.rol_solicitado }}
+                                {% if solicitud.facultad %}
+                                    · {{ solicitud.facultad }}
+                                {% endif %}
+                                {% if solicitud.programa %}
+                                    · {{ solicitud.programa }}
+                                {% endif %}
+                            </small>
+
+                            <small>
+                                Documento: {{ solicitud.documento or 'No registrado' }}
+                            </small>
+
+                            <small>
+                                Fecha:
+                                {{ solicitud.fecha_solicitud.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </div>
+
+                        <span class="status pendiente">
+                            {{ solicitud.estado }}
+                        </span>
+
+                        <div class="request-actions">
+                            <button type="button"
+                                    class="btn btn-red"
+                                    data-id="{{ solicitud.id_solicitud }}"
+                                    onclick="resolverSolicitud(this, 'aprobar')">
+                                Aprobar
+                            </button>
+
+                            <button type="button"
+                                    class="btn"
+                                    data-id="{{ solicitud.id_solicitud }}"
+                                    onclick="resolverSolicitud(this, 'rechazar')">
+                                Rechazar
+                            </button>
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p>No hay solicitudes pendientes.</p>
+
+            {% endif %}
+
+        </div>
     </div>
 
-    <p class="aviso-solicitudes" id="avisoSolicitudes" hidden></p>
+</div>
 
-    <div class="request-list" id="requestsList">
+<!-- SOLICITUDES DE CAMBIOS DE DATOS -->
+<div id="panel-cambios" class="panel-solicitudes" hidden>
 
-        {% if solicitudes %}
+    <div class="admin-card">
+        <div class="card-heading">
+            <h2>Solicitudes de cambios de datos</h2>
+            <p>Revisa las solicitudes de modificación de información personal y académica, incluida la fotografía.</p>
+        </div>
 
-            {% for solicitud in solicitudes %}
-
-                <article class="request-item">
-
-                    <div class="admin-avatar">
-                        {{ solicitud.nombre_completo[:2]|upper }}
-                    </div>
-
-                    <div class="request-info">
-                        <strong>{{ solicitud.nombre_completo }}</strong>
-
-                        <small>
-                            {{ solicitud.correo_institucional }}
-                        </small>
-
-                        <small>
-                            {{ solicitud.rol_solicitado }}
-                            {% if solicitud.facultad %}
-                                · {{ solicitud.facultad }}
-                            {% endif %}
-                            {% if solicitud.programa %}
-                                · {{ solicitud.programa }}
-                            {% endif %}
-                        </small>
-
-                        <small>
-                            Documento: {{ solicitud.documento or 'No registrado' }}
-                        </small>
-
-                        <small>
-                            Fecha:
-                            {{ solicitud.fecha_solicitud.strftime('%d/%m/%Y %H:%M') }}
-                        </small>
-                    </div>
-
-                    <span class="status pendiente">
-                        {{ solicitud.estado }}
-                    </span>
-
-                    <div class="request-actions">
-                        <button type="button"
-                                class="btn btn-red"
-                                data-id="{{ solicitud.id_solicitud }}"
-                                onclick="resolverSolicitud(this, 'aprobar')">
-                            Aprobar
-                        </button>
-
-                        <button type="button"
-                                class="btn"
-                                data-id="{{ solicitud.id_solicitud }}"
-                                onclick="resolverSolicitud(this, 'rechazar')">
-                            Rechazar
-                        </button>
-                    </div>
-
-                </article>
-
-            {% endfor %}
-
-        {% else %}
-
-            <p>No hay solicitudes pendientes.</p>
-
-        {% endif %}
-
+        <div id="requestsCambios">
+            <p>No se han cargado solicitudes de cambios de datos.</p>
+        </div>
     </div>
 
+</div>
 
- </div>
+
+<!-- MODAL PARA RECHAZAR SOLICITUD -->
+<div class="modal-overlay" id="modalRechazoCambio" hidden>
+    <div class="modal-contenido">
+
+        <div class="modal-header">
+            <h2>Rechazar solicitud</h2>
+            <button type="button" id="cerrarModalRechazo" aria-label="Cerrar">
+                &times;
+            </button>
+        </div>
+
+        <p>Indica el motivo por el cual deseas rechazar esta solicitud.</p>
+
+        <textarea
+            id="motivoRechazo"
+            placeholder="Escribe el motivo del rechazo..."
+            rows="4">
+        </textarea>
+
+        <p id="errorMotivoRechazo" class="mensaje-error" hidden></p>
+
+        <div class="modal-acciones">
+            <button type="button" id="cancelarRechazo">
+                Cancelar
+            </button>
+
+            <button type="button" id="confirmarRechazo">
+                Confirmar rechazo
+            </button>
+        </div>
+
+    </div>
+</div>
+
+

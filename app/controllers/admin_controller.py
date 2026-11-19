@@ -1,7 +1,9 @@
 
-from flask import render_template, jsonify
+from flask import render_template, jsonify, request
 from sqlalchemy import text
 from app.extensions import db
+import secrets
+from datetime import datetime
 
 
 def mostrar_panel():
@@ -204,3 +206,395 @@ def mostrar_solicitudes():
         solicitudes=solicitudes
     )
 
+
+def aprobar_solicitud_registro(id_solicitud):
+    try:
+        # Buscar y bloquear la solicitud
+        solicitud = db.session.execute(text("""
+            SELECT *
+            FROM solicitudregistro
+            WHERE id_solicitud = :id
+            FOR UPDATE
+        """), {"id": id_solicitud}).mappings().first()
+
+        if not solicitud:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "La solicitud no existe."
+            }), 404
+
+        if solicitud["estado"] != "PENDIENTE":
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "Esta solicitud ya fue procesada."
+            }), 400
+
+        rol = solicitud["rol_solicitado"]
+
+        if rol not in ["ESTUDIANTE", "DOCENTE", "DOCENTE_LIDER"]:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "El rol de la solicitud no es válido."
+            }), 400
+
+        if not solicitud["contrasena_hash"]:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "La solicitud no tiene una contraseña registrada."
+            }), 400
+
+        if rol == "ESTUDIANTE" and not solicitud["id_programa"]:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "La solicitud no tiene un programa académico."
+            }), 400
+
+        # Verificar que el correo no exista
+        usuario_existente = db.session.execute(text("""
+            SELECT id_usuario
+            FROM usuario
+            WHERE correo_institucional = :correo
+        """), {
+            "correo": solicitud["correo_institucional"]
+        }).first()
+
+        if usuario_existente:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "Ya existe una cuenta con este correo."
+            }), 409
+
+        # Crear usuario principal
+        resultado = db.session.execute(text("""
+            INSERT INTO usuario (
+                nombre_institucional,
+                correo_institucional,
+                contrasena_hash,
+                fecha_nacimiento,
+                rol,
+                estado,
+                fecha_registro,
+                intentos_fallidos
+            )
+            VALUES (
+                :nombre,
+                :correo,
+                :contrasena,
+                :fecha_nacimiento,
+                :rol,
+                'ACTIVO',
+                :fecha_registro,
+                0
+            )
+        """), {
+            "nombre": solicitud["nombre_completo"],
+            "correo": solicitud["correo_institucional"],
+            "contrasena": solicitud["contrasena_hash"],
+            "fecha_nacimiento": solicitud["fecha_nacimiento"],
+            "rol": rol,
+            "fecha_registro": datetime.now()
+        })
+
+        id_usuario = resultado.lastrowid
+
+        # Generar código único de cuatro dígitos
+        codigo = None
+
+        for intento in range(9000):
+            candidato = str(secrets.randbelow(9000) + 1000)
+
+            existe = db.session.execute(text("""
+                SELECT
+                    EXISTS (
+                        SELECT 1 FROM estudianteinvestigador
+                        WHERE codigo_estudiantil = :codigo
+                    )
+                    OR EXISTS (
+                        SELECT 1 FROM docente
+                        WHERE codigo_docente = :codigo
+                    )
+                    OR EXISTS (
+                        SELECT 1 FROM docentelider
+                        WHERE codigo_docente_lider = :codigo
+                    ) AS existe
+            """), {"codigo": candidato}).scalar()
+
+            if not existe:
+                codigo = candidato
+                break
+
+        if codigo is None:
+            raise Exception("No hay códigos de cuatro dígitos disponibles.")
+
+        # Crear perfil según el rol
+        if rol == "ESTUDIANTE":
+
+            db.session.execute(text("""
+                INSERT INTO estudianteinvestigador (
+                    id_usuario,
+                    codigo_estudiantil,
+                    id_programa,
+                    semestre,
+                    id_semillero,
+                    xp_total,
+                    id_nivel_actual,
+                    fecha_actualizacion
+                )
+                VALUES (
+                    :id_usuario,
+                    :codigo,
+                    :id_programa,
+                    1,
+                    NULL,
+                    0,
+                    NULL,
+                    :fecha
+                )
+            """), {
+                "id_usuario": id_usuario,
+                "codigo": codigo,
+                "id_programa": solicitud["id_programa"],
+                "fecha": datetime.now()
+            })
+
+        elif rol == "DOCENTE":
+
+            db.session.execute(text("""
+                INSERT INTO docente (
+                    id_usuario,
+                    codigo_docente,
+                    fecha_actualizacion
+                )
+                VALUES (
+                    :id_usuario,
+                    :codigo,
+                    :fecha
+                )
+            """), {
+                "id_usuario": id_usuario,
+                "codigo": codigo,
+                "fecha": datetime.now()
+            })
+
+        elif rol == "DOCENTE_LIDER":
+
+            db.session.execute(text("""
+                INSERT INTO docentelider (
+                    id_usuario,
+                    codigo_docente_lider,
+                    id_semillero_liderado
+                )
+                VALUES (
+                    :id_usuario,
+                    :codigo,
+                    NULL
+                )
+            """), {
+                "id_usuario": id_usuario,
+                "codigo": codigo
+            })
+
+        # Actualizar solicitud
+        db.session.execute(text("""
+            UPDATE solicitudregistro
+            SET
+                estado = 'APROBADA',
+                fecha_resolucion = :fecha,
+                id_usuario_generado = :id_usuario
+            WHERE id_solicitud = :id_solicitud
+        """), {
+            "fecha": datetime.now(),
+            "id_usuario": id_usuario,
+            "id_solicitud": id_solicitud
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Solicitud aprobada correctamente. Código asignado: " + codigo
+        }), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL APROBAR REGISTRO:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible aprobar la solicitud."
+        }), 500
+
+
+
+def mostrar_solicitudes_actualizacion():
+    solicitudes = db.session.execute(text("""
+        SELECT
+            sa.id_solicitud_act,
+            sa.id_usuario,
+            sa.campo_modificado,
+            sa.valor_anterior,
+            sa.valor_nuevo,
+            sa.descripcion_solicitud,
+            sa.estado,
+            sa.fecha_solicitud,
+            u.nombre_institucional,
+            u.correo_institucional
+        FROM solicitudactualizacion sa
+        INNER JOIN usuario u
+            ON u.id_usuario = sa.id_usuario
+        WHERE sa.estado = 'PENDIENTE'
+        ORDER BY sa.fecha_solicitud DESC
+    """)).mappings().all()
+
+    return solicitudes
+
+def aprobar_solicitud_actualizacion(id_solicitud):
+
+    solicitud = db.session.execute(text("""
+        SELECT *
+        FROM solicitudactualizacion
+        WHERE id_solicitud_act = :id
+          AND estado = 'PENDIENTE'
+    """), {"id": id_solicitud}).mappings().first()
+
+    if not solicitud:
+        return jsonify({
+            "mensaje": "La solicitud no existe o ya fue revisada."
+        }), 404
+
+
+    campos_permitidos = {
+        "nombre_institucional",
+        "correo_institucional",
+        "fecha_nacimiento",
+        "telefono",
+        "foto_perfil"
+    }
+
+    campo = solicitud["campo_modificado"]
+
+    if campo not in campos_permitidos:
+        return jsonify({
+            "mensaje": "El campo solicitado no está permitido."
+        }), 400
+
+    try:
+        db.session.execute(text(f"""
+            UPDATE usuario
+            SET {campo} = :valor,
+                fecha_actualizacion = NOW()
+            WHERE id_usuario = :id_usuario
+        """), {
+            "valor": solicitud["valor_nuevo"],
+            "id_usuario": solicitud["id_usuario"]
+        })
+
+        db.session.execute(text("""
+            UPDATE solicitudactualizacion
+            SET estado = 'APROBADA',
+                fecha_resolucion = NOW()
+            WHERE id_solicitud_act = :id
+        """), {"id": id_solicitud})
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Solicitud aprobada correctamente."
+        }), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("Error al aprobar solicitud:", error)
+
+        return jsonify({
+            "mensaje": "No se pudo aprobar la solicitud."
+        }), 500
+
+def rechazar_solicitud_actualizacion(id_solicitud, motivo):
+
+    try:
+        resultado = db.session.execute(text("""
+            UPDATE solicitudactualizacion
+            SET estado = 'RECHAZADA',
+                motivo_rechazo = :motivo,
+                fecha_resolucion = NOW()
+            WHERE id_solicitud_act = :id
+              AND estado = 'PENDIENTE'
+        """), {
+            "motivo": motivo,
+            "id": id_solicitud
+        })
+
+        if resultado.rowcount == 0:
+            return jsonify({
+                "mensaje": "La solicitud no existe o ya fue revisada."
+            }), 404
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Solicitud rechazada correctamente."
+        }), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("Error al rechazar solicitud:", error)
+
+        return jsonify({
+            "mensaje": "No se pudo rechazar la solicitud."
+        }), 500
+
+
+def rechazar_solicitud_registro(id_solicitud):
+
+    datos = request.get_json(silent=True) or {}
+    motivo = datos.get("motivo", "").strip()
+
+    if not motivo:
+        return jsonify({
+            "mensaje": "Debes escribir el motivo del rechazo."
+        }), 400
+
+    try:
+        solicitud = db.session.execute(text("""
+            SELECT estado
+            FROM solicitudregistro
+            WHERE id_solicitud = :id
+            FOR UPDATE
+        """), {"id": id_solicitud}).fetchone()
+
+        if not solicitud:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "La solicitud no existe."
+            }), 404
+
+        if solicitud.estado != "PENDIENTE":
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "Esta solicitud ya fue procesada."
+            }), 400
+
+        db.session.execute(text("""
+            UPDATE solicitudregistro
+            SET estado = 'RECHAZADA',
+                motivo_rechazo = :motivo,
+                fecha_resolucion = :fecha
+            WHERE id_solicitud = :id
+        """), {
+            "motivo": motivo,
+            "fecha": datetime.now(),
+            "id": id_solicitud
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "La solicitud fue rechazada correctamente."
+        }), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("Error al rechazar solicitud:", error)
+
+        return jsonify({
+            "mensaje": "Ocurrió un error al rechazar la solicitud."
+        }), 500

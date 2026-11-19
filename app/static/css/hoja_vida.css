@@ -273,4 +273,31 @@
     #contenido-hoja-vida .hv-nivel {
         width: 100%;
     }
+
+}
+@media print {
+    .sidebar,
+    .encabezado,
+    #contenido-hoja-vida .cab button,
+    #mensajeHojaVida {
+        display: none !important;
+    }
+
+    .layout,
+    .principal,
+    .contenido {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #contenido-hoja-vida {
+        padding: 0;
+    }
+
+    #contenido-hoja-vida .tarjeta,
+    #contenido-hoja-vida .hv-banner {
+        break-inside: avoid;
+        box-shadow: none;
+    }
 }

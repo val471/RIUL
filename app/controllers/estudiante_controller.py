@@ -14,10 +14,63 @@ import re
 # PANEL DEL ESTUDIANTE
 # =====================================================
 
+def _escalar(consulta, parametros):
+    return db.session.execute(text(consulta), parametros).scalar() or 0
+
+
 def mostrar_panel():
-    return render_template("estudiante/index.html")
+    id_estudiante = obtener_id_estudiante()
+    perfil = obtener_perfil()
 
+    nombre = (perfil.get("nombre_institucional") or "Estudiante").strip()
+    partes = nombre.split()
+    primer_nombre = partes[0] if partes else "Estudiante"
+    iniciales = "".join(p[0] for p in partes[:2]).upper() or "E"
 
+    p = {"id": id_estudiante}
+
+    total_insignias = _escalar(
+        "SELECT COUNT(*) FROM insigniaotorgada WHERE id_usuario = :id", p)
+
+    xp_total = _escalar(
+        "SELECT xp_total FROM estudianteinvestigador WHERE id_usuario = :id", p)
+
+    total_logros = _escalar(
+        "SELECT COUNT(*) FROM logro "
+        "WHERE id_estudiante = :id AND estado = 'APROBADO'", p)
+
+    total_semilleros = _escalar(
+        "SELECT COUNT(*) FROM membresiasemillero "
+        "WHERE id_estudiante = :id AND fecha_salida IS NULL", p)
+
+    estrellas = _escalar(
+        "SELECT n.estrellas FROM estudianteinvestigador ei "
+        "JOIN nivel n ON n.id_nivel = ei.id_nivel_actual "
+        "WHERE ei.id_usuario = :id", p)
+
+    # Insignias que faltan para el siguiente nivel
+    minimas_siguiente = db.session.execute(text("""
+        SELECT MIN(insignias_minimas) FROM nivel
+        WHERE insignias_minimas > :total
+    """), {"total": total_insignias}).scalar()
+
+    faltan_insignias = (
+        max(minimas_siguiente - total_insignias, 0)
+        if minimas_siguiente is not None else 0
+    )
+
+    return render_template(
+        "estudiante/index.html",
+        nombre_completo=nombre,
+        primer_nombre=primer_nombre,
+        iniciales=iniciales,
+        total_insignias=total_insignias,
+        faltan_insignias=faltan_insignias,
+        xp_total=xp_total,
+        total_logros=total_logros,
+        total_semilleros=total_semilleros,
+        estrellas=min(int(estrellas), 5)
+    )
 # =====================================================
 # IDENTIFICACION DEL ESTUDIANTE
 # =====================================================
@@ -722,68 +775,33 @@ def obtener_insignias_hoja_vida(id_estudiante):
 # PROYECTOS DEL ESTUDIANTE
 # =====================================================
 
-def obtener_mis_proyectos():
+def obtener_proyectos_hoja_vida(id_estudiante):
 
-    id_estudiante = obtener_id_estudiante()
+    resultados = db.session.execute(text("""
+        SELECT
+            p.titulo,
+            p.descripcion,
+            p.fecha_inicio,
+            p.estado,
+            s.nombre AS semillero
+        FROM estudianteinvestigador ei
+        INNER JOIN proyecto p
+            ON ei.id_semillero = p.id_semillero
+        INNER JOIN semillero s
+            ON p.id_semillero = s.id_semillero
+        WHERE ei.id_usuario = :id_estudiante
+        ORDER BY p.fecha_inicio DESC
+    """), {
+        "id_estudiante": id_estudiante
+    }).mappings().all()
 
-    if not id_estudiante:
-        return jsonify({
-            "proyectos": []
-        }), 401
-
-    try:
-
-        consulta = text("""
-            SELECT
-                p.id_proyecto,
-                p.titulo,
-                p.descripcion,
-                p.fecha_inicio,
-                p.estado,
-                s.nombre AS semillero
-            FROM estudianteinvestigador ei
-            INNER JOIN proyecto p
-                ON p.id_semillero = ei.id_semillero
-            INNER JOIN semillero s
-                ON s.id_semillero = ei.id_semillero
-            WHERE ei.id_usuario = :id_estudiante
-            ORDER BY p.fecha_inicio DESC
-        """)
-
-        resultados = db.session.execute(
-            consulta,
-            {"id_estudiante": id_estudiante}
-        ).mappings().all()
-
-        proyectos = []
-
-        for fila in resultados:
-
-            proyectos.append({
-                "id_proyecto": fila["id_proyecto"],
-                "titulo": fila["titulo"],
-                "descripcion": fila["descripcion"],
-                "fecha_inicio": (
-                    fila["fecha_inicio"].strftime("%Y-%m-%d")
-                    if fila["fecha_inicio"] else ""
-                ),
-                "estado": fila["estado"],
-                "semillero": fila["semillero"]
-            })
-
-        return jsonify({
-            "proyectos": proyectos
-        })
-
-    except Exception:
-
-        db.session.rollback()
-
-        current_app.logger.exception(
-            "Error al consultar los proyectos del estudiante"
-        )
-
-        return jsonify({
-            "proyectos": [],
-            "mensaje": "No fue posible consultar tus proyectos."
-        }), 500
+    return [
+        {
+            **dict(fila),
+            "fecha_inicio": (
+                fila["fecha_inicio"].strftime("%d/%m/%Y")
+                if fila["fecha_inicio"] else ""
+            )
+        }
+        for fila in resultados
+    ]
