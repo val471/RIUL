@@ -271,6 +271,8 @@ def aprobar_solicitud_registro(id_solicitud):
                 correo_institucional,
                 contrasena_hash,
                 fecha_nacimiento,
+                documento,
+                telefono,
                 rol,
                 estado,
                 fecha_registro,
@@ -281,6 +283,8 @@ def aprobar_solicitud_registro(id_solicitud):
                 :correo,
                 :contrasena,
                 :fecha_nacimiento,
+                :documento,
+                :telefono,
                 :rol,
                 'ACTIVO',
                 :fecha_registro,
@@ -291,6 +295,8 @@ def aprobar_solicitud_registro(id_solicitud):
             "correo": solicitud["correo_institucional"],
             "contrasena": solicitud["contrasena_hash"],
             "fecha_nacimiento": solicitud["fecha_nacimiento"],
+            "documento": solicitud["documento"],
+            "telefono": solicitud["telefono"],
             "rol": rol,
             "fecha_registro": datetime.now()
         })
@@ -453,6 +459,7 @@ def aprobar_solicitud_actualizacion(id_solicitud):
         FROM solicitudactualizacion
         WHERE id_solicitud_act = :id
           AND estado = 'PENDIENTE'
+        FOR UPDATE
     """), {"id": id_solicitud}).mappings().first()
 
     if not solicitud:
@@ -460,8 +467,7 @@ def aprobar_solicitud_actualizacion(id_solicitud):
             "mensaje": "La solicitud no existe o ya fue revisada."
         }), 404
 
-
-    campos_permitidos = {
+    campos_permitidos = { 
         "nombre_institucional",
         "correo_institucional",
         "fecha_nacimiento",
@@ -494,6 +500,27 @@ def aprobar_solicitud_actualizacion(id_solicitud):
             WHERE id_solicitud_act = :id
         """), {"id": id_solicitud})
 
+        # Crear notificacion para el estudiante
+        db.session.execute(text("""
+            INSERT INTO notificacion (
+                id_usuario,
+                mensaje,
+                tipo,
+                estado,
+                fecha
+            )
+            VALUES (
+                :id_usuario,
+                :mensaje,
+                'ACTUALIZACION',
+                0,
+                NOW()
+            )
+        """), {
+            "id_usuario": solicitud["id_usuario"],
+            "mensaje": "Tu solicitud de actualización de perfil fue aprobada."
+        })
+
         db.session.commit()
 
         return jsonify({
@@ -511,22 +538,52 @@ def aprobar_solicitud_actualizacion(id_solicitud):
 def rechazar_solicitud_actualizacion(id_solicitud, motivo):
 
     try:
-        resultado = db.session.execute(text("""
+        solicitud = db.session.execute(text("""
+            SELECT id_usuario
+            FROM solicitudactualizacion
+            WHERE id_solicitud_act = :id
+              AND estado = 'PENDIENTE'
+            FOR UPDATE
+        """), {
+            "id": id_solicitud
+        }).mappings().first()
+
+        if not solicitud:
+            return jsonify({
+                "mensaje": "La solicitud no existe o ya fue revisada."
+            }), 404
+
+        db.session.execute(text("""
             UPDATE solicitudactualizacion
             SET estado = 'RECHAZADA',
                 motivo_rechazo = :motivo,
                 fecha_resolucion = NOW()
             WHERE id_solicitud_act = :id
-              AND estado = 'PENDIENTE'
         """), {
             "motivo": motivo,
             "id": id_solicitud
         })
 
-        if resultado.rowcount == 0:
-            return jsonify({
-                "mensaje": "La solicitud no existe o ya fue revisada."
-            }), 404
+        # Crear notificacion para el estudiante
+        db.session.execute(text("""
+            INSERT INTO notificacion (
+                id_usuario,
+                mensaje,
+                tipo,
+                estado,
+                fecha
+            )
+            VALUES (
+                :id_usuario,
+                :mensaje,
+                'ACTUALIZACION',
+                0,
+                NOW()
+            )
+        """), {
+            "id_usuario": solicitud["id_usuario"],
+            "mensaje": "Tu solicitud de actualización de perfil fue rechazada. Motivo: " + motivo
+        })
 
         db.session.commit()
 
@@ -541,7 +598,7 @@ def rechazar_solicitud_actualizacion(id_solicitud, motivo):
         return jsonify({
             "mensaje": "No se pudo rechazar la solicitud."
         }), 500
-
+    
 
 def rechazar_solicitud_registro(id_solicitud):
 

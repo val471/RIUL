@@ -1,10 +1,15 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-    const formLogin = document.getElementById("formLogin");
+
+    const formLogin = document.getElementById("formularioLogin");
     const formRegistro = document.getElementById("formRegistro");
 
+    // ========================================
     // ENVIO DE FORMULARIOS
+    // ========================================
+
     async function enviarFormulario(url, datos, mensaje) {
+
         mensaje.textContent = "Procesando...";
 
         try {
@@ -31,12 +36,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (!respuesta.ok) {
-                throw new Error(
-                    resultado.mensaje || "No fue posible completar la solicitud."
-                );
+                mensaje.hidden = false;
+                mensaje.textContent =
+                 resultado.mensaje ||
+                 resultado.error ||
+                 "Correo o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.";
+            return;
             }
 
-            mensaje.textContent = resultado.mensaje || "Operación completada.";
+            mensaje.textContent =
+                resultado.mensaje || "Operación completada.";
 
             if (resultado.redirect) {
                 window.location.href = resultado.redirect;
@@ -50,8 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ========================================
     // INICIO DE SESION
+    // ========================================
+
     formLogin?.addEventListener("submit", async function (evento) {
+
         evento.preventDefault();
 
         if (!formLogin.reportValidity()) return;
@@ -64,31 +77,45 @@ document.addEventListener("DOMContentLoaded", function () {
             correo: correo,
             contrasena: contrasena
         }, mensaje);
+
     });
 
+    // ========================================
     // ELEMENTOS DEL REGISTRO
+    // ========================================
+
     const rolRegistro = document.getElementById("rol");
     const facultadRegistro = document.getElementById("facultad");
     const programaRegistro = document.getElementById("programa");
     const campoPrograma = document.getElementById("campoPrograma");
 
+    // ========================================
     // FILTRAR PROGRAMAS POR FACULTAD
+    // ========================================
+
     function actualizarProgramas() {
+
         if (!programaRegistro || !facultadRegistro) return;
 
         const idFacultad = facultadRegistro.value;
 
         Array.from(programaRegistro.options).forEach(opcion => {
+
             if (!opcion.value) return;
 
             opcion.hidden = opcion.dataset.facultad !== idFacultad;
+
         });
 
         programaRegistro.value = "";
     }
 
+    // ========================================
     // MOSTRAR PROGRAMA SOLO PARA ESTUDIANTES
+    // ========================================
+
     rolRegistro?.addEventListener("change", function () {
+
         if (campoPrograma) {
             campoPrograma.hidden = rolRegistro.value !== "ESTUDIANTE";
         }
@@ -96,13 +123,21 @@ document.addEventListener("DOMContentLoaded", function () {
         if (programaRegistro) {
             programaRegistro.required = rolRegistro.value === "ESTUDIANTE";
         }
+
     });
 
+    // ========================================
     // ACTUALIZAR PROGRAMAS AL CAMBIAR FACULTAD
+    // ========================================
+
     facultadRegistro?.addEventListener("change", actualizarProgramas);
 
+    // ========================================
     // REGISTRO
+    // ========================================
+
     formRegistro?.addEventListener("submit", async function (evento) {
+
         evento.preventDefault();
 
         if (!formRegistro.reportValidity()) return;
@@ -114,36 +149,47 @@ document.addEventListener("DOMContentLoaded", function () {
         const mensaje = document.getElementById("mensajeRegistro");
 
         // VALIDAR CORREO
+
         if (!correo.toLowerCase().endsWith("@unilibre.edu.co")) {
             mensaje.textContent = "Debes utilizar tu correo institucional.";
             return;
         }
 
         // VALIDAR CONTRASEÑAS
+
         if (contrasena !== confirmar) {
             mensaje.textContent = "Las contraseñas no coinciden.";
             return;
         }
 
         if (contrasena.length < 8) {
-            mensaje.textContent = "La contraseña debe tener al menos 8 caracteres.";
+            mensaje.textContent =
+                "La contraseña debe tener al menos 8 caracteres.";
             return;
         }
 
         // ENVIAR SOLICITUD
+
         await enviarFormulario("/api/registro", {
+
             nombres: document.getElementById("nombres").value.trim(),
             apellidos: document.getElementById("apellidos").value.trim(),
             documento: document.getElementById("documento").value.trim(),
             fecha_nacimiento: document.getElementById("fechaNacimiento").value,
+            telefono: document.getElementById("telefono").value.trim(),
             correo: correo,
             rol: rol,
+
             id_facultad: facultadRegistro.value,
+
             id_programa: rol === "ESTUDIANTE"
                 ? programaRegistro.value
                 : null,
+
             contrasena: contrasena
+
         }, mensaje);
+
     });
 
 });

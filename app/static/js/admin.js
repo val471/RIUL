@@ -152,8 +152,9 @@ function mostrarAvisoSolicitud(texto, tipo) {
     aviso.className = 'aviso-solicitudes ' + tipo;
     aviso.hidden = false;
 }
-
+let solicitudPendienteRechazo = null;
 let cambioPendienteRechazo = null;
+
 
 function resolverSolicitud(boton, accion) {
     const item = boton.closest('.request-item');

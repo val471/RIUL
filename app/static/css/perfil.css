@@ -483,4 +483,26 @@
     }
 }
 
+.error-solicitud {
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #fdecec;
+    color: #b91c1c;
+    font-size: 14px;
+}
+
+.error-solicitud[hidden] {
+    display: none !important;
+}
+
+.notificacion-icono.error {
+    background: #fdecec;
+    color: #d10d32;
+}
+
+#campoValorSolicitud[hidden],
+#campoFotoSolicitud[hidden] {
+    display: none !important;
+}
 

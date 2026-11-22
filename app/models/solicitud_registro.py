@@ -11,6 +11,7 @@ class SolicitudRegistro(db.Model):
     fecha_nacimiento = db.Column(db.Date, nullable=False)
 
     documento = db.Column(db.String(30), nullable=True)
+    telefono = db.Column(db.String(20), nullable=True)
     id_facultad = db.Column(db.Integer, nullable=True)
     id_programa = db.Column(db.Integer, nullable=True)
     contrasena_hash = db.Column(db.String(255), nullable=True)

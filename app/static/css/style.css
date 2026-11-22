@@ -1386,3 +1386,26 @@ button:focus-visible {
         font-size: 19px;
     }
 }
+
+
+
+/* MENSAJES DEL INICIO DE SESION */
+
+.mensaje-demo {
+    display: block;
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 9px;
+    background-color: #FDE8E8;
+    border: 1px solid #F5B5B5;
+    color: #B42318;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.mensaje-demo[hidden] {
+    display: none !important;
+}
+

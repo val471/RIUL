@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión | RIUL</title>
+
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
     <main class="auth-pagina">
 
         <section class="auth-lateral">
@@ -32,12 +34,14 @@
 
         <section class="auth-contenedor">
             <div class="auth-tarjeta">
+
                 <a href="/" class="logo">RIUL</a>
 
                 <h2>Bienvenido de nuevo</h2>
                 <p>Ingresa tus credenciales para continuar.</p>
 
                 <form id="formularioLogin">
+
                     <div class="auth-campo">
                         <label for="correo">Correo electrónico</label>
                         <input
@@ -65,105 +69,15 @@
                     </button>
 
                     <p id="mensajeLogin" class="mensaje-demo" hidden></p>
+
                 </form>
 
-                <div class="demo-cuentas">
-                    <h3>Accesos de demostración</h3>
-                    <p>
-                        Pulsa un perfil para rellenar automáticamente
-                        el correo y la contraseña.
-                    </p>
-
-                    <button class="demo-cuenta" type="button"
-                            data-rol="administrador"
-                            data-correo="admin@unilibre.edu.co"
-                            data-clave="Admin123!">
-                        <span>
-                            <strong>Administrador</strong>
-                            <small>Gestión general de RIUL</small>
-                        </span>
-                        <span>Usar cuenta →</span>
-                    </button>
-
-                    <button class="demo-cuenta" type="button"
-                            data-rol="estudiante"
-                            data-correo="estudiante@unilibre.edu.co"
-                            data-clave="Estudiante123!">
-                        <span>
-                            <strong>Estudiante</strong>
-                            <small>Proyectos, logros y semilleros</small>
-                        </span>
-                        <span>Usar cuenta →</span>
-                    </button>
-
-                    <button class="demo-cuenta" type="button"
-                            data-rol="docente"
-                            data-correo="docente@unilibre.edu.co"
-                            data-clave="Docente123!">
-                        <span>
-                            <strong>Docente</strong>
-                            <small>Proyectos e integrantes</small>
-                        </span>
-                        <span>Usar cuenta →</span>
-                    </button>
-                </div>
-
-                <p style="margin-top:22px; text-align:center;">
-                    ¿No tienes cuenta?
-                    <a href="/registro">Crear cuenta</a>
-                </p>
-
-                <p style="font-size:12px; color:#69717D;">
-                    Las cuentas mostradas son de demostración y se
-                    validan contra la base de datos.
-                </p>
             </div>
         </section>
 
     </main>
 
-    <script>
-        const formulario = document.getElementById("formularioLogin");
-        const campoCorreo = document.getElementById("correo");
-        const campoClave = document.getElementById("contrasena");
-        const mensaje = document.getElementById("mensajeLogin");
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 
-        document.querySelectorAll(".demo-cuenta").forEach((boton) => {
-            boton.addEventListener("click", () => {
-                campoCorreo.value = boton.dataset.correo;
-                campoClave.value = boton.dataset.clave;
-
-                mensaje.hidden = false;
-                mensaje.textContent =
-                    "Cuenta de " + boton.dataset.rol +
-                    " cargada. Pulsa «Iniciar sesión» para continuar.";
-            });
-        });
-
-        formulario.addEventListener("submit", async (evento) => {
-            evento.preventDefault();
-            mensaje.hidden = false;
-            mensaje.textContent = "Procesando...";
-
-            try {
-                const respuesta = await fetch("/api/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        correo: campoCorreo.value.trim(),
-                        contrasena: campoClave.value
-                    })
-                });
-                const datos = await respuesta.json();
-                mensaje.textContent = datos.mensaje || "";
-
-                if (respuesta.ok && datos.redirect) {
-                    window.location.href = datos.redirect;
-                }
-            } catch (error) {
-                mensaje.textContent = "No fue posible conectar con el servidor.";
-            }
-        });
-    </script>
 </body>
 </html>

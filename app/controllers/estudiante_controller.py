@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 import os
 import re
+import time
 
 
 # =====================================================
@@ -98,6 +99,7 @@ def obtener_perfil():
             u.fecha_nacimiento,
             u.foto_perfil,
             u.telefono,
+            u.documento,
             ei.codigo_estudiantil,
             ei.semestre,
             p.nombre AS programa,
@@ -256,6 +258,25 @@ def solicitar_cambio_perfil():
             "descripcion": descripcion
         })
 
+        db.session.execute(text("""
+    INSERT INTO notificacion (
+        id_usuario,
+        mensaje,
+        tipo,
+        estado,
+        fecha
+    )
+    VALUES (
+        :id_usuario,
+        :mensaje,
+        'ACTUALIZACION',
+        0,
+        NOW()
+    )
+"""), {
+    "id_usuario": id_estudiante,
+    "mensaje": "Tu solicitud de cambio de perfil fue enviada y está pendiente de aprobación."
+})
         db.session.commit()
 
         return jsonify({
@@ -279,7 +300,7 @@ def solicitar_cambio_perfil():
 # CAMBIAR CONTRASEÑA
 # =====================================================
 
-def cambiar_contraseña():
+def cambiar_contrasena():
 
     id_estudiante = obtener_id_estudiante()
 
@@ -805,3 +826,181 @@ def obtener_proyectos_hoja_vida(id_estudiante):
         }
         for fila in resultados
     ]
+
+# =====================================================
+# EVENTOS DEL ESTUDIANTE
+# =====================================================
+
+def obtener_eventos():
+
+    resultados = db.session.execute(text("""
+        SELECT
+            id_evento,
+            nombre,
+            descripcion,
+            fecha,
+            fecha_cierre,
+            lugar,
+            modalidad,
+            CASE
+                WHEN fecha_cierre IS NOT NULL
+                     AND fecha_cierre >= NOW()
+                THEN 'abierto'
+                ELSE 'cerrado'
+            END AS estado
+        FROM evento
+        ORDER BY fecha ASC
+    """)).mappings().all()
+
+    return [
+        {
+            **dict(evento),
+            "fecha": (
+                evento["fecha"].strftime("%Y-%m-%d %H:%M:%S")
+                if evento["fecha"] else None
+            ),
+            "fecha_cierre": (
+                evento["fecha_cierre"].strftime("%Y-%m-%d %H:%M:%S")
+                if evento["fecha_cierre"] else None
+            )
+        }
+        for evento in resultados
+    ]
+
+
+def cargar_eventos():
+    return jsonify(obtener_eventos())
+
+# =====================================================
+# SOLICITUD DE CAMBIO DE FOTO DE PERFIL
+# =====================================================
+
+
+def solicitar_cambio_foto():
+
+    id_estudiante = obtener_id_estudiante()
+
+    if not id_estudiante:
+        return jsonify({"mensaje": "No se encontró tu usuario."}), 401
+
+    archivo = request.files.get("foto")
+    descripcion = (request.form.get("descripcion") or "").strip()
+
+    if not archivo or not archivo.filename:
+        return jsonify({"mensaje": "Selecciona la foto que quieres usar."}), 400
+
+    if not descripcion:
+        return jsonify({"mensaje": "Explica el motivo de la solicitud."}), 400
+
+    extension = ""
+    if "." in archivo.filename:
+        extension = archivo.filename.rsplit(".", 1)[-1].lower()
+
+    if extension not in {"png", "jpg", "jpeg", "webp"}:
+        return jsonify({
+            "mensaje": "Formato no permitido. Usa PNG, JPG o WEBP."
+        }), 400
+
+    archivo.seek(0, os.SEEK_END)
+    peso = archivo.tell()
+    archivo.seek(0)
+
+    if peso > 2 * 1024 * 1024:
+        return jsonify({"mensaje": "La imagen no debe superar 2 MB."}), 400
+
+    ruta_archivo = None
+
+    try:
+        pendiente = db.session.execute(text("""
+            SELECT 1
+            FROM solicitudactualizacion
+            WHERE id_usuario = :id
+              AND campo_modificado = 'foto_perfil'
+              AND estado = 'PENDIENTE'
+            LIMIT 1
+        """), {"id": id_estudiante}).first()
+
+        if pendiente:
+            return jsonify({
+                "mensaje": "Ya tienes una solicitud pendiente para tu foto."
+            }), 409
+
+        perfil = obtener_perfil() or {}
+
+        carpeta = os.path.join(
+            current_app.static_folder,
+            "uploads",
+            "perfiles"
+        )
+        os.makedirs(carpeta, exist_ok=True)
+
+        nombre_archivo = (
+            f"solicitud_{id_estudiante}_{int(time.time())}.{extension}"
+        )
+        ruta_archivo = os.path.join(carpeta, nombre_archivo)
+        archivo.save(ruta_archivo)
+
+        db.session.execute(text("""
+            INSERT INTO solicitudactualizacion (
+                id_usuario,
+                campo_modificado,
+                valor_anterior,
+                valor_nuevo,
+                descripcion_solicitud,
+                estado,
+                fecha_solicitud
+            )
+            VALUES (
+                :id_usuario,
+                'foto_perfil',
+                :anterior,
+                :nuevo,
+                :descripcion,
+                'PENDIENTE',
+                NOW()
+            )
+        """), {
+            "id_usuario": id_estudiante,
+            "anterior": perfil.get("foto_perfil"),
+            "nuevo": "uploads/perfiles/" + nombre_archivo,
+            "descripcion": descripcion
+        })
+
+        db.session.execute(text("""
+            INSERT INTO notificacion (
+                id_usuario,
+                mensaje,
+                tipo,
+                estado,
+                fecha
+            )
+            VALUES (
+                :id_usuario,
+                :mensaje,
+                'ACTUALIZACION',
+                0,
+                NOW()
+            )
+        """), {
+            "id_usuario": id_estudiante,
+            "mensaje": "Tu solicitud de cambio de foto fue enviada y está pendiente de aprobación."
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Tu nueva foto fue enviada y está pendiente de aprobación."
+        }), 201
+
+    except Exception:
+
+        db.session.rollback()
+
+        if ruta_archivo and os.path.exists(ruta_archivo):
+            os.remove(ruta_archivo)
+
+        current_app.logger.exception("Error al solicitar cambio de foto")
+
+        return jsonify({
+            "mensaje": "No fue posible enviar la solicitud."
+        }), 500

@@ -47,10 +47,17 @@
 
         <!-- USUARIO Y CERRAR SESION (abajo del menú) -->
         <div class="admin-user">
-            <div class="admin-avatar">CM</div>
-            <div><strong>Carlos Moreno</strong><small>Administrador</small></div>
+            <div class="admin-avatar">
+                {{ session.get('nombre_institucional', 'AG')[:2].upper() }}
+
+            </div>
+            
+            <div>
+               <strong>{{ session.get('nombre_institucional', 'Administrador') }}</strong>
+               <small>Administrador</small>
+            </div>
             <a href="/cerrar-sesion" class="admin-logout">
-                <svg viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Cerrar sesión
+                <svg viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Cerrar sesion
             </a>
         </div>
     </aside>

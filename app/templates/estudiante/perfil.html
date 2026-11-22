@@ -56,6 +56,13 @@
                                readonly>
                     </div>
 
+                    <div class="campo">
+                       <label>Documento de identidad</label>
+                       <input type="text" id="documento"
+                               value="{{ perfil.documento or '' }}"
+                               readonly>
+                    </div>
+
                 </div>
             </div>
 
@@ -170,7 +177,7 @@
                 </select>
             </div>
 
-            <div class="campo">
+            <div class="campo" id="campoValorSolicitud">
                 <label for="valorNuevoSolicitud">
                    Nuevo dato que solicitas
                 </label>
@@ -179,6 +186,15 @@
              id="valorNuevoSolicitud"
             placeholder="Escribe el nuevo dato que deseas registrar">
         </div>
+         
+        <div class="campo" id="campoFotoSolicitud" hidden>
+         <label for="archivoFotoSolicitud">Nueva foto</label>
+            
+         <input type="file"
+         id="archivoFotoSolicitud"
+         accept="image/png,image/jpeg,image/webp">
+        </div>
+
 
         <div class="campo">
         <label for="descripcionSolicitud">
@@ -188,7 +204,7 @@
               rows="5"
               placeholder="Explica por qué necesitas realizar este cambio."></textarea>
             </div>
-
+            <p id="errorSolicitud" class="error-solicitud" hidden></p>
             <div class="modal-solicitud-acciones">
 
                 <button type="button" id="enviarSolicitud">
@@ -207,7 +223,7 @@
     <!-- NOTIFICACION DE SOLICITUD -->
 <div id="notificacionPerfil" class="notificacion-perfil" hidden>
     <div class="notificacion-contenido">
-        <div class="notificacion-icono">✓</div>
+       <div class="notificacion-icono" id="iconoNotificacion">✓</div>
 
         <h3 id="tituloNotificacion">Solicitud enviada</h3>
 

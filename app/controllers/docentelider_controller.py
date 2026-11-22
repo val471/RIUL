@@ -1,5 +1,7 @@
 
 from flask import render_template, jsonify, session
+from sqlalchemy import text
+from app.extensions import db
 
 
 def mostrar_panel():

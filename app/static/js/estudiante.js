@@ -307,7 +307,7 @@ if (s.mi_solicitud === "PENDIENTE") {
                         "</div>" +
                         '<div class="semillero-acciones">' +
                             botonPrincipal +
-                            '<button type="button" class="boton">Seguir</button>' +
+                            '<button type="button" class="boton btn-seguir" data-id="' + s.id + '">Seguir</button>' +
                         "</div>" +
                     "</div>" +
                 "</article>"
@@ -318,6 +318,39 @@ if (s.mi_solicitud === "PENDIENTE") {
         lista.innerHTML = "<p>No fue posible cargar los semilleros.</p>";
     }
 }
+//BOTON SE SEGUIR
+document.addEventListener("click", async e => {
+    const boton = e.target.closest(".btn-seguir");
+    if (!boton) return;
+
+    boton.disabled = true;
+    boton.textContent = "Siguiendo...";
+
+    try {
+        const respuesta = await fetch(
+            "/estudiante/api/semilleros/" + boton.dataset.id + "/seguir",
+            { method: "POST" }
+        );
+
+        const resultado = await respuesta.json();
+
+        console.log("RESPUESTA DE SEGUIR:", respuesta.status, resultado);
+
+        if (!respuesta.ok) {
+            boton.disabled = false;
+            boton.textContent = "Seguir";
+            console.error("Error al seguir:", resultado.mensaje);
+            return;
+        }
+
+        boton.textContent = "Siguiendo";
+
+    } catch (error) {
+        console.error("Error al seguir semillero:", error);
+        boton.disabled = false;
+        boton.textContent = "Seguir";
+    }
+});
 // ---------- SOLICITAR VINCULACIÓN ----------
 document.addEventListener("click", async e => {
     const boton = e.target.closest(".btn-solicitar");
@@ -378,6 +411,61 @@ document.addEventListener("input", e => {
 
 
 // ---------- EVENTOS ----------
+// ---------- CARGAR EVENTOS REALES ----------
+async function cargarEventos() {
+
+    const lista = document.getElementById("listaEventos");
+
+    if (!lista) return;
+
+    lista.innerHTML = "<p>Cargando eventos...</p>";
+
+    try {
+        const respuesta = await fetch("/estudiante/api/eventos");
+
+        if (!respuesta.ok) {
+            throw new Error("Error al consultar eventos");
+        }
+
+        const eventos = await respuesta.json();
+
+        if (eventos.length === 0) {
+            lista.innerHTML = "<p>No hay eventos disponibles.</p>";
+            return;
+        }
+
+        lista.innerHTML = eventos.map(evento => `
+            <article class="evento-card">
+                <div class="evento-icono">
+                    <span data-icon="cal"></span>
+                </div>
+
+                <div class="evento-info">
+                    <h3>${esc(evento.nombre)}</h3>
+                    <p>
+                        Cierre: ${evento.fecha_cierre
+                            ? esc(evento.fecha_cierre)
+                            : "Sin fecha de cierre"}
+                        · Modalidad: ${esc(evento.modalidad)}
+                    </p>
+                </div>
+
+                <div class="evento-acciones">
+                    <span class="evento-estado ${evento.estado}">
+                        ${evento.estado === "abierto" ? "Abierto" : "Cerrado"}
+                    </span>
+                </div>
+            </article>
+        `).join("");
+
+        cargarIconos(lista);
+        cargarEventos();
+
+    } catch (error) {
+        console.error("Error al cargar eventos:", error);
+        lista.innerHTML = "<p>No fue posible cargar los eventos.</p>";
+    }
+}
 function filtrarEventos() {
     const buscador = document.getElementById("buscarEvento");
     const filtro = document.getElementById("filtroEvento");
@@ -713,23 +801,36 @@ function inicializarPerfil() {
     const cerrarNotificacion = document.getElementById("cerrarNotificacion");
     const tituloNotificacion = document.getElementById("tituloNotificacion");
     const mensajeNotificacion = document.getElementById("mensajeNotificacion");
+    const iconoNotificacion = document.getElementById("iconoNotificacion");
+    const errorSolicitud = document.getElementById("errorSolicitud");
+    const campoSolicitud = document.getElementById("campoSolicitud");
+    const campoValorSolicitud = document.getElementById("campoValorSolicitud");
+    const campoFotoSolicitud = document.getElementById("campoFotoSolicitud");
+    const archivoFotoSolicitud = document.getElementById("archivoFotoSolicitud");
 
     // FUNCION PARA MOSTRAR NOTIFICACION
-    function mostrarNotificacion(titulo, mensaje) {
-        if (tituloNotificacion && mensajeNotificacion && notificacionPerfil) {
-            tituloNotificacion.textContent = titulo;
-            mensajeNotificacion.textContent = mensaje;
-            notificacionPerfil.hidden = false;
-        }
-    }
-
+    
     // CERRAR NOTIFICACION
     if (cerrarNotificacion && notificacionPerfil) {
         cerrarNotificacion.addEventListener("click", function () {
             notificacionPerfil.hidden = true;
         });
     }
+        // FUNCION PARA MOSTRAR NOTIFICACION
+    function mostrarNotificacion(titulo, mensaje, tipo) {
+        if (tituloNotificacion && mensajeNotificacion && notificacionPerfil) {
+            tituloNotificacion.textContent = titulo;
+            mensajeNotificacion.textContent = mensaje;
 
+            if (iconoNotificacion) {
+                const esError = tipo === "error";
+                iconoNotificacion.textContent = esError ? "✕" : "✓";
+                iconoNotificacion.classList.toggle("error", esError);
+            }
+
+            notificacionPerfil.hidden = false;
+        }
+    }
     // MOSTRAR FOTO SELECCIONADA
     if (cambiarFoto && foto) {
         cambiarFoto.addEventListener("change", function () {
@@ -768,6 +869,80 @@ function inicializarPerfil() {
         });
     }
 
+
+        // MOSTRAR CAMPO DE FOTO CUANDO SE ELIGE "FOTO DE PERFIL"
+    if (campoSolicitud) {
+        campoSolicitud.addEventListener("change", function () {
+            const esFoto = campoSolicitud.value === "foto_perfil";
+
+            if (campoValorSolicitud) {
+                campoValorSolicitud.hidden = esFoto;
+            }
+
+            if (campoFotoSolicitud) {
+                campoFotoSolicitud.hidden = !esFoto;
+            }
+        });
+    }
+
+    // ENVIAR SOLICITUD DE FOTO
+    async function enviarSolicitudFoto(descripcion) {
+
+        const archivo = archivoFotoSolicitud && archivoFotoSolicitud.files[0];
+
+        if (!archivo || !descripcion) {
+            if (errorSolicitud) {
+                errorSolicitud.textContent =
+                    "Selecciona la nueva foto y explica el motivo.";
+                errorSolicitud.hidden = false;
+            }
+            return;
+        }
+
+        enviarSolicitud.disabled = true;
+
+        try {
+            const datos = new FormData();
+            datos.append("foto", archivo);
+            datos.append("descripcion", descripcion);
+
+            const respuesta = await fetch("/estudiante/api/perfil/solicitud-foto", {
+                method: "POST",
+                body: datos
+            });
+
+            const resultado = await respuesta.json();
+
+            modalSolicitud.hidden = true;
+
+            if (!respuesta.ok) {
+                mostrarNotificacion(
+                    "No se pudo enviar",
+                    resultado.mensaje || "No fue posible enviar la solicitud.",
+                    "error"
+                );
+                return;
+            }
+
+            archivoFotoSolicitud.value = "";
+            document.getElementById("descripcionSolicitud").value = "";
+
+            mostrarNotificacion("¡Solicitud enviada!", resultado.mensaje);
+
+        } catch (error) {
+            console.error("Error al enviar la foto:", error);
+            modalSolicitud.hidden = true;
+            mostrarNotificacion(
+                "Sin conexión",
+                "No fue posible conectar con el servidor.",
+                "error"
+            );
+
+        } finally {
+            enviarSolicitud.disabled = false;
+        }
+    }
+
     // ENVIAR SOLICITUD A FLASK
     if (enviarSolicitud) {
         enviarSolicitud.addEventListener("click", async function () {
@@ -776,8 +951,20 @@ function inicializarPerfil() {
             const valorNuevo = document.getElementById("valorNuevoSolicitud").value.trim();
             const descripcion = document.getElementById("descripcionSolicitud").value.trim();
 
+            if (errorSolicitud) {
+                errorSolicitud.hidden = true;
+            }
+            
+            if (campo === "foto_perfil") {
+                await enviarSolicitudFoto(descripcion);
+                return;
+            }
+
             if (!campo || !valorNuevo || !descripcion) {
-                alert("Completa todos los campos de la solicitud.");
+                if (errorSolicitud) {
+                    errorSolicitud.textContent = "Completa todos los campos de la solicitud.";
+                    errorSolicitud.hidden = false;
+                }
                 return;
             }
 
@@ -798,15 +985,19 @@ function inicializarPerfil() {
 
                 const resultado = await respuesta.json();
 
+                modalSolicitud.hidden = true;
+
                 if (!respuesta.ok) {
-                    alert(resultado.mensaje || "No fue posible enviar la solicitud.");
+                    mostrarNotificacion(
+                        "No se pudo enviar",
+                        resultado.mensaje || "No fue posible enviar la solicitud.",
+                        "error"
+                    );
                     return;
                 }
 
-                document.getElementById("valorNuevoSolicitud").value = "";
-                document.getElementById("descripcionSolicitud").value = "";
-
-                modalSolicitud.hidden = true;
+                document.getElementById("valorNuevoSolicitud").value = ""; 
+                document.getElementById("descripcionSolicitud").value = ""; 
 
                 mostrarNotificacion(
                     "¡Solicitud enviada!",
@@ -815,7 +1006,12 @@ function inicializarPerfil() {
 
             } catch (error) {
                 console.error("Error al enviar solicitud:", error);
-                alert("No fue posible conectar con el servidor.");
+                modalSolicitud.hidden = true;
+                mostrarNotificacion(
+                    "Sin conexión",
+                    "No fue posible conectar con el servidor.",
+                    "error"
+                );
 
             } finally {
                 enviarSolicitud.disabled = false;
@@ -1050,8 +1246,10 @@ function inicializarPublicaciones() {
         });
     }
 
-    // ---------- NOTIFICACIONES ----------
+
+ // ---------- NOTIFICACIONES ----------//
 function inicializarNotificaciones() {
+    
     const boton = document.getElementById("marcarTodasLeidas");
     const lista = document.getElementById("listaNotificaciones");
     const contador = document.getElementById("contadorNotificaciones");
@@ -1086,16 +1284,79 @@ const btnNotificaciones = document.getElementById("btnNotificaciones");
 const panelNotificaciones = document.getElementById("panelNotificaciones");
 const marcarTodasLeidas = document.getElementById("marcarTodasLeidas");
 const badgeNotif = document.getElementById("badgeNotif");
+const listaNotificaciones = document.getElementById("listaNotificaciones");
 
-// ACTUALIZAR CONTADOR
-function actualizarBadgeNotificaciones() {
-    const pendientes = document.querySelectorAll(
-        "#listaNotificaciones .notificacion.no-leida"
-    ).length;
+const TIPOS_NOTIFICACION = {
+    VINCULACION:  { icono: "🌱", titulo: "Semillero" },
+    PERFIL:       { icono: "👤", titulo: "Mi perfil" },
+    LOGRO:        { icono: "🏆", titulo: "Logro" },
+    CONVOCATORIA: { icono: "📢", titulo: "Convocatoria" },
+    EVENTO:       { icono: "📅", titulo: "Evento" }
+};
 
-    if (badgeNotif) {
-        badgeNotif.textContent = pendientes;
-        badgeNotif.hidden = pendientes === 0;
+function textoHace(minutos) {
+    if (minutos < 1) return "Hace un momento";
+
+    if (minutos < 60) {
+        return "Hace " + minutos + (minutos === 1 ? " minuto" : " minutos");
+    }
+
+    const horas = Math.floor(minutos / 60);
+
+    if (horas < 24) {
+        return "Hace " + horas + (horas === 1 ? " hora" : " horas");
+    }
+
+    const dias = Math.floor(horas / 24);
+    return "Hace " + dias + (dias === 1 ? " día" : " días");
+}
+
+function actualizarBadgeNotificaciones(cantidad) {
+    if (!badgeNotif) return;
+
+    badgeNotif.textContent = cantidad;
+    badgeNotif.hidden = cantidad === 0;
+}
+
+async function cargarNotificaciones() {
+    if (!listaNotificaciones) return;
+
+    try {
+        const respuesta = await fetch("/estudiante/api/notificaciones");
+
+        if (!respuesta.ok) {
+            throw new Error("Error " + respuesta.status);
+        }
+
+        const datos = await respuesta.json();
+
+        actualizarBadgeNotificaciones(datos.no_leidas);
+
+        if (datos.notificaciones.length === 0) {
+            listaNotificaciones.innerHTML =
+                '<p class="notificaciones-vacio">No tienes notificaciones.</p>';
+            return;
+        }
+
+        listaNotificaciones.innerHTML = datos.notificaciones.map(n => {
+            const tipo = TIPOS_NOTIFICACION[n.tipo] ||
+                { icono: "🔔", titulo: "Notificación" };
+
+            return `
+                <div class="notificacion ${n.leida ? "leida" : "no-leida"}">
+                    <span class="notif-icono">${tipo.icono}</span>
+                    <div>
+                        <strong>${tipo.titulo}</strong>
+                        <p>${esc(n.mensaje)}</p>
+                        <small>${textoHace(n.minutos)}</small>
+                    </div>
+                </div>`;
+        }).join("");
+
+    } catch (error) {
+        console.error("Error al cargar notificaciones:", error);
+        listaNotificaciones.innerHTML =
+            '<p class="notificaciones-vacio">No fue posible cargar las notificaciones.</p>';
     }
 }
 
@@ -1110,6 +1371,10 @@ if (btnNotificaciones && panelNotificaciones) {
             "aria-expanded",
             String(!panelNotificaciones.hidden)
         );
+
+        if (!panelNotificaciones.hidden) {
+            cargarNotificaciones();
+        }
     });
 
     // CERRAR AL HACER CLIC FUERA
@@ -1126,17 +1391,33 @@ if (btnNotificaciones && panelNotificaciones) {
 
 // MARCAR TODAS COMO LEIDAS
 if (marcarTodasLeidas) {
-    marcarTodasLeidas.addEventListener("click", function() {
-        document.querySelectorAll(
-            "#listaNotificaciones .notificacion"
-        ).forEach(notificacion => {
-            notificacion.classList.remove("no-leida");
-            notificacion.classList.add("leida");
-        });
+    marcarTodasLeidas.addEventListener("click", async function() {
+        try {
+            const respuesta = await fetch(
+                "/estudiante/api/notificaciones/leidas",
+                { method: "POST" }
+            );
 
-        actualizarBadgeNotificaciones();
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            document.querySelectorAll(
+                "#listaNotificaciones .notificacion"
+            ).forEach(notificacion => {
+                notificacion.classList.remove("no-leida");
+                notificacion.classList.add("leida");
+            });
+
+            actualizarBadgeNotificaciones(0);
+
+        } catch (error) {
+            console.error("Error al marcar notificaciones:", error);
+        }
     });
 }
+
+cargarNotificaciones();
 
 
 // ---------- MIS PROYECTOS ----------
@@ -1146,18 +1427,17 @@ function cargarMisProyectos() {
     const contenedor = document.getElementById("listaMisProyectos");
 
     if (!contenedor) return;
+ 
+    fetch("/estudiante/api/proyectos")
+    .then(respuesta => {
+        if (!respuesta.ok) {
+            throw new Error("Error al consultar los proyectos");
+        }
 
-    fetch("/estudiante/proyectos/datos")
-        .then(respuesta => {
-            if (!respuesta.ok) {
-                throw new Error("Error al consultar los proyectos");
-            }
-
-            return respuesta.json();
-        })
-        .then(datos => {
-
-            const proyectos = datos.proyectos || [];
+        return respuesta.json();
+    })
+    .then(proyectos => {
+            
 
             document.getElementById("totalProyectos").textContent =
                 proyectos.length;
@@ -1227,6 +1507,5 @@ if (confirmarCerrarSesion) {
 actualizarBadgeNotificaciones();
 
 // MOSTRAR DATOS INICIALES
-cargarHojaVida();
-filtrarRanking();
+filtrarRanking(); 
 pintarPubs();

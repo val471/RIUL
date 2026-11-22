@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const enlacesMenu = document.querySelectorAll(".menu a[data-modulo]");
     const modulos = document.querySelectorAll(".contenido .modulo");
 
+
+    function sesionVencida(respuesta) {
+        if (respuesta.redirected && respuesta.url.includes("/iniciar-sesion")) {
+            window.location.href = "/iniciar-sesion";
+            return true;
+        }
+        return false;
+    }
+
     // ========================================
     // ICONOS SVG
     // ========================================
@@ -139,6 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function consultarPerfil() {
 
         const respuesta = await fetch("/docentelider/api/perfil");
+        
+        
 
         if (!respuesta.ok) {
             throw new Error("No se pudieron consultar los datos");
@@ -206,6 +217,10 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedorPerfil.innerHTML = "<p>Cargando perfil...</p>";
 
             const respuesta = await fetch("/docentelider/perfil");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
 
             if (!respuesta.ok) {
                 throw new Error("No se pudo cargar el HTML del perfil");
@@ -556,6 +571,10 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedor.innerHTML = "<p>Cargando semilleros...</p>";
 
             const respuesta = await fetch("/docentelider/semilleros");
+            
+            if (sesionVencida(respuesta)) {
+                return;
+            }
 
             if (!respuesta.ok) {
                 throw new Error("No se pudo cargar el modulo de semilleros");
@@ -609,6 +628,10 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedor.innerHTML = "<p>Cargando...</p>";
 
             const respuesta = await fetch(RUTAS_MODULOS[id]);
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
 
             if (!respuesta.ok) {
                 throw new Error("Error " + respuesta.status);
@@ -665,8 +688,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================
 
     let semillerosConfigurados = false;
-
-    function configurarModuloSemilleros() {
+        async function configurarModuloSemilleros() {
 
         const contenedor = document.getElementById("contenido-semilleros");
 
@@ -691,8 +713,56 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
         });
+
+        await cargarMiSemillero(contenedor, estadoVacio, detalleSemillero);
     }
 
+    async function cargarMiSemillero(contenedor, estadoVacio, detalle) {
+
+        const poner = (id, valor) => {
+            const elemento = contenedor.querySelector("#" + id);
+            if (elemento) {
+                elemento.textContent = valor;
+            }
+        };
+
+        try {
+
+            const respuesta = await fetch("/docentelider/api/semillero");
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const s = await respuesta.json();
+
+            if (!s.asignado) {
+                estadoVacio.style.display = "";
+                detalle.hidden = true;
+                return;
+            }
+
+            poner("nombreMiSemillero", s.nombre);
+            poner("totalIntegrantesSemillero", s.integrantes);
+            poner("totalProyectosSemillero", s.proyectos);
+            poner("estadoMiSemillero", s.estado);
+
+            poner("detalleNombreSemillero", s.nombre);
+            poner("detalleFacultadSemillero", s.facultad);
+            poner("detalleLineaSemillero", s.linea || "No registrada");
+            poner("detalleDescripcionSemillero", s.descripcion || "Sin descripción");
+
+            estadoVacio.style.display = "none";
+            detalle.hidden = false;
+
+        } catch (error) {
+
+            console.error("Error al cargar mi semillero:", error);
+        }
+    }
+
+
+    
     // ========================================
     // MODULO USUARIO
     // ========================================
@@ -768,6 +838,53 @@ document.addEventListener("DOMContentLoaded", () => {
             /[&<>"']/g,
             c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
         );
+
+                async function dibujarRegistros() {
+
+            const tablaRegistros = document.getElementById("tablaRegistros");
+
+            if (!tablaRegistros) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch("/docentelider/api/registros");
+
+                if (!respuesta.ok) {
+                    throw new Error("Error " + respuesta.status);
+                }
+
+                const registros = await respuesta.json();
+
+                if (registros.length === 0) {
+                    tablaRegistros.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="solicitudes-vacio">
+                                No hay cuentas pendientes.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                tablaRegistros.innerHTML = registros.map(r => `
+                    <tr>
+                        <td>${escaparHTML(r.nombre)}</td>
+                        <td>${escaparHTML(r.programa)}</td>
+                        <td>${escaparHTML(r.correo)}</td>
+                        <td>${escaparHTML(r.fecha)}</td>
+                    </tr>
+                `).join("");
+
+            } catch (error) {
+                console.error("No se pudieron cargar los registros:", error);
+                tablaRegistros.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="solicitudes-vacio">
+                            No fue posible cargar las cuentas pendientes.
+                        </td>
+                    </tr>`;
+            }
+        }
 
         async function dibujarSolicitudes() {
 
@@ -861,6 +978,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         dibujarSolicitudes();
+        dibujarRegistros();
     }
     // ========================================
     // MODULO CONVOCATORIAS

@@ -107,3 +107,20 @@
         width: calc(100vw - 30px);
     }
 }
+
+.notif-icono {
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.notificaciones-vacio {
+    margin: 0;
+    padding: 24px 17px;
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+}
+
+#badgeNotif[hidden] {
+    display: none !important;
+}

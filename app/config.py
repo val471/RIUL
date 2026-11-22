@@ -22,6 +22,8 @@ class config:
     
     # La sesión expira a los 10 minutos sin actividad 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)
+
+    SESSION_REFRESH_EACH_REQUEST = True
    
     #3600 segundos = 1 hora
     JWT_ACCESS_TOKEN_EXPIRES = 3600

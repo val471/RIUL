@@ -125,6 +125,8 @@ def estudiante_proyectos():
 def estudiante_eventos():
     return render_template("estudiante/eventos.html")
 
+
+
 # LOGROS
 @web.route("/estudiante/logros")
 def estudiante_logros():
@@ -170,8 +172,9 @@ def _usuario_actual():
 # PANEL  DOCENTE
 @web.before_request
 def proteger_panel_docente():
-    """Solo un usuario con rol DOCENTE puede entrar a /docentelider/..."""
-    if request.path.startswith("/docentelider") and session.get("rol") != "DOCENTE":
+    """Solo un docente líder puede entrar a /docentelider/..."""
+    if request.path.startswith("/docentelider") \
+            and session.get("rol") != "DOCENTE_LIDER":
         if request.path.startswith("/docentelider/api"):
             return jsonify({"mensaje": "No autorizado"}), 401
         return redirect(url_for("web.iniciar_sesion"))
@@ -295,7 +298,7 @@ def admin_solicitudes():
 
 
 
-DESTINOS = {"ADMIN": "/admin", "ESTUDIANTE": "/estudiante", "DOCENTE": "/docentelider"}
+DESTINOS = {"ADMIN": "/admin", "ESTUDIANTE": "/estudiante", "DOCENTE_LIDER": "/docentelider"}
 
 MAX_INTENTOS = 5
 MINUTOS_BLOQUEO = 15
@@ -341,6 +344,7 @@ def api_login():
     db.session.commit()
 
     session.permanent = True
+    session["nombre_institucional"] = usuario.nombre_institucional
     session["id_usuario"] = usuario.id_usuario
     session["rol"] = usuario.rol
     return jsonify({
@@ -410,6 +414,7 @@ def api_registro():
     apellidos = (datos.get("apellidos") or "").strip()
     correo = (datos.get("correo") or "").strip().lower()
     documento = (datos.get("documento") or "").strip()
+    telefono = (datos.get("telefono") or "").strip()
     fecha_nacimiento = datos.get("fecha_nacimiento")
     rol = datos.get("rol")
     id_facultad = datos.get("id_facultad")
@@ -423,7 +428,7 @@ def api_registro():
     if not correo.endswith("@unilibre.edu.co"):
         return jsonify({"mensaje": "Debes utilizar tu correo institucional."}), 400
 
-    if rol not in ["ESTUDIANTE", "DOCENTE", "DOCENTE_LIDER"]:
+    if rol not in ["ESTUDIANTE", "DOCENTE_LIDER"]:
        return jsonify({"mensaje": "El rol seleccionado no es válido."}), 400
 
     if rol == "ESTUDIANTE" and not id_programa:
@@ -446,6 +451,7 @@ def api_registro():
             correo_institucional=correo,
             fecha_nacimiento=fecha,
             documento=documento,
+            telefono=telefono,
             id_facultad=int(id_facultad),
             id_programa=int(id_programa) if rol == "ESTUDIANTE" else None,
             contrasena_hash=generate_password_hash(contrasena),
@@ -474,7 +480,49 @@ def api_registro():
         return jsonify({
             "mensaje": "No fue posible guardar la solicitud."
         }), 500
+#Eventos
+@web.route("/estudiante/api/eventos")
+def api_eventos_estudiante():
 
+    consulta = text("""
+        SELECT
+            id_evento,
+            nombre,
+            descripcion,
+            fecha,
+            fecha_cierre,
+            lugar,
+            modalidad,
+            CASE
+                WHEN fecha_cierre IS NOT NULL
+                     AND fecha_cierre >= NOW()
+                THEN 'abierto'
+                ELSE 'cerrado'
+            END AS estado
+        FROM evento
+        ORDER BY fecha ASC
+    """)
+
+    eventos = db.session.execute(consulta).mappings().all()
+
+    resultado = []
+
+    for evento in eventos:
+        resultado.append({
+            "id_evento": evento["id_evento"],
+            "nombre": evento["nombre"],
+            "descripcion": evento["descripcion"],
+            "fecha": evento["fecha"].strftime("%Y-%m-%d %H:%M:%S"),
+            "fecha_cierre": (
+                evento["fecha_cierre"].strftime("%Y-%m-%d %H:%M:%S")
+                if evento["fecha_cierre"] else None
+            ),
+            "lugar": evento["lugar"],
+            "modalidad": evento["modalidad"],
+            "estado": evento["estado"]
+        })
+
+    return jsonify(resultado)
 
 
 @web.route("/docentelider/api/perfil")
@@ -667,6 +715,37 @@ def docente_cambiar_foto():
         print("ERROR AL GUARDAR FOTO:", repr(error))
         return jsonify({"mensaje": "No fue posible guardar la foto."}), 500
 
+@web.route("/docentelider/api/registros")
+def docente_api_registros():
+    id_semillero = _semillero_del_docente()
+
+    if not id_semillero:
+        return jsonify([])
+
+    filas = db.session.execute(text("""
+        SELECT
+            sr.nombre_completo,
+            sr.correo_institucional,
+            sr.fecha_solicitud,
+            p.nombre AS programa
+        FROM solicitudregistro sr
+        INNER JOIN semillero s
+            ON s.id_facultad = sr.id_facultad
+        LEFT JOIN programa p
+            ON p.id_programa = sr.id_programa
+        WHERE s.id_semillero = :semillero
+          AND sr.estado = 'PENDIENTE'
+          AND sr.rol_solicitado = 'ESTUDIANTE'
+        ORDER BY sr.fecha_solicitud
+    """), {"semillero": id_semillero}).mappings().all()
+
+    return jsonify([{
+        "nombre": f["nombre_completo"],
+        "correo": f["correo_institucional"],
+        "programa": f["programa"] or "Sin programa",
+        "fecha": f["fecha_solicitud"].strftime("%d/%m/%Y"),
+    } for f in filas])
+
 @web.route("/admin/api/solicitudes/<int:id_solicitud>/aprobar", methods=["POST"])
 def admin_aprobar_solicitud(id_solicitud):
     return admin_controller.aprobar_solicitud_registro(id_solicitud)
@@ -782,78 +861,206 @@ def estudiante_solicitar_vinculacion(id_semillero):
         print("ERROR AL SOLICITAR VINCULACION:", repr(error))
         return jsonify({"mensaje": "No fue posible enviar la solicitud."}), 500
 
-    # ==============================
-# DOCENTE LÍDER: SOLICITUDES DE INGRESO AL SEMILLERO (RF-14)
-# ==============================
+#Seguimiento de semillero estudiante#
+@web.route("/estudiante/api/semilleros/<int:id_semillero>/seguir", methods=["POST"])
+def estudiante_seguir_semillero(id_semillero):
+    id_usuario = session.get("id_usuario")
 
-def _semillero_del_docente():
-    fila = db.session.execute(text("""
-        SELECT id_semillero_liderado
-        FROM docentelider
-        WHERE id_usuario = :id
-    """), {"id": session.get("id_usuario")}).first()
+    if not id_usuario:
+        return jsonify({"mensaje": "Debes iniciar sesión."}), 401
 
-    return fila[0] if fila else None
+    try:
+        # Verificar que el semillero exista
+        semillero = db.session.execute(text("""
+            SELECT id_semillero
+            FROM semillero
+            WHERE id_semillero = :id
+              AND estado = 'ACTIVO'
+        """), {"id": id_semillero}).first()
 
+        if not semillero:
+            return jsonify({"mensaje": "El semillero no está disponible."}), 404
 
-@web.route("/docentelider/api/vinculaciones")
-def docente_api_vinculaciones():
+        # Verificar si ya lo sigue
+        existe = db.session.execute(text("""
+            SELECT 1
+            FROM seguimientoesemillero
+            WHERE id_usuario = :usuario
+              AND id_semillero = :semillero
+        """), {
+            "usuario": id_usuario,
+            "semillero": id_semillero
+        }).first()
+
+        if existe:
+            return jsonify({"mensaje": "Ya sigues este semillero."}), 409
+
+        # Registrar seguimiento
+        db.session.execute(text("""
+            INSERT INTO seguimientosemillero
+                (id_usuario, id_semillero, fecha_seguimiento)
+            VALUES (:usuario, :semillero, NOW())
+        """), {
+            "usuario": id_usuario,
+            "semillero": id_semillero
+        })
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Ahora sigues este semillero."}), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL SEGUIR SEMILLERO:", repr(error))
+        return jsonify({"mensaje": "No fue posible seguir el semillero."}), 500
+
+# PROYECTOS DEL ESTUDIANTE
+@web.route("/estudiante/api/proyectos")
+def estudiante_api_proyectos():
+    id_estudiante = session.get("id_usuario")
+
+    if not id_estudiante:
+        return jsonify({"mensaje": "Debes iniciar sesión."}), 401
+
+    try:
+        proyectos = db.session.execute(text("""
+            SELECT
+                p.id_proyecto,
+                p.titulo,
+                p.descripcion,
+                p.fecha_inicio,
+                p.estado,
+                s.nombre AS semillero,
+                (
+                    SELECT COUNT(*)
+                    FROM avanceproyecto a
+                    WHERE a.id_proyecto = p.id_proyecto
+                ) AS total_avances
+            FROM membresiasemillero m
+            INNER JOIN proyecto p
+                ON p.id_semillero = m.id_semillero
+            INNER JOIN semillero s
+                ON s.id_semillero = p.id_semillero
+            WHERE m.id_estudiante = :id
+              AND m.fecha_salida IS NULL
+            ORDER BY p.fecha_inicio DESC
+        """), {"id": id_estudiante}).mappings().all()
+
+        return jsonify([{
+            "id": p["id_proyecto"],
+            "titulo": p["titulo"],
+            "descripcion": p["descripcion"] or "",
+            "fecha_inicio": p["fecha_inicio"].strftime("%d/%m/%Y"),
+            "estado": p["estado"],
+            "semillero": p["semillero"],
+            "total_avances": p["total_avances"]
+        } for p in proyectos])
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL CONSULTAR PROYECTOS:", repr(error))
+        return jsonify({"mensaje": "No fue posible consultar los proyectos."}), 500
+    
+
+@web.route("/docentelider/api/semillero")
+def docente_api_semillero():
     id_semillero = _semillero_del_docente()
 
     if not id_semillero:
-        return jsonify([])
+        return jsonify({"asignado": False})
 
-    filas = db.session.execute(text("""
+    s = db.session.execute(text("""
         SELECT
-            sv.id_solicitud_vinc,
-            u.nombre_institucional AS nombre,
-            p.nombre AS programa,
-            ei.semestre,
-            sv.fecha_solicitud
-        FROM solicitudvinculacion sv
-        INNER JOIN estudianteinvestigador ei
-            ON ei.id_usuario = sv.id_estudiante
-        INNER JOIN usuario u
-            ON u.id_usuario = sv.id_estudiante
-        INNER JOIN programa p
-            ON p.id_programa = ei.id_programa
-        WHERE sv.id_semillero = :semillero
-          AND sv.estado = 'PENDIENTE'
-          AND sv.tipo = 'SOLICITUD'
-        ORDER BY sv.fecha_solicitud
-    """), {"semillero": id_semillero}).mappings().all()
+            s.nombre,
+            s.descripcion,
+            s.linea_investigacion,
+            s.estado,
+            s.cupo_maximo,
+            f.nombre AS facultad,
+            (
+                SELECT COUNT(*)
+                FROM membresiasemillero m
+                WHERE m.id_semillero = s.id_semillero
+                  AND m.fecha_salida IS NULL
+            ) AS integrantes,
+            (
+                SELECT COUNT(*)
+                FROM proyecto p
+                WHERE p.id_semillero = s.id_semillero
+            ) AS proyectos
+        FROM semillero s
+        INNER JOIN facultad f
+            ON f.id_facultad = s.id_facultad
+        WHERE s.id_semillero = :id
+    """), {"id": id_semillero}).mappings().first()
 
-    return jsonify([{
-        "id": f["id_solicitud_vinc"],
-        "nombre": f["nombre"],
-        "programa": f["programa"],
-        "semestre": f["semestre"],
-        "fecha": f["fecha_solicitud"].strftime("%d/%m/%Y"),
-    } for f in filas])
+    if not s:
+        return jsonify({"asignado": False})
 
+    return jsonify({
+        "asignado": True,
+        "nombre": s["nombre"],
+        "descripcion": s["descripcion"],
+        "linea": s["linea_investigacion"],
+        "estado": s["estado"],
+        "cupo_maximo": s["cupo_maximo"],
+        "facultad": s["facultad"],
+        "integrantes": s["integrantes"],
+        "proyectos": s["proyectos"],
+    })
 
 def _resolver_vinculacion(id_solicitud, aceptar):
-    id_docente = session.get("id_usuario")
-    id_semillero = _semillero_del_docente()
+    id_docente = session.get("id_usuario") 
 
-    solicitud = db.session.execute(text("""
-        SELECT id_solicitud_vinc, id_estudiante, id_semillero, estado
-        FROM solicitudvinculacion
-        WHERE id_solicitud_vinc = :id
-    """), {"id": id_solicitud}).mappings().first()
-
-    # Solo puede resolver solicitudes de SU semillero
-    if not solicitud or solicitud["id_semillero"] != id_semillero:
-        return jsonify({"mensaje": "La solicitud no existe."}), 404
-
-    if solicitud["estado"] != "PENDIENTE":
-        return jsonify({"mensaje": "Esta solicitud ya fue resuelta."}), 409
-
-    id_estudiante = solicitud["id_estudiante"]
+    if not id_docente:
+        return jsonify({"mensaje": "Debes iniciar sesión."}), 401
 
     try:
+        # Buscar la solicitud
+        solicitud = db.session.execute(text("""
+            SELECT
+                id_estudiante,
+                id_semillero,
+                estado,
+                tipo
+            FROM solicitudvinculacion
+            WHERE id_solicitud_vinc = :id
+        """), {"id": id_solicitud}).mappings().first()
+
+        if not solicitud:
+            return jsonify({"mensaje": "La solicitud no existe."}), 404
+
+        if solicitud["estado"] != "PENDIENTE":
+            return jsonify({"mensaje": "La solicitud ya fue resuelta."}), 409
+
+        # Verificar que el semillero pertenezca al docente
+        semillero = db.session.execute(text("""
+            SELECT id_semillero_liderado
+            FROM docentelider
+            WHERE id_usuario = :docente
+        """), {"docente": id_docente}).scalar()
+
+        if semillero != solicitud["id_semillero"]:
+            return jsonify({
+                "mensaje": "No puedes resolver solicitudes de otro semillero."
+            }), 403
+
         if aceptar:
-            semillero = db.session.execute(text("""
+            # Verificar que el estudiante no pertenezca a otro semillero
+            miembro = db.session.execute(text("""
+                SELECT 1
+                FROM membresiasemillero
+                WHERE id_estudiante = :estudiante
+                  AND fecha_salida IS NULL
+            """), {"estudiante": solicitud["id_estudiante"]}).first()
+
+            if miembro:
+                return jsonify({
+                    "mensaje": "El estudiante ya pertenece a un semillero."
+                }), 409
+
+            # Verificar cupo
+            cupo = db.session.execute(text("""
                 SELECT
                     s.cupo_maximo,
                     (
@@ -863,42 +1070,31 @@ def _resolver_vinculacion(id_solicitud, aceptar):
                           AND m.fecha_salida IS NULL
                     ) AS integrantes
                 FROM semillero s
-                WHERE s.id_semillero = :id
-            """), {"id": id_semillero}).mappings().first()
+                WHERE s.id_semillero = :semillero
+            """), {"semillero": semillero}).mappings().first()
 
-            if semillero["integrantes"] >= semillero["cupo_maximo"]:
+            if not cupo or cupo["integrantes"] >= cupo["cupo_maximo"]:
                 return jsonify({
-                    "mensaje": "El semillero no tiene cupo disponible."
+                    "mensaje": "El semillero no tiene cupos disponibles."
                 }), 409
 
-            ya_miembro = db.session.execute(text("""
-                SELECT 1
-                FROM membresiasemillero
-                WHERE id_estudiante = :id
-                  AND fecha_salida IS NULL
-            """), {"id": id_estudiante}).first()
-
-            if ya_miembro:
-                return jsonify({
-                    "mensaje": "El estudiante ya pertenece a un semillero."
-                }), 409
-
+            # Registrar membresia
             db.session.execute(text("""
                 INSERT INTO membresiasemillero
                     (id_estudiante, id_semillero, fecha_ingreso)
                 VALUES
-                    (:est, :sem, NOW())
-            """), {"est": id_estudiante, "sem": id_semillero})
+                    (:estudiante, :semillero, NOW())
+            """), {
+                "estudiante": solicitud["id_estudiante"],
+                "semillero": semillero
+            })
 
-            db.session.execute(text("""
-                UPDATE estudianteinvestigador
-                SET id_semillero = :sem,
-                    fecha_actualizacion = NOW()
-                WHERE id_usuario = :est
-            """), {"est": id_estudiante, "sem": id_semillero})
+            nuevo_estado = "APROBADA"
 
-        nuevo_estado = "ACEPTADA" if aceptar else "RECHAZADA"
+        else:
+            nuevo_estado = "RECHAZADA"
 
+        # Actualizar solicitud
         db.session.execute(text("""
             UPDATE solicitudvinculacion
             SET estado = :estado,
@@ -909,33 +1105,23 @@ def _resolver_vinculacion(id_solicitud, aceptar):
             "estado": nuevo_estado,
             "docente": id_docente,
             "id": id_solicitud
-        })
-
-        db.session.execute(text("""
-            INSERT INTO historial
-                (id_usuario, accion, tabla_afectada, id_registro,
-                 valor_anterior, valor_nuevo, fecha)
-            VALUES
-                (:usuario, :accion, 'solicitudvinculacion', :registro,
-                 'PENDIENTE', :nuevo, NOW())
-        """), {
-            "usuario": id_docente,
-            "accion": "ACEPTAR_VINCULACION" if aceptar else "RECHAZAR_VINCULACION",
-            "registro": id_solicitud,
-            "nuevo": nuevo_estado
-        })
+        }) 
 
         db.session.commit()
 
         return jsonify({
-            "mensaje": "Solicitud aceptada." if aceptar else "Solicitud rechazada."
-        })
+            "mensaje": (
+                "Solicitud aprobada correctamente."
+                if aceptar else "Solicitud rechazada correctamente."
+            )
+        }), 200
 
     except Exception as error:
         db.session.rollback()
         print("ERROR AL RESOLVER VINCULACION:", repr(error))
-        return jsonify({"mensaje": "No fue posible procesar la solicitud."}), 500
-
+        return jsonify({
+            "mensaje": "No fue posible resolver la solicitud."
+        }), 500
 
 @web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/aceptar",
            methods=["POST"])
@@ -1198,13 +1384,89 @@ def admin_eliminar_convocatoria(id_convocatoria):
         print("ERROR AL ELIMINAR CONVOCATORIA:", repr(error))
         return jsonify({"mensaje": "No fue posible eliminar la convocatoria."}), 500
 
+
+def _semillero_del_docente():
+    id_usuario = session.get("id_usuario")
+
+    if not id_usuario:
+        return None
+
+    resultado = db.session.execute(text("""
+        SELECT id_semillero_liderado
+        FROM docentelider
+        WHERE id_usuario = :id
+    """), {"id": id_usuario}).scalar()
+
+    return resultado
+
 @web.route("/estudiante/api/perfil/solicitud", methods=["POST"])
 def estudiante_solicitar_cambio_perfil():
     return estudiante_controller.solicitar_cambio_perfil()
 
+@web.route("/estudiante/api/perfil/solicitud-foto", methods=["POST"])
+def estudiante_solicitar_cambio_foto():
+    return estudiante_controller.solicitar_cambio_foto()
+
+@web.route("/estudiante/api/notificaciones")
+def estudiante_api_notificaciones():
+    id_usuario = session.get("id_usuario")
+
+    filas = db.session.execute(text("""
+        SELECT
+            id_notificacion,
+            mensaje,
+            tipo,
+            estado,
+            TIMESTAMPDIFF(MINUTE, fecha, NOW()) AS minutos
+        FROM notificacion
+        WHERE id_usuario = :id
+        ORDER BY fecha DESC, id_notificacion DESC
+        LIMIT 20
+    """), {"id": id_usuario}).mappings().all()
+
+    no_leidas = db.session.execute(text("""
+        SELECT COUNT(*)
+        FROM notificacion
+        WHERE id_usuario = :id
+          AND estado = 0
+    """), {"id": id_usuario}).scalar()
+
+    return jsonify({
+        "no_leidas": no_leidas,
+        "notificaciones": [{
+            "id": f["id_notificacion"],
+            "mensaje": f["mensaje"],
+            "tipo": f["tipo"],
+            "leida": bool(f["estado"]),
+            "minutos": max(f["minutos"] or 0, 0),
+        } for f in filas]
+    })
+
+
+@web.route("/estudiante/api/notificaciones/leidas", methods=["POST"])
+def estudiante_marcar_notificaciones_leidas():
+    try:
+        db.session.execute(text("""
+            UPDATE notificacion
+            SET estado = 1
+            WHERE id_usuario = :id
+              AND estado = 0
+        """), {"id": session.get("id_usuario")})
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Notificaciones marcadas como leídas."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL MARCAR NOTIFICACIONES:", repr(error))
+        return jsonify({
+            "mensaje": "No fue posible actualizar las notificaciones."
+        }), 500
+
 @web.route("/estudiante/api/perfil/contrasena", methods=["POST"])
 def estudiante_cambiar_contrasena():
-    return estudiante_controller.cambiar_contraseña()
+    return estudiante_controller.cambiar_contrasena()
 
 @web.route("/admin/solicitudes/actualizaciones")
 def admin_solicitudes_actualizaciones():
