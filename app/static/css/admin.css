@@ -899,3 +899,80 @@ tbody tr:last-child td {
     color: #fff;
 }
 
+/* ==============================
+   PANEL DE NOTIFICACIONES (ADMIN)
+================================ */
+.admin-notif { position: relative; }
+
+button.admin-top-icons {
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.admin-top-icons .punto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    right: 0;
+    width: auto;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+.admin-top-icons .punto[hidden] { display: none; }
+
+.admin-notif-panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    overflow: hidden;
+}
+.admin-notif-panel[hidden] { display: none !important; }
+
+.admin-notif-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.admin-notif-head h3 { margin: 0; font-size: 17px; color: #111827; }
+.admin-notif-head span { font-size: 12px; color: #d20a35; font-weight: 600; }
+
+#listaNotifAdmin { max-height: 360px; overflow-y: auto; }
+
+.admin-notif-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
+    background: #fffafb;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+.admin-notif-item:hover { background: #fdecef; }
+.admin-notif-item:last-child { border-bottom: none; }
+.admin-notif-icono { font-size: 20px; line-height: 1.2; }
+.admin-notif-item strong { display: block; font-size: 13px; color: #111827; }
+.admin-notif-item p { margin: 2px 0; font-size: 13px; color: #475569; }
+.admin-notif-item small { font-size: 11px; color: #94a3b8; }
+
+.admin-notif-vacio { padding: 22px 18px; text-align: center; color: #64748b; font-size: 14px; }

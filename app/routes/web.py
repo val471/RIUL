@@ -1511,3 +1511,63 @@ def admin_rechazar_solicitud_actualizacion(id_solicitud):
         id_solicitud,
         motivo
     )
+
+@web.route("/admin/api/notificaciones")
+def admin_api_notificaciones():
+    """Notificaciones del administrador: todo lo que espera su decision."""
+    consultas = [
+        ("REGISTRO", "solicitudes", """
+            SELECT CONCAT('Nueva solicitud de registro: ', nombre_completo,
+                          ' (', rol_solicitado, ')') AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, fecha_solicitud, NOW()) AS minutos
+            FROM solicitudregistro
+            WHERE estado = 'PENDIENTE'
+            ORDER BY fecha_solicitud DESC LIMIT 10"""),
+        ("ACTUALIZACION", "solicitudes", """
+            SELECT CONCAT(u.nombre_institucional,
+                          ' solicita actualizar: ', sa.campo_modificado) AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, sa.fecha_solicitud, NOW()) AS minutos
+            FROM solicitudactualizacion sa
+            JOIN usuario u ON u.id_usuario = sa.id_usuario
+            WHERE sa.estado = 'PENDIENTE'
+            ORDER BY sa.fecha_solicitud DESC LIMIT 10"""),
+        ("LIDERAZGO", "solicitudes", """
+            SELECT CONCAT('Un docente solicita liderar el semillero ',
+                          s.nombre) AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, sl.fecha_solicitud, NOW()) AS minutos
+            FROM solicitudliderazgo sl
+            JOIN semillero s ON s.id_semillero = sl.id_semillero
+            WHERE sl.estado = 'PENDIENTE'
+            ORDER BY sl.fecha_solicitud DESC LIMIT 10"""),
+        ("LOGRO", "logros", """
+            SELECT CONCAT('Logro pendiente de validar: ',
+                          COALESCE(tl.nombre, 'Logro')) AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, l.fecha_registro, NOW()) AS minutos
+            FROM logro l
+            LEFT JOIN tipologro tl ON tl.id_tipo_logro = l.id_tipo_logro
+            WHERE l.estado = 'PENDIENTE'
+            ORDER BY l.fecha_registro DESC LIMIT 10"""),
+    ]
+
+    items = []
+    errores = []
+    for tipo, destino, sql in consultas:
+        try:
+            for fila in db.session.execute(text(sql)).mappings().all():
+                items.append({
+                    "tipo": tipo,
+                    "destino": destino,
+                    "mensaje": fila["mensaje"],
+                    "minutos": max(fila["minutos"] or 0, 0),
+                })
+        except Exception as error:
+            db.session.rollback()
+            print("ERROR NOTIFICACIONES ADMIN (" + tipo + "):", repr(error))
+            errores.append(tipo)
+
+    items.sort(key=lambda n: n["minutos"])
+    return jsonify({
+        "total": len(items),
+        "notificaciones": items[:20],
+        "errores": errores,
+    })

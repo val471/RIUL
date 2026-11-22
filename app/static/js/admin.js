@@ -1,3 +1,20 @@
+(function () {
+    const fetchOriginal = window.fetch.bind(window);
+
+    window.fetch = async function (...args) {
+        const respuesta = await fetchOriginal(...args);
+
+        const aLogin = respuesta.redirected &&
+                       respuesta.url.includes('/iniciar-sesion');
+
+        if (aLogin || respuesta.status === 401) {
+            window.location.href = '/iniciar-sesion';
+        }
+
+        return respuesta;
+    };
+})();
+
 // TITULOS DE LOS MODULOS
 const titles = {
     inicio: 'Inicio',
@@ -694,6 +711,116 @@ function rechazarCambio(id) {
     document.getElementById('modalRechazoCambio').hidden = false;
 }
 
+
+// ==============================
+// NOTIFICACIONES DEL ADMINISTRADOR
+// ==============================
+(function () {
+    const btn = document.getElementById('btnNotifAdmin');
+    const panel = document.getElementById('panelNotifAdmin');
+    const lista = document.getElementById('listaNotifAdmin');
+    const badge = document.getElementById('badgeNotifAdmin');
+    const resumen = document.getElementById('resumenNotifAdmin');
+    let ultimoTotal = null;
+    if (!btn || !panel || !lista) return;
+
+    const TIPOS = {
+        REGISTRO:      { icono: '👤', titulo: 'Registro' },
+        ACTUALIZACION: { icono: '✏️', titulo: 'Actualización de datos' },
+        LIDERAZGO:     { icono: '🎓', titulo: 'Liderazgo de semillero' },
+        LOGRO:         { icono: '🏆', titulo: 'Logro por validar' }
+    };
+
+    function escapar(texto) {
+        const d = document.createElement('div');
+        d.textContent = texto == null ? '' : String(texto);
+        return d.innerHTML;
+    }
+
+    function haceCuanto(min) {
+        if (min < 1) return 'Hace un momento';
+        if (min < 60) return 'Hace ' + min + ' min';
+        const h = Math.floor(min / 60);
+        if (h < 24) return 'Hace ' + h + (h === 1 ? ' hora' : ' horas');
+        const d = Math.floor(h / 24);
+        return 'Hace ' + d + (d === 1 ? ' día' : ' días');
+    }
+
+    function pintarBadge(total) {
+        badge.textContent = total > 9 ? '9+' : total;
+        badge.hidden = total === 0;
+        resumen.textContent = total === 0 ? '' : total + ' pendiente' + (total === 1 ? '' : 's');
+    }
+
+     // Si hay novedades y estás en Solicitudes, se refresca la lista sola
+        const seccion = document.getElementById('page-solicitudes');
+            if (ultimoTotal !== null && datos.total !== ultimoTotal &&
+                seccion && seccion.classList.contains('active-page') &&
+                typeof cargarSolicitudes === 'function') {
+                cargarSolicitudes(seccion);
+            }
+            ultimoTotal = datos.total;
+
+    async function cargar() {
+        try {
+            const r = await fetch('/admin/api/notificaciones');
+            if (!r.ok) throw new Error('Error ' + r.status);
+            const datos = await r.json();
+
+            pintarBadge(datos.total);
+
+            if (!datos.notificaciones.length) {
+                lista.innerHTML = '<p class="admin-notif-vacio">No tienes notificaciones pendientes.</p>';
+                return;
+            }
+
+            lista.innerHTML = datos.notificaciones.map(n => {
+                const t = TIPOS[n.tipo] || { icono: '🔔', titulo: 'Notificación' };
+                return '<button type="button" class="admin-notif-item" data-destino="' + escapar(n.destino) + '">' +
+                    '<span class="admin-notif-icono">' + t.icono + '</span>' +
+                    '<span><strong>' + t.titulo + '</strong>' +
+                    '<p>' + escapar(n.mensaje) + '</p>' +
+                    '<small>' + haceCuanto(n.minutos) + '</small></span>' +
+                    '</button>';
+            }).join('');
+        } catch (e) {
+            console.error('Error al cargar notificaciones:', e);
+            lista.innerHTML = '<p class="admin-notif-vacio">No fue posible cargar las notificaciones.</p>';
+        }
+    }
+
+    function cerrar() {
+        panel.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        panel.hidden = !panel.hidden;
+        btn.setAttribute('aria-expanded', String(!panel.hidden));
+        if (!panel.hidden) cargar();
+    });
+
+    // Clic en una notificación: ir al módulo correspondiente
+    lista.addEventListener('click', function (e) {
+        const item = e.target.closest('.admin-notif-item');
+        if (!item) return;
+        const enlace = document.querySelector('.admin-nav a[data-page="' + item.dataset.destino + '"]');
+        if (enlace) enlace.click();
+        cerrar();
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!panel.contains(e.target) && !btn.contains(e.target)) cerrar();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') cerrar();
+    });
+
+    // Contador inicial y refresco cada 60 s
+    cargar();
+    setInterval(cargar, 15000);
+})();
 
 // VENTANA CERRAR SESION
 const modalCerrarSesion = document.getElementById('modalCerrarSesion');
