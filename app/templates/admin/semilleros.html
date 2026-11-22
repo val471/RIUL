@@ -16,33 +16,26 @@
 
     <!-- BUSCADOR -->
     <div class="search-box">
-        <input
-            type="text"
-            id="buscarSemilleros"
-            placeholder="Buscar por semillero, facultad o programa..."
-            oninput="filtrarSemilleros()"
-        >
+        <input type="text" id="buscarSemilleros"
+               placeholder="Buscar por semillero, facultad o programa..."
+               oninput="filtrarSemilleros()">
     </div>
 
     <!-- RESUMEN -->
     <div class="resumen-semilleros">
-
-        <div class="resumen-card">
+        <div class="resumen-card"> 
             <span>Semilleros</span>
             <strong>{{ total_semilleros }}</strong>
-        </div>
-
+        </div> 
         <div class="resumen-card">
             <span>Proyectos</span>
             <strong>{{ total_proyectos }}</strong>
         </div>
-
-    </div>
+    </div> 
 
     <!-- DISTRIBUCION POR FACULTAD -->
     <div class="distribucion-semilleros">
-        <h2>Distribución por facultad</h2>
-
+         <h2>Distribución por facultad</h2>
         <div class="distribucion-lista">
             {% for facultad in distribucion %}
             <div class="distribucion-item">
@@ -60,41 +53,49 @@
         <div class="semilleros-grid" id="listaSemilleros">
 
             {% for semillero in semilleros %}
+            {% set activo = (semillero.estado == 'ACTIVO') %}
 
-            <article class="semillero-card">
+            <article class="semillero-card" data-id="{{ semillero.id_semillero }}">
 
                 <div class="semillero-card-top">
                     <h3>{{ semillero.nombre }}</h3>
-                    <span>{{ semillero.estado }}</span>
+                    <span class="{{ '' if activo else 'inactivo' }}">
+                        {{ 'Activo' if activo else 'Inactivo' }}
+                    </span>
                 </div>
 
                 <p>{{ semillero.facultad }}</p>
                 <p>{{ semillero.programa }}</p>
+                <p>Docente líder: {{ semillero.docente_lider or 'Sin asignar' }}</p>
 
                 <div class="semillero-datos">
                     <span>Proyectos: {{ semillero.total_proyectos }}</span>
-                    <span>Integrantes: {{ semillero.total_integrantes }}</span>
+                    <span>Integrantes: {{ semillero.total_integrantes }} / {{ semillero.cupo_maximo }}</span>
                 </div>
 
                 <div class="semillero-acciones">
-                    <button 
-                        class="btn-detalle"
-                        ata-id="{{ semillero.id_semillero }}"
-                        onclick="verDetalleSemillero(this.dataset.id)">
+                    <button class="btn-detalle"
+                            data-id="{{ semillero.id_semillero }}"
+                            onclick="verDetalleSemillero(this.dataset.id)">
                         Ver detalles
                     </button>
 
-                    <button 
-                       data-id="{{ semillero.id_semillero }}"
-                       onclick="editarSemillero(this.dataset.id)">
-                       Editar
+                    <button data-id="{{ semillero.id_semillero }}"
+                            onclick="editarSemillero(this.dataset.id)">
+                        Editar
                     </button>
 
-                    <button 
-                       data-id="{{ semillero.id_semillero }}"
-                       onclick="eliminarSemillero(this.dataset.id)">
-                       Eliminar
+                    {% if activo %}
+                    <button class="btn-baja" data-nuevo="INACTIVO"
+                            onclick="cambiarEstadoSemillero(this)">
+                        Dar de baja
                     </button>
+                    {% else %}
+                    <button data-nuevo="ACTIVO"
+                            onclick="cambiarEstadoSemillero(this)">
+                        Reactivar
+                    </button>
+                    {% endif %}
                 </div>
 
             </article>
@@ -105,4 +106,83 @@
 
         </div>
     </div>
-</div>
+
+    <!-- VENTANA: CREAR / EDITAR SEMILLERO -->
+    <div class="modal-fac" id="modalSemillero" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalSemillero')">
+        <div class="modal-fac-contenido">
+            <h2 id="tituloModalSemillero">Nuevo semillero</h2>
+            <p class="modal-fac-ayuda">Completa los datos del semillero.</p>
+
+            <div class="campo">
+                <label for="semNombre">Nombre</label>
+                <input id="semNombre" maxlength="100" autocomplete="off"
+                       placeholder="Ej: Semillero de Inteligencia Artificial">
+            </div>
+
+            <div class="campo">
+                <label for="semFacultad">Facultad</label>
+                <select id="semFacultad">
+                    <option value="">Selecciona una facultad</option>
+                    {% for f in facultades %}
+                    <option value="{{ f.id_facultad }}">{{ f.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="modal-fac-fila">
+                <div class="campo">
+                    <label for="semLinea">Línea de investigación</label>
+                    <input id="semLinea" maxlength="100" autocomplete="off"
+                           placeholder="Ej: Inteligencia artificial">
+                </div>
+                <div class="campo">
+                    <label for="semCupo">Cupo</label>
+                    <input id="semCupo" type="number" min="1" max="500" value="20">
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="semDescripcion">Descripción</label>
+                <textarea id="semDescripcion" rows="3"
+                          placeholder="¿De qué trata el semillero?"></textarea>
+            </div>
+
+            <p class="modal-fac-error" id="errorModalSemillero" hidden></p>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn" onclick="cerrarModalFac('modalSemillero')">Cancelar</button>
+                <button type="button" class="btn btn-red" id="btnGuardarSemillero" onclick="guardarSemillero()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA: DETALLE DEL SEMILLERO -->
+    <div class="modal-fac" id="modalDetalleSemillero" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalDetalleSemillero')">
+        <div class="modal-fac-contenido modal-fac-ancho">
+            <h2 id="detSemNombre">Semillero</h2>
+            <p class="modal-fac-ayuda" id="detSemSubtitulo"></p>
+
+            <div class="det-sem-grid" id="detSemDatos"></div>
+
+            <h3>Integrantes</h3>
+            <div class="modal-fac-tabla">
+                <table>
+                    <thead>
+                        <tr><th>Integrante</th><th>Programa</th><th>Ingreso</th></tr>
+                    </thead>
+                    <tbody id="detSemIntegrantes"></tbody>
+                </table>
+            </div>
+
+            <h3>Proyectos</h3>
+            <ul class="det-sem-lista" id="detSemProyectos"></ul>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn" onclick="cerrarModalFac('modalDetalleSemillero')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+</div> 

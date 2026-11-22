@@ -151,6 +151,10 @@ async function cargarSolicitudes(section) {
         }
 
         section.innerHTML = await response.text();
+         
+        // Conectar los botones del modal despues de cargar el HTML
+        configurarModalRechazo();
+
 
     } catch (error) {
         console.error(error);
@@ -173,7 +177,7 @@ let solicitudPendienteRechazo = null;
 let cambioPendienteRechazo = null;
 
 
-function resolverSolicitud(boton, accion) {
+async function resolverSolicitud(boton, accion) {
     const item = boton.closest('.request-item');
     const id = boton.dataset.id;
 
@@ -190,9 +194,16 @@ function resolverSolicitud(boton, accion) {
         return;
     }
 
-    procesarSolicitudRegistro(item, id, accion);
-}
+    const confirmado = await confirmarAccion({
+        titulo: 'Aprobar registro',
+        mensaje: 'Se creará la cuenta del usuario y quedará activa. ¿Deseas aprobar la solicitud?',
+        aceptar: 'Sí, aprobar'
+    });
 
+    if (!confirmado) return;
+
+    procesarSolicitudRegistro(item, id, accion);
+} 
 
 async function procesarSolicitudRegistro(item, id, accion, motivo = '') {
     item.querySelectorAll('button').forEach(b => b.disabled = true);
@@ -301,96 +312,101 @@ async function cargarSolicitudesCambios() {
 
 // BOTONES DEL MODAL DE RECHAZO
 
-const modalRechazo = document.getElementById('modalRechazoCambio');
-const motivoRechazo = document.getElementById('motivoRechazo');
-const errorMotivo = document.getElementById('errorMotivoRechazo');
-const botonConfirmarRechazo = document.getElementById('confirmarRechazo');
 
+ // BOTONES DEL MODAL DE RECHAZO
 
+function configurarModalRechazo() {
 
-function cerrarModalRechazo() {
-    modalRechazo.hidden = true;
-    motivoRechazo.value = '';
-    errorMotivo.hidden = true;
-    
-    solicitudPendienteRechazo = null;
-    cambioPendienteRechazo = null;
-}
+    const modalRechazo = document.getElementById('modalRechazoCambio');
 
-document.getElementById('cerrarModalRechazo')
-    .addEventListener('click', cerrarModalRechazo);
+    if (!modalRechazo) return;
 
-document.getElementById('cancelarRechazo')
-    .addEventListener('click', cerrarModalRechazo);
+    const motivoRechazo = modalRechazo.querySelector('#motivoRechazo');
+    const errorMotivo = modalRechazo.querySelector('#errorMotivoRechazo');
+    const botonConfirmarRechazo = modalRechazo.querySelector('#confirmarRechazo');
+    const btnCerrarRechazo = modalRechazo.querySelector('#cerrarModalRechazo');
+    const btnCancelarRechazo = modalRechazo.querySelector('#cancelarRechazo');
 
-botonConfirmarRechazo.addEventListener('click', async () => {
+    function cerrarModalRechazo() {
+        modalRechazo.hidden = true;
+        motivoRechazo.value = '';
+        errorMotivo.hidden = true;
 
-    const motivo = motivoRechazo.value.trim();
-
-    if (!motivo) {
-        errorMotivo.textContent = 'Debes escribir el motivo del rechazo.';
-        errorMotivo.hidden = false;
-        return;
+        solicitudPendienteRechazo = null;
+        cambioPendienteRechazo = null;
     }
 
-    botonConfirmarRechazo.disabled = true;
+    btnCerrarRechazo.onclick = cerrarModalRechazo;
+    btnCancelarRechazo.onclick = cerrarModalRechazo;
 
-    try {
+    botonConfirmarRechazo.onclick = async () => {
 
-        // RECHAZAR SOLICITUD DE REGISTRO
-        if (solicitudPendienteRechazo) {
+        const motivo = motivoRechazo.value.trim();
 
-            const solicitud = solicitudPendienteRechazo;
-
-            const exito = await procesarSolicitudRegistro(
-                solicitud.item,
-                solicitud.id,
-                'rechazar',
-                motivo
-            );
-
-            if (!exito) return;
-
-            cerrarModalRechazo();
+        if (!motivo) {
+            errorMotivo.textContent = 'Debes escribir el motivo del rechazo.';
+            errorMotivo.hidden = false;
             return;
         }
 
-        // RECHAZAR CAMBIO DE DATOS
-        if (cambioPendienteRechazo) {
+        botonConfirmarRechazo.disabled = true;
 
-            const respuesta = await fetch(
-                `/admin/solicitudes/actualizaciones/${cambioPendienteRechazo.id}/rechazar`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ motivo: motivo })
-                }
-            );
+        try {
 
-            const resultado = await respuesta.json();
+            // RECHAZAR SOLICITUD DE REGISTRO
+            if (solicitudPendienteRechazo) {
 
-            if (!respuesta.ok) {
-                throw new Error(resultado.mensaje);
+                const solicitud = solicitudPendienteRechazo;
+
+                const exito = await procesarSolicitudRegistro(
+                    solicitud.item,
+                    solicitud.id,
+                    'rechazar',
+                    motivo
+                );
+
+                if (!exito) return;
+
+                cerrarModalRechazo();
+                return;
             }
 
-            cerrarModalRechazo();
-            await cargarSolicitudesCambios();
+            // RECHAZAR CAMBIO DE DATOS
+            if (cambioPendienteRechazo) {
+
+                const respuesta = await fetch(
+                    `/admin/solicitudes/actualizaciones/${cambioPendienteRechazo.id}/rechazar`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ motivo: motivo })
+                    }
+                );
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(resultado.mensaje);
+                }
+
+                cerrarModalRechazo();
+                await cargarSolicitudesCambios();
+            }
+
+        } catch (error) {
+
+            errorMotivo.textContent =
+                error.message || 'No se pudo rechazar la solicitud.';
+
+            errorMotivo.hidden = false;
+
+        } finally {
+            botonConfirmarRechazo.disabled = false;
         }
-
-    } catch (error) {
-
-        errorMotivo.textContent =
-            error.message || 'No se pudo rechazar la solicitud.';
-
-        errorMotivo.hidden = false;
-
-    } finally {
-        botonConfirmarRechazo.disabled = false;
-    }
-});
-
+    };
+}
 
 
 // FILTRAR USUARIOS
@@ -398,37 +414,58 @@ function filterUsers() {
     const q = document.getElementById('searchUsers').value.toLowerCase();
     const role = document.getElementById('filterRole').value;
 
-    document.querySelectorAll('#usersTable tr').forEach(row => {
+    document.querySelectorAll('#usersTable tr[data-rol]').forEach(row => {
         row.hidden = !(
             row.textContent.toLowerCase().includes(q) &&
-            (!role || row.cells[2].querySelector('select').value === role)
+            (!role || row.dataset.rol === role)
         );
     });
 }
 
-// ACTIVAR O SUSPENDER USUARIOS
-function toggleUser(button) {
+// ACTIVAR O SUSPENDER USUARIOS (guarda en MySQL)
+async function toggleUser(button) {
     const row = button.closest('tr');
-    const status = row.querySelector('.status');
+    const nuevoEstado = button.dataset.nuevo;
+    const nombre = row.querySelector('strong').textContent;
+    const verbo = nuevoEstado === 'ACTIVO' ? 'activar' : 'suspender';
+    const confirmado = await confirmarAccion({
+    titulo: nuevoEstado === 'ACTIVO' ? 'Activar cuenta' : 'Suspender cuenta',
+    mensaje: '¿Seguro que quieres ' + verbo + ' la cuenta de ' + nombre + '?',
+    aceptar: nuevoEstado === 'ACTIVO' ? 'Sí, activar' : 'Sí, suspender'
+    });
 
-    const suspended = status.classList.toggle('suspended');
+    if (!confirmado) return;
 
-    status.textContent = suspended ? 'Suspendido' : 'Activo';
-    button.textContent = suspended ? 'Activar' : 'Suspender';
-}
+    button.disabled = true;
 
-// AGREGAR ELEMENTOS
-function addItem(id, label) {
-    const name = prompt(label + ':');
+    try {
+        const respuesta = await fetch('/admin/api/usuarios/' + row.dataset.id + '/estado', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: nuevoEstado })
+        });
+        const datos = await respuesta.json().catch(() => ({}));
 
-    if (!name || !name.trim()) {
-        return;
+        if (!respuesta.ok) {
+            alert(datos.mensaje || 'No fue posible cambiar el estado.');
+            button.disabled = false;
+            return;
+        }
+
+        const activo = nuevoEstado === 'ACTIVO';
+        const estado = row.querySelector('.status');
+        estado.classList.toggle('suspended', !activo);
+        estado.textContent = activo ? 'Activo' : 'Suspendido';
+
+        button.textContent = activo ? 'Suspender' : 'Activar';
+        button.dataset.nuevo = activo ? 'SUSPENDIDO' : 'ACTIVO';
+        button.className = activo ? 'btn btn-soft-red' : 'btn';
+    } catch (error) {
+        console.error(error);
+        alert('No fue posible conectar con el servidor.');
     }
 
-    const p = document.createElement('p');
-    p.textContent = name.trim();
-
-    document.getElementById(id).appendChild(p);
+    button.disabled = false;
 }
 
 // GENERAR INFORME
@@ -450,15 +487,13 @@ function generateReport() {
 // FACULTADES Y PROGRAMAS
 // ==============================
 
-// Filtra las tarjetas por nombre de facultad
+// Filtra las tarjetas por nombre de facultad o de programa
 function filterFacultades() {
     const q = document.getElementById('searchFacultades').value.toLowerCase();
     let visibles = 0;
 
     document.querySelectorAll('#listaFacultades .facultad-card').forEach(card => {
-        const nombre = card.querySelector('h3').textContent.toLowerCase();
-        const mostrar = nombre.includes(q);
-
+        const mostrar = card.textContent.toLowerCase().includes(q);
         card.hidden = !mostrar;
         if (mostrar) visibles++;
     });
@@ -466,51 +501,227 @@ function filterFacultades() {
     document.getElementById('sinFacultades').hidden = visibles > 0;
 }
 
-// Crea una tarjeta nueva
+function abrirModalFac(id) {
+    document.getElementById(id).hidden = false;
+}
+
+function cerrarModalFac(id) {
+    document.getElementById(id).hidden = true;
+}
+
+// Vuelve a pedir el módulo al servidor para ver lo recién guardado
+async function recargarFacultades() {
+    const seccion = document.getElementById('page-facultades');
+    const respuesta = await fetch('/admin/facultades');
+    if (respuesta.ok) {
+        seccion.innerHTML = await respuesta.text();
+    }
+}
+
+async function enviarJsonFac(url, metodo, cuerpo) {
+    const respuesta = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cuerpo)
+    });
+    const datos = await respuesta.json().catch(() => ({}));
+    return { ok: respuesta.ok, datos: datos };
+}
+
+// ---------- CREAR / EDITAR FACULTAD ----------
 function crearFacultad() {
-    const nombre = prompt('Nombre de la facultad:');
-    if (!nombre || !nombre.trim()) return;
+    const modal = document.getElementById('modalFacultad');
+    const input = document.getElementById('inputNombreFacultad');
 
-    const card = document.createElement('article');
-    card.className = 'facultad-card';
-    card.innerHTML =
-        '<div class="facultad-top">' +
-            '<div class="facultad-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/></svg></div>' +
-            '<button class="link-editar" onclick="editarFacultad(this)">Editar</button>' +
-        '</div>' +
-        '<h3></h3>' +
-        '<p class="facultad-meta">0 programas · 0 semilleros</p>' +
-        '<button class="btn" onclick="vincularSemillero(this)">Vincular semillero</button>';
+    modal.dataset.id = '';
+    document.getElementById('tituloModalFacultad').textContent = 'Nueva facultad';
+    document.getElementById('errorModalFacultad').hidden = true;
+    input.value = '';
 
-    // textContent evita que el nombre escrito se interprete como HTML
-    card.querySelector('h3').textContent = nombre.trim();
-    document.getElementById('listaFacultades').appendChild(card);
+    abrirModalFac('modalFacultad');
+    input.focus();
 }
 
-// Cambia el nombre de una facultad
 function editarFacultad(boton) {
-    const titulo = boton.closest('.facultad-card').querySelector('h3');
-    const nuevo = prompt('Nuevo nombre de la facultad:', titulo.textContent);
-
-    if (!nuevo || !nuevo.trim()) return;
-    titulo.textContent = nuevo.trim();
-}
-
-// Suma un semillero al contador de la facultad
-function vincularSemillero(boton) {
     const card = boton.closest('.facultad-card');
-    const facultad = card.querySelector('h3').textContent;
-    const semillero = prompt('Nombre del semillero a vincular a ' + facultad + ':');
+    const modal = document.getElementById('modalFacultad');
+    const input = document.getElementById('inputNombreFacultad');
 
-    if (!semillero || !semillero.trim()) return;
+    modal.dataset.id = card.dataset.id;
+    document.getElementById('tituloModalFacultad').textContent = 'Editar facultad';
+    document.getElementById('errorModalFacultad').hidden = true;
+    input.value = card.querySelector('h3').textContent.trim();
 
-    const meta = card.querySelector('.facultad-meta');
-    meta.textContent = meta.textContent.replace(
-        /(\d+) semilleros/,
-        (texto, n) => (Number(n) + 1) + ' semilleros'
-    );
-
+    abrirModalFac('modalFacultad');
+    input.focus();
 }
+
+async function guardarFacultad() {
+    const modal = document.getElementById('modalFacultad');
+    const nombre = document.getElementById('inputNombreFacultad').value.trim();
+    const error = document.getElementById('errorModalFacultad');
+    const boton = document.getElementById('btnGuardarFacultad');
+    const id = modal.dataset.id;
+
+    if (!nombre) {
+        error.textContent = 'Escribe el nombre de la facultad.';
+        error.hidden = false;
+        return;
+    }
+
+    boton.disabled = true;
+
+    try {
+        const resultado = await enviarJsonFac(
+            id ? '/admin/api/facultades/' + id : '/admin/api/facultades',
+            id ? 'PUT' : 'POST',
+            { nombre: nombre }
+        );
+
+        if (!resultado.ok) {
+            error.textContent = resultado.datos.mensaje || 'No fue posible guardar.';
+            error.hidden = false;
+            boton.disabled = false;
+            return;
+        }
+
+        cerrarModalFac('modalFacultad');
+        await recargarFacultades();
+    } catch (e) {
+        console.error(e);
+        error.textContent = 'No fue posible conectar con el servidor.';
+        error.hidden = false;
+        boton.disabled = false;
+    }
+}
+
+// ---------- CREAR PROGRAMA ----------
+function crearPrograma(boton) {
+    const card = boton.closest('.facultad-card');
+    const modal = document.getElementById('modalPrograma');
+    const input = document.getElementById('inputNombrePrograma');
+
+    modal.dataset.facultad = card.dataset.id;
+    document.getElementById('subtituloModalPrograma').textContent =
+        'Se agregará a: ' + card.querySelector('h3').textContent.trim();
+    document.getElementById('errorModalPrograma').hidden = true;
+    input.value = '';
+
+    abrirModalFac('modalPrograma');
+    input.focus();
+}
+
+async function guardarPrograma() {
+    const modal = document.getElementById('modalPrograma');
+    const nombre = document.getElementById('inputNombrePrograma').value.trim();
+    const error = document.getElementById('errorModalPrograma');
+    const boton = document.getElementById('btnGuardarPrograma');
+
+    if (!nombre) {
+        error.textContent = 'Escribe el nombre del programa.';
+        error.hidden = false;
+        return;
+    }
+
+    boton.disabled = true;
+
+    try {
+        const resultado = await enviarJsonFac(
+            '/admin/api/facultades/' + modal.dataset.facultad + '/programas',
+            'POST',
+            { nombre: nombre }
+        );
+
+        if (!resultado.ok) {
+            error.textContent = resultado.datos.mensaje || 'No fue posible guardar.';
+            error.hidden = false;
+            boton.disabled = false;
+            return;
+        }
+
+        cerrarModalFac('modalPrograma');
+        await recargarFacultades();
+    } catch (e) {
+        console.error(e);
+        error.textContent = 'No fue posible conectar con el servidor.';
+        error.hidden = false;
+        boton.disabled = false;
+    }
+}
+
+// ---------- USUARIOS MATRICULADOS ----------
+async function verUsuariosFacultad(boton) {
+    const card = boton.closest('.facultad-card');
+    const cuerpo = document.getElementById('tablaUsuariosFac');
+    const resumen = document.getElementById('resumenUsuariosFac');
+    const ROLES = {
+        ESTUDIANTE: 'Estudiante investigador',
+        DOCENTE_LIDER: 'Docente líder'
+    };
+
+    document.getElementById('tituloUsuariosFac').textContent =
+        'Usuarios matriculados · ' + card.querySelector('h3').textContent.trim();
+    document.getElementById('buscarUsuariosFac').value = '';
+    resumen.textContent = '';
+    cuerpo.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+    abrirModalFac('modalUsuariosFac');
+
+    try {
+        const respuesta = await fetch('/admin/api/facultades/' + card.dataset.id + '/usuarios');
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'Error');
+
+        cuerpo.innerHTML = '';
+
+        if (!datos.usuarios.length) {
+            cuerpo.innerHTML = '<tr><td colspan="4">Esta facultad aún no tiene usuarios matriculados.</td></tr>';
+            return;
+        }
+
+        datos.usuarios.forEach(u => {
+            const fila = document.createElement('tr');
+
+            const tdUsuario = document.createElement('td');
+            const nombre = document.createElement('strong');
+            nombre.textContent = u.nombre;
+            const correo = document.createElement('small');
+            correo.textContent = u.correo;
+            correo.style.display = 'block';
+            tdUsuario.append(nombre, correo);
+
+            const tdPrograma = document.createElement('td');
+            tdPrograma.textContent = u.detalle || '—';
+
+            const tdRol = document.createElement('td');
+            tdRol.textContent = ROLES[u.rol] || u.rol;
+
+            const tdEstado = document.createElement('td');
+            const estado = document.createElement('span');
+            const activo = u.estado === 'ACTIVO';
+            estado.className = 'status' + (activo ? '' : ' suspended');
+            estado.textContent = activo ? 'Activo' : 'Suspendido';
+            tdEstado.appendChild(estado);
+
+            fila.append(tdUsuario, tdPrograma, tdRol, tdEstado);
+            cuerpo.appendChild(fila);
+        });
+
+        resumen.textContent = datos.usuarios.length +
+            (datos.usuarios.length === 1 ? ' usuario' : ' usuarios');
+    } catch (e) {
+        console.error(e);
+        cuerpo.innerHTML = '<tr><td colspan="4">No fue posible cargar los usuarios.</td></tr>';
+    }
+}
+
+function filtrarUsuariosFac() {
+    const q = document.getElementById('buscarUsuariosFac').value.toLowerCase();
+    document.querySelectorAll('#tablaUsuariosFac tr').forEach(fila => {
+        fila.hidden = !fila.textContent.toLowerCase().includes(q);
+    });
+}
+
 
 // MOSTRAR U OCULTAR PROGRAMAS Y SEMILLEROS
 function mostrarLista(boton) {
@@ -541,6 +752,236 @@ function filtrarSemilleros() {
     tarjetas.forEach(tarjeta => {
         tarjeta.hidden = !tarjeta.textContent.toLowerCase().includes(texto);
     });
+}
+
+// ==============================
+// SEMILLEROS (ADMIN)
+// ==============================
+async function recargarSemilleros() {
+    const seccion = document.getElementById('page-semilleros');
+    const respuesta = await fetch('/admin/semilleros');
+    if (respuesta.ok) {
+        seccion.innerHTML = await respuesta.text();
+    }
+}
+
+function limpiarErrorSemillero() {
+    document.getElementById('errorModalSemillero').hidden = true;
+}
+
+// ---------- CREAR ----------
+function crearSemillero() {
+    const modal = document.getElementById('modalSemillero');
+
+    modal.dataset.id = '';
+    document.getElementById('tituloModalSemillero').textContent = 'Nuevo semillero';
+    document.getElementById('semNombre').value = '';
+    document.getElementById('semFacultad').value = '';
+    document.getElementById('semLinea').value = '';
+    document.getElementById('semCupo').value = '20';
+    document.getElementById('semDescripcion').value = '';
+    limpiarErrorSemillero();
+
+    abrirModalFac('modalSemillero');
+    document.getElementById('semNombre').focus();
+}
+
+// ---------- EDITAR ----------
+async function editarSemillero(id) {
+    try {
+        const respuesta = await fetch('/admin/api/semilleros/' + id);
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.mensaje || 'No fue posible cargar el semillero.');
+            return;
+        }
+
+        const s = datos.semillero;
+        const modal = document.getElementById('modalSemillero');
+
+        modal.dataset.id = id;
+        document.getElementById('tituloModalSemillero').textContent = 'Editar semillero';
+        document.getElementById('semNombre').value = s.nombre || '';
+        document.getElementById('semFacultad').value = s.id_facultad;
+        document.getElementById('semLinea').value = s.linea_investigacion || '';
+        document.getElementById('semCupo').value = s.cupo_maximo;
+        document.getElementById('semDescripcion').value = s.descripcion || '';
+        limpiarErrorSemillero();
+
+        abrirModalFac('modalSemillero');
+        document.getElementById('semNombre').focus();
+    } catch (e) {
+        console.error(e);
+        alert('No fue posible conectar con el servidor.');
+    }
+}
+
+async function guardarSemillero() {
+    const modal = document.getElementById('modalSemillero');
+    const error = document.getElementById('errorModalSemillero');
+    const boton = document.getElementById('btnGuardarSemillero');
+    const id = modal.dataset.id;
+
+    const cuerpo = {
+        nombre: document.getElementById('semNombre').value.trim(),
+        id_facultad: document.getElementById('semFacultad').value,
+        linea_investigacion: document.getElementById('semLinea').value.trim(),
+        cupo_maximo: document.getElementById('semCupo').value,
+        descripcion: document.getElementById('semDescripcion').value.trim()
+    };
+
+    if (!cuerpo.nombre) {
+        error.textContent = 'Escribe el nombre del semillero.';
+        error.hidden = false;
+        return;
+    }
+    if (!cuerpo.id_facultad) {
+        error.textContent = 'Selecciona la facultad.';
+        error.hidden = false;
+        return;
+    }
+
+    boton.disabled = true;
+
+    try {
+        const resultado = await enviarJsonFac(
+            id ? '/admin/api/semilleros/' + id : '/admin/api/semilleros',
+            id ? 'PUT' : 'POST',
+            cuerpo
+        );
+
+        if (!resultado.ok) {
+            error.textContent = resultado.datos.mensaje || 'No fue posible guardar.';
+            error.hidden = false;
+            boton.disabled = false;
+            return;
+        }
+
+        cerrarModalFac('modalSemillero');
+        await recargarSemilleros();
+    } catch (e) {
+        console.error(e);
+        error.textContent = 'No fue posible conectar con el servidor.';
+        error.hidden = false;
+        boton.disabled = false;
+    }
+}
+
+// ---------- DAR DE BAJA / REACTIVAR ----------
+async function cambiarEstadoSemillero(boton) {
+    const card = boton.closest('.semillero-card');
+    const nombre = card.querySelector('h3').textContent.trim();
+    const nuevo = boton.dataset.nuevo;
+    const verbo = nuevo === 'ACTIVO' ? 'reactivar' : 'dar de baja';
+    const confirmado = await confirmarAccion({
+    titulo: nuevo === 'ACTIVO' ? 'Reactivar semillero' : 'Dar de baja semillero',
+    mensaje: '¿Seguro que quieres ' + verbo + ' el semillero "' + nombre + '"?',
+    aceptar: 'Sí, continuar'
+    });
+
+    if (!confirmado) return;
+
+    boton.disabled = true;
+
+    try {
+        const resultado = await enviarJsonFac(
+            '/admin/api/semilleros/' + card.dataset.id + '/estado',
+            'POST',
+            { estado: nuevo }
+        );
+
+        if (!resultado.ok) {
+            alert(resultado.datos.mensaje || 'No fue posible cambiar el estado.');
+            boton.disabled = false;
+            return;
+        }
+
+        await recargarSemilleros();
+    } catch (e) {
+        console.error(e);
+        alert('No fue posible conectar con el servidor.');
+        boton.disabled = false;
+    }
+}
+
+// ---------- DETALLE ----------
+function agregarDatoSem(contenedor, etiqueta, valor, ancho) {
+    const caja = document.createElement('div');
+    caja.className = 'det-sem-dato' + (ancho ? ' ancho' : '');
+
+    const titulo = document.createElement('small');
+    titulo.textContent = etiqueta;
+
+    const contenido = document.createElement('strong');
+    contenido.textContent = valor || '—';
+
+    caja.append(titulo, contenido);
+    contenedor.appendChild(caja);
+}
+
+async function verDetalleSemillero(id) {
+    const nombre = document.getElementById('detSemNombre');
+    const subtitulo = document.getElementById('detSemSubtitulo');
+    const datosCaja = document.getElementById('detSemDatos');
+    const integrantes = document.getElementById('detSemIntegrantes');
+    const proyectos = document.getElementById('detSemProyectos');
+
+    nombre.textContent = 'Cargando...';
+    subtitulo.textContent = '';
+    datosCaja.innerHTML = '';
+    integrantes.innerHTML = '';
+    proyectos.innerHTML = '';
+    abrirModalFac('modalDetalleSemillero');
+
+    try {
+        const respuesta = await fetch('/admin/api/semilleros/' + id);
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'Error');
+
+        const s = datos.semillero;
+
+        nombre.textContent = s.nombre;
+        subtitulo.textContent = s.facultad + ' · ' +
+            (s.estado === 'ACTIVO' ? 'Activo' : 'Inactivo');
+
+        agregarDatoSem(datosCaja, 'Docente líder', s.docente_lider);
+        agregarDatoSem(datosCaja, 'Línea de investigación', s.linea_investigacion);
+        agregarDatoSem(datosCaja, 'Cupo',
+            datos.integrantes.length + ' de ' + s.cupo_maximo + ' integrantes');
+        agregarDatoSem(datosCaja, 'XP acumulado', String(s.xp_total));
+        agregarDatoSem(datosCaja, 'Descripción', s.descripcion, true);
+
+        if (!datos.integrantes.length) {
+            integrantes.innerHTML = '<tr><td colspan="3">Aún no tiene integrantes.</td></tr>';
+        }
+
+        datos.integrantes.forEach(i => {
+            const fila = document.createElement('tr');
+            [i.nombre, i.programa || '—', i.ingreso || '—'].forEach(texto => {
+                const celda = document.createElement('td');
+                celda.textContent = texto;
+                fila.appendChild(celda);
+            });
+            integrantes.appendChild(fila);
+        });
+
+        if (!datos.proyectos.length) {
+            const vacio = document.createElement('li');
+            vacio.textContent = 'Aún no tiene proyectos.';
+            proyectos.appendChild(vacio);
+        }
+
+        datos.proyectos.forEach(p => {
+            const item = document.createElement('li');
+            item.textContent = p.titulo + ' (' + p.estado + ')';
+            proyectos.appendChild(item);
+        });
+    } catch (e) {
+        console.error(e);
+        nombre.textContent = 'No fue posible cargar el semillero.';
+    }
 }
 
 // VER DETALLES DE CONVOCATORIA
@@ -595,10 +1036,13 @@ async function editarConvocatoria(boton) {
 }
 
 async function eliminarConvocatoria(boton) {
-    if (!confirm('¿Deseas eliminar esta convocatoria?')) {
-        return;
-    }
+   const confirmado = await confirmarAccion({
+    titulo: 'Eliminar convocatoria',
+    mensaje: 'Esta acción no se puede deshacer. ¿Deseas eliminarla?',
+    aceptar: 'Sí, eliminar'
+    });
 
+    if (!confirmado) return;
     try {
         const respuesta = await fetch(
             '/admin/api/convocatorias/' + boton.dataset.id,
@@ -627,13 +1071,12 @@ async function recargarConvocatorias() {
     }
 }
 
-document.getElementById('cancelarConvocatoria').addEventListener('click', function () {
+document.getElementById('cancelarConvocatoria')?.addEventListener('click', function () {
     modalConvocatoria.hidden = true;
 });
 
-formConvocatoria.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    mensajeConvocatoria.textContent = 'Guardando...';
+formConvocatoria?.addEventListener('submit', async function (e) {
+ mensajeConvocatoria.textContent = 'Guardando...';
 
     const datos = {
         titulo: document.getElementById('convTitulo').value,
@@ -671,18 +1114,95 @@ formConvocatoria.addEventListener('submit', async function (e) {
 
 });
 
+// ==============================
+// VENTANA DE CONFIRMACIÓN Y AVISOS
+// ==============================
+// Uso: const ok = await confirmarAccion({ titulo, mensaje, aceptar });
+function confirmarAccion(opciones) {
+    const o = Object.assign({
+        titulo: '¿Estás seguro?',
+        mensaje: '',
+        aceptar: 'Aceptar',
+        cancelar: 'Cancelar'
+    }, opciones || {});
+
+    return new Promise(function (resolver) {
+        const fondo = document.createElement('div');
+        fondo.className = 'confirmar-fondo';
+
+        const caja = document.createElement('div');
+        caja.className = 'confirmar-caja';
+        caja.setAttribute('role', 'dialog');
+        caja.setAttribute('aria-modal', 'true');
+
+        const titulo = document.createElement('h2');
+        titulo.textContent = o.titulo;
+
+        const mensaje = document.createElement('p');
+        mensaje.textContent = o.mensaje;
+
+        const botones = document.createElement('div');
+        botones.className = 'confirmar-botones';
+
+        const btnCancelar = document.createElement('button');
+        btnCancelar.type = 'button';
+        btnCancelar.className = 'btn';
+        btnCancelar.textContent = o.cancelar;
+
+        const btnAceptar = document.createElement('button');
+        btnAceptar.type = 'button';
+        btnAceptar.className = 'btn btn-red';
+        btnAceptar.textContent = o.aceptar;
+
+        function cerrar(resultado) {
+            document.removeEventListener('keydown', alTeclear);
+            fondo.remove();
+            resolver(resultado);
+        }
+
+        function alTeclear(e) {
+            if (e.key === 'Escape') cerrar(false);
+        }
+
+        btnCancelar.addEventListener('click', function () { cerrar(false); });
+        btnAceptar.addEventListener('click', function () { cerrar(true); });
+        fondo.addEventListener('click', function (e) {
+            if (e.target === fondo) cerrar(false);
+        });
+        document.addEventListener('keydown', alTeclear);
+
+        botones.append(btnCancelar, btnAceptar);
+        caja.append(titulo, mensaje, botones);
+        fondo.appendChild(caja);
+        document.body.appendChild(fondo);
+
+        btnAceptar.focus();
+    });
+}
+
+// Aviso corto que desaparece solo (reemplaza al alert)
+function mostrarToast(mensaje, tipo) {
+    const aviso = document.createElement('div');
+    aviso.className = 'toast-admin ' + (tipo || '');
+    aviso.textContent = mensaje;
+    document.body.appendChild(aviso);
+    setTimeout(function () { aviso.remove(); }, 3500);
+}
+
 async function aprobarCambio(id) {
 
-    const confirmar = confirm("¿Deseas aprobar esta solicitud?");
+    const confirmado = await confirmarAccion({
+        titulo: 'Aprobar solicitud',
+        mensaje: 'Se aplicará el cambio solicitado a los datos del usuario. ¿Deseas aprobarla?',
+        aceptar: 'Sí, aprobar'
+    });
 
-    if (!confirmar) return;
+    if (!confirmado) return;
 
     try {
         const respuesta = await fetch(
             `/admin/solicitudes/actualizaciones/${id}/aprobar`,
-            {
-                method: "POST"
-            }
+            { method: "POST" }
         );
 
         const resultado = await respuesta.json();
@@ -691,12 +1211,12 @@ async function aprobarCambio(id) {
             throw new Error(resultado.mensaje);
         }
 
-        alert(resultado.mensaje);
+        mostrarToast(resultado.mensaje, 'exito');
         cargarSolicitudesCambios();
 
     } catch (error) {
         console.error(error);
-        alert(error.message || "No se pudo aprobar la solicitud.");
+        mostrarToast(error.message || "No se pudo aprobar la solicitud.", 'error');
     }
 }
 
@@ -752,15 +1272,7 @@ function rechazarCambio(id) {
         resumen.textContent = total === 0 ? '' : total + ' pendiente' + (total === 1 ? '' : 's');
     }
 
-     // Si hay novedades y estás en Solicitudes, se refresca la lista sola
-        const seccion = document.getElementById('page-solicitudes');
-            if (ultimoTotal !== null && datos.total !== ultimoTotal &&
-                seccion && seccion.classList.contains('active-page') &&
-                typeof cargarSolicitudes === 'function') {
-                cargarSolicitudes(seccion);
-            }
-            ultimoTotal = datos.total;
-
+     
     async function cargar() {
         try {
             const r = await fetch('/admin/api/notificaciones');
@@ -769,13 +1281,25 @@ function rechazarCambio(id) {
 
             pintarBadge(datos.total);
 
+            const seccion = document.getElementById('page-solicitudes');
+
+         if (ultimoTotal !== null && datos.total !== ultimoTotal &&
+         seccion && seccion.classList.contains('active-page') &&
+         typeof cargarSolicitudes === 'function') {
+         cargarSolicitudes(seccion);
+          }
+
+          ultimoTotal = datos.total;
+
             if (!datos.notificaciones.length) {
                 lista.innerHTML = '<p class="admin-notif-vacio">No tienes notificaciones pendientes.</p>';
                 return;
             }
 
             lista.innerHTML = datos.notificaciones.map(n => {
-                const t = TIPOS[n.tipo] || { icono: '🔔', titulo: 'Notificación' };
+                const t = TIPOS[n.tipo] || { icono: '🔔', titulo: 'Notificación', 
+                                           logro:{ icono: '🏆', titulo: 'Logro por validar' },
+                                           RESUELTA:      { icono: '✅', titulo: 'Solicitud resuelta' } };
                 return '<button type="button" class="admin-notif-item" data-destino="' + escapar(n.destino) + '">' +
                     '<span class="admin-notif-icono">' + t.icono + '</span>' +
                     '<span><strong>' + t.titulo + '</strong>' +

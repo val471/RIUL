@@ -264,6 +264,25 @@ def admin_facultades():
 def admin_semilleros():
     return admin_controller.mostrar_semilleros()
 
+@web.route("/admin/api/semilleros", methods=["POST"])
+def admin_crear_semillero():
+    return admin_controller.crear_semillero()
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["GET"])
+def admin_detalle_semillero(id_semillero):
+    return admin_controller.detalle_semillero(id_semillero)
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["PUT"])
+def admin_editar_semillero(id_semillero):
+    return admin_controller.editar_semillero(id_semillero)
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>/estado", methods=["POST"])
+def admin_estado_semillero(id_semillero):
+    return admin_controller.cambiar_estado_semillero(id_semillero)
+
 
 @web.route("/admin/convocatorias")
 def admin_convocatorias():
@@ -1565,9 +1584,33 @@ def admin_api_notificaciones():
             print("ERROR NOTIFICACIONES ADMIN (" + tipo + "):", repr(error))
             errores.append(tipo)
 
+        pendientes = len(items)
+
+    try:
+        guardadas = db.session.execute(text("""
+            SELECT mensaje,
+                   TIMESTAMPDIFF(MINUTE, fecha, NOW()) AS minutos
+            FROM notificacion
+            WHERE id_usuario = :id
+            ORDER BY fecha DESC, id_notificacion DESC
+            LIMIT 10
+        """), {"id": session.get("id_usuario")}).mappings().all()
+
+        for fila in guardadas:
+            items.append({
+                "tipo": "RESUELTA",
+                "destino": "solicitudes",
+                "mensaje": fila["mensaje"],
+                "minutos": max(fila["minutos"] or 0, 0),
+            })
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR NOTIFICACIONES ADMIN (RESUELTA):", repr(error))
+        errores.append("RESUELTA")
+
     items.sort(key=lambda n: n["minutos"])
     return jsonify({
-        "total": len(items),
+        "total": pendientes,
         "notificaciones": items[:20],
         "errores": errores,
     })

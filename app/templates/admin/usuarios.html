@@ -1,16 +1,19 @@
+{% set roles = {
+    'ESTUDIANTE': 'Estudiante investigador',
+    'DOCENTE_LIDER': 'Docente líder',
+    'DOCENTE': 'Docente',
+    'ADMIN': 'Administrador'
+} %}
 <div class="usuarios-modulo">
 
-    <p class="eyebrow">ADMINISTRACIÓN</p>
+    <p class="eyebrow">ADMINISTRACION</p>
 
     <div class="page-heading">
         <div>
             <h1>Usuarios</h1>
-            <p>Activa, suspende o cambia el rol de las cuentas.</p>
+            <p>Activa o suspende las cuentas de la plataforma.</p>
         </div>
-        <button class="btn btn-red" onclick="alert('Formulario de nuevo usuario de demostración')">
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nuevo usuario
-        </button>
-    </div>
+    </div> 
 
     <div class="toolbar">
         <div class="search-box">
@@ -19,9 +22,10 @@
         </div>
         <select class="filter" id="filterRole" onchange="filterUsers()">
             <option value="">Todos</option>
-            <option>Docente líder</option>
-            <option>Estudiante investigador</option>
-            <option>Administrador</option>
+            <option value="ESTUDIANTE">Estudiante investigador</option>
+            <option value="DOCENTE_LIDER">Docente líder</option>
+            <option value="DOCENTE">Docente</option>
+            <option value="ADMIN">Administrador</option>
         </select>
     </div>
 
@@ -32,27 +36,40 @@
                     <tr><th>Usuario</th><th>Programa</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="usersTable">
-                    <tr>
-                        <td><div class="person"><div class="admin-avatar">LG</div><div><strong>Dra. Laura Gómez</strong><small>laura.gomez@unilibre.edu.co</small></div></div></td>
-                        <td>Ingeniería de Sistemas</td>
-                        <td><select class="role-select"><option>Docente líder</option><option>Estudiante investigador</option><option>Administrador</option></select></td>
-                        <td><span class="status">Activo</span></td>
-                        <td><button class="btn btn-soft-red" onclick="toggleUser(this)">Suspender</button></td>
+                    {% for u in usuarios %}
+                    {% set activo = (u.estado == 'ACTIVO') %}
+                    <tr data-id="{{ u.id_usuario }}" data-rol="{{ u.rol }}">
+                        <td>
+                            <div class="person">
+                                <div class="admin-avatar">{{ u.nombre_institucional[:2]|upper }}</div>
+                                <div>
+                                    <strong>{{ u.nombre_institucional }}</strong>
+                                    <small>{{ u.correo_institucional }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ u.programa or '—' }}</td>
+                        <td>{{ roles.get(u.rol, u.rol) }}</td>
+                        <td>
+                            <span class="status {{ '' if activo else 'suspended' }}">
+                                {{ 'Activo' if activo else 'Suspendido' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if u.id_usuario == session.get('id_usuario') %}
+                                <small>Tu cuenta</small>
+                            {% elif activo %}
+                                <button class="btn btn-soft-red" data-nuevo="SUSPENDIDO"
+                                        onclick="toggleUser(this)">Suspender</button>
+                            {% else %}
+                                <button class="btn" data-nuevo="ACTIVO"
+                                        onclick="toggleUser(this)">Activar</button>
+                            {% endif %}
+                        </td>
                     </tr>
-                    <tr>
-                        <td><div class="person"><div class="admin-avatar">AM</div><div><strong>Andrés Martínez</strong><small>andres.martinez@unilibre.edu.co</small></div></div></td>
-                        <td>Ingeniería de Sistemas</td>
-                        <td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td>
-                        <td><span class="status">Activo</span></td>
-                        <td><button class="btn btn-soft-red" onclick="toggleUser(this)">Suspender</button></td>
-                    </tr>
-                    <tr>
-                        <td><div class="person"><div class="admin-avatar">SR</div><div><strong>Sofía Restrepo</strong><small>sofia.restrepo@unilibre.edu.co</small></div></div></td>
-                        <td>Ingeniería Industrial</td>
-                        <td><select class="role-select"><option>Estudiante investigador</option><option>Docente líder</option><option>Administrador</option></select></td>
-                        <td><span class="status suspended">Suspendido</span></td>
-                        <td><button class="btn" onclick="toggleUser(this)">Activar</button></td>
-                    </tr>
+                    {% else %}
+                    <tr><td colspan="5">No hay usuarios registrados.</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -15,81 +15,62 @@
     </div>
 
     <div class="search-box">
-        <input
-            class="search"
-            id="searchFacultades"
-            placeholder="Buscar facultad o programa..."
-            oninput="filterFacultades()"
-        >
+        <input class="search" id="searchFacultades"
+               placeholder="Buscar facultad o programa..."
+               oninput="filterFacultades()">
     </div>
 
     <div class="facultades-grid" id="listaFacultades">
 
         {% for facultad in facultades %}
+        <article class="facultad-card" data-id="{{ facultad.id_facultad }}">
 
-        <article class="facultad-card"
-                 data-nombre="{{ facultad.nombre|lower }}">
-
-            <div class="facultad-top">
-
+            <div class="facultad-top"> 
                 <div class="facultad-icon">
                     <svg viewBox="0 0 24 24">
                         <rect x="4" y="3" width="16" height="18" rx="1"/>
                         <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 21v-4h6v4"/>
                     </svg>
                 </div>
-
-                <button class="link-editar"
-                        onclick="editarFacultad(this)">
+                <button class="link-editar" onclick="editarFacultad(this)">
                     Editar facultad
                 </button>
-
-            </div>
+            </div> 
 
             <h3>{{ facultad.nombre }}</h3>
 
             <div class="facultad-detalles">
 
-                <!-- PROGRAMAS -->
-                <div class="facultad-grupo">
-
+                <!-- PROGRAMAS --> 
+                <div class="facultad-grupo"> 
                     <strong>Programas</strong>
+                    <span class="cantidad">{{ facultad.programas|length }}</span>
 
-                    <span class="cantidad">
-                        {{ facultad.programas|length }}
-                    </span>
-
-                    <button class="btn btn-ver"
-                            onclick="mostrarLista(this)">
+                    <button class="btn btn-ver" onclick="mostrarLista(this)">
                         Ver programas
                     </button>
-
-                    <button class="btn btn-crear"
-                            onclick="crearPrograma(this)">
+                    <button class="btn btn-crear" onclick="crearPrograma(this)">
                         + Crear programa
                     </button>
 
                     <ul class="lista-elementos" hidden>
                         {% for programa in facultad.programas %}
-                        <li>{{ programa }}</li>
+                        <li>
+                            {{ programa.nombre }}
+                            <small>· {{ programa.estudiantes }} estudiante{{ '' if programa.estudiantes == 1 else 's' }}</small>
+                        </li>
                         {% else %}
                         <li>Sin programas registrados</li>
                         {% endfor %}
                     </ul>
-
-                </div>
+                </div> 
 
                 <!-- SEMILLEROS -->
-                <div class="facultad-grupo">
-
+                <div class="facultad-grupo"> 
                     <strong>Semilleros asociados</strong>
+                    <span class="cantidad">{{ facultad.semilleros|length }}</span>
 
-                    <span class="cantidad">
-                        {{ facultad.semilleros|length }}
-                    </span>
-
-                    <button class="btn btn-ver"
-                            onclick="mostrarLista(this)">
+                    <button class="btn btn-ver" onclick="mostrarLista(this)">
                         Ver semilleros
                     </button>
 
@@ -99,35 +80,26 @@
                         {% else %}
                         <li>Sin semilleros asociados</li>
                         {% endfor %}
-                    </ul>
-
+                    </ul> 
                 </div>
 
             </div>
 
             <!-- USUARIOS MATRICULADOS -->
-            <div class="facultad-usuarios">
-
-                <strong>Usuarios matriculados</strong>
-
+            <div class="facultad-usuarios"> 
+                <strong>Usuarios matriculados</strong> 
                 <p>
-                    Consulta los estudiantes y docentes
-                    pertenecientes a esta facultad.
+                    {{ facultad.estudiantes }} estudiante{{ '' if facultad.estudiantes == 1 else 's' }}
+                    en sus programas. Consulta también a los docentes líderes.
                 </p>
-
-                <button class="btn btn-ver"
-                        onclick="verUsuariosFacultad(this)">
+                <button class="btn btn-ver" onclick="verUsuariosFacultad(this)">
                     Ver usuarios matriculados
-                </button>
-
+                </button> 
             </div>
 
         </article>
-
-        {% else %}
-
-        <p>No hay facultades registradas.</p>
-
+        {% else %} 
+        <p>No hay facultades registradas.</p> 
         {% endfor %}
 
     </div>
@@ -136,4 +108,72 @@
         No se encontraron facultades.
     </p>
 
-</div>
+    <!-- VENTANA: CREAR / EDITAR FACULTAD -->
+    <div class="modal-fac" id="modalFacultad" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalFacultad')">
+        <div class="modal-fac-contenido">
+            <h2 id="tituloModalFacultad">Nueva facultad</h2>
+            <p class="modal-fac-ayuda">Escribe el nombre oficial de la facultad.</p>
+
+            <label for="inputNombreFacultad">Nombre de la facultad</label>
+            <input id="inputNombreFacultad" maxlength="100" autocomplete="off"
+                   placeholder="Ej: Facultad de Ingeniería"
+                   onkeydown="if (event.key === 'Enter') guardarFacultad()">
+
+            <p class="modal-fac-error" id="errorModalFacultad" hidden></p>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn" onclick="cerrarModalFac('modalFacultad')">Cancelar</button>
+                <button type="button" class="btn btn-red" id="btnGuardarFacultad" onclick="guardarFacultad()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA: CREAR PROGRAMA -->
+    <div class="modal-fac" id="modalPrograma" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalPrograma')">
+        <div class="modal-fac-contenido">
+            <h2>Nuevo programa</h2>
+            <p class="modal-fac-ayuda" id="subtituloModalPrograma"></p>
+
+            <label for="inputNombrePrograma">Nombre del programa</label>
+            <input id="inputNombrePrograma" maxlength="100" autocomplete="off"
+                   placeholder="Ej: Ingeniería de Sistemas"
+                   onkeydown="if (event.key === 'Enter') guardarPrograma()">
+
+            <p class="modal-fac-error" id="errorModalPrograma" hidden></p>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn" onclick="cerrarModalFac('modalPrograma')">Cancelar</button>
+                <button type="button" class="btn btn-red" id="btnGuardarPrograma" onclick="guardarPrograma()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENTANA: USUARIOS MATRICULADOS -->
+    <div class="modal-fac" id="modalUsuariosFac" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalUsuariosFac')">
+        <div class="modal-fac-contenido modal-fac-ancho">
+            <h2 id="tituloUsuariosFac">Usuarios matriculados</h2>
+            <p class="modal-fac-ayuda" id="resumenUsuariosFac"></p>
+
+            <input class="search" id="buscarUsuariosFac" autocomplete="off"
+                   placeholder="Buscar por nombre, correo o programa..."
+                   oninput="filtrarUsuariosFac()">
+
+            <div class="modal-fac-tabla">
+                <table>
+                    <thead>
+                        <tr><th>Usuario</th><th>Programa</th><th>Rol</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody id="tablaUsuariosFac"></tbody>
+                </table>
+            </div>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn" onclick="cerrarModalFac('modalUsuariosFac')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+</div> 

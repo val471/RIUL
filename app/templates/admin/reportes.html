@@ -1,13 +1,66 @@
-<p class="eyebrow">INFORMACION</p>
 
-<div class="page-heading">
-    <div>
-        <h1>Informes</h1>
-        <p>Resumen demostrativo de actividad de la plataforma.</p>
+<div class="reportes-page">
+
+    <a href="#inicio" class="reportes-volver">← Volver al panel</a>
+
+    <div class="reportes-encabezado">
+        <div>
+            <h1>Reportes</h1>
+            <p>Indicadores consolidados de la plataforma.</p>
+        </div>
+
+        <button class="reportes-btn-generar" onclick="generateReport()">
+            + Generar reporte
+        </button>
     </div>
-    <button class="btn btn-red" onclick="generateReport()">Generar informe</button>
-</div>
 
-<div class="admin-card card-heading">
-    <pre id="reportOutput" hidden></pre>
+    <div class="reportes-tabla-contenedor">
+
+        <div class="reportes-buscador">
+            <input
+                type="search"
+                id="buscarReportes"
+                placeholder="⌕  Buscar en reportes..."
+            >
+        </div>
+
+        <div class="reportes-tabla-scroll">
+            <table class="reportes-tabla" id="tablaReportes">
+                <thead>
+                    <tr>
+                        <th>REPORTE</th>
+                        <th>PERIODO</th>
+                        <th>FORMATO</th>
+                        <th>ESTADO</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Actividad de usuarios</td>
+                        <td>Agosto 2024</td>
+                        <td>PDF</td>
+                        <td>Disponible</td>
+                    </tr>
+
+                    <tr>
+                        <td>Proyectos por facultad</td>
+                        <td>2024-II</td>
+                        <td>Excel</td>
+                        <td>Disponible</td>
+                    </tr>
+
+                    <tr>
+                        <td>Logros y gamificación</td>
+                        <td>Agosto 2024</td>
+                        <td>PDF</td>
+                        <td>Disponible</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <pre id="reportOutput" class="reportes-salida" hidden></pre>
+
+    </div>
 </div>

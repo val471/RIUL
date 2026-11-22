@@ -151,11 +151,15 @@
 
 /* ESTADO VACIO */
 .solicitudes-vacio {
-    padding: 35px !important;
+    padding: 55px 20px !important;
     text-align: center;
-    color: #6b6f7b !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 500;
+    background: #fafafa;
+    border-radius: 10px;
+    letter-spacing: 0.2px;
 }
-
 /* RESPONSIVE */
 @media (max-width: 700px) {
     .solicitudes-contenido {
@@ -347,3 +351,52 @@
         width: 100%;
     }
 }
+
+/* ==============================
+   VENTANA DE CONFIRMACIÓN Y AVISOS
+================================ */
+.confirmar-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.confirmar-caja {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px;
+    background: var(--blanco);
+    border-radius: 22px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+}
+.confirmar-caja h2 { margin: 0 0 8px; font-size: 21px; }
+.confirmar-caja p { margin: 0; color: var(--gris); font-size: 14px; line-height: 1.5; }
+
+.confirmar-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.toast-admin {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 2100;
+    max-width: 360px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: #1f2937;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.toast-admin.exito { background: #166534; }
+.toast-admin.error { background: var(--rojo-osc); }
+
+

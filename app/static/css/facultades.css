@@ -277,3 +277,84 @@
     display: none;
 }
 
+
+/* ==============================
+   VENTANAS DE FACULTADES
+================================ */
+.modal-fac[hidden] { display: none !important; }
+
+.modal-fac {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-fac-contenido {
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 28px;
+    background: var(--blanco);
+    border-radius: 22px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18);
+}
+
+.modal-fac-ancho { max-width: 760px; }
+
+.modal-fac h2 { margin: 0 0 6px; font-size: 22px; }
+.modal-fac-ayuda { margin: 0 0 18px; color: var(--gris); font-size: 14px; }
+
+.modal-fac label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modal-fac input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    font: inherit;
+}
+.modal-fac input:focus { outline: 2px solid var(--rojo); outline-offset: 0; }
+
+.modal-fac-error { margin: 10px 0 0; color: var(--rojo); font-size: 13px; }
+.modal-fac-error[hidden] { display: none; }
+
+.modal-fac-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.modal-fac-tabla {
+    max-height: 340px;
+    margin-top: 14px;
+    overflow: auto;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+}
+.modal-fac-tabla table { width: 100%; border-collapse: collapse; }
+.modal-fac-tabla th,
+.modal-fac-tabla td {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid var(--borde);
+}
+.modal-fac-tabla th {
+    position: sticky;
+    top: 0;
+    background: var(--blanco);
+}
+
+.lista-elementos li small { margin-left: 4px; color: var(--gris); }
+

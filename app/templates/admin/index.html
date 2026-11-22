@@ -47,10 +47,7 @@
 
         <!-- USUARIO Y CERRAR SESION (abajo del menú) -->
         <div class="admin-user">
-            <div class="admin-avatar">
-                {{ session.get('nombre_institucional', 'AG')[:2].upper() }}
-
-            </div>
+            <div class="admin-avatar">{{ session.get('nombre_institucional', 'AD')[:2].upper() }}</div>
             
             <div>
                <strong>{{ session.get('nombre_institucional', 'Administrador') }}</strong>
@@ -105,19 +102,19 @@
                 <div class="stats-grid">
                     <article class="stat-card">
                         <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-                        <strong>284</strong><span>Usuarios activos</span><small>+12 este mes</small>
+                        <strong>{{ resumen.usuarios_activos }}</strong><span>Usuarios activos</span><small>+{{ resumen.usuarios_mes }} este mes</small>
                     </article>
                     <article class="stat-card">
                         <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v8a7 7 0 0 1-14 0z"/></svg></div>
-                        <strong>38</strong><span>Semilleros</span><small>34 activos</small>
+                        <strong>{{ resumen.semilleros_total }}</strong><span>Semilleros</span><small>{{ resumen.semilleros_activos }} activos</small>
                     </article>
                     <article class="stat-card">
                         <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg></div>
-                        <strong>3</strong><span>Solicitudes</span><small>Requieren revisión</small>
+                        <strong>{{ resumen.solicitudes }}</strong><span>Solicitudes</span><small>Requieren revisión</small>
                     </article>
                     <article class="stat-card">
                         <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
-                        <strong>2</strong><span>Logros por validar</span><small>Calificados por docentes</small>
+                        <strong>{{ resumen.logros }}</strong><span>Logros por validar</span><small>Pendientes de validación</small>
                     </article>
                 </div>
 
