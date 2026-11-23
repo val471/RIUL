@@ -1409,3 +1409,26 @@ button:focus-visible {
     display: none !important;
 }
 
+
+.campo-clave {
+    position: relative;
+}
+
+.campo-clave input {
+    width: 100%;
+    padding-right: 46px;
+    box-sizing: border-box;
+}
+
+.ver-clave {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px;
+}

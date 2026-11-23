@@ -33,49 +33,199 @@
         </section>
 
         <section class="auth-contenedor">
-            <div class="auth-tarjeta">
+                        <div class="auth-tarjeta">
 
                 <a href="/" class="logo">RIUL</a>
 
-                <h2>Bienvenido de nuevo</h2>
-                <p>Ingresa tus credenciales para continuar.</p>
+                <!-- ===== VISTA: INICIAR SESIÓN ===== -->
+                <div id="vistaLogin">
+                    <h2>Bienvenido de nuevo</h2>
+                    <p>Ingresa tus credenciales para continuar.</p>
 
-                <form id="formularioLogin">
+                    <form id="formularioLogin">
 
-                    <div class="auth-campo">
-                        <label for="correo">Correo electrónico</label>
-                        <input
-                            id="correo"
-                            name="correo"
-                            type="email"
-                            placeholder="usuario@unilibre.edu.co"
-                            autocomplete="username"
-                            required>
-                    </div>
+                        <div class="auth-campo">
+                            <label for="correo">Correo electrónico</label>
+                            <input
+                                id="correo"
+                                name="correo"
+                                type="email"
+                                placeholder="usuario@unilibre.edu.co"
+                                autocomplete="username"
+                                required>
+                        </div>
 
-                    <div class="auth-campo">
-                        <label for="contrasena">Contraseña</label>
-                        <input
-                            id="contrasena"
-                            name="contrasena"
-                            type="password"
-                            placeholder="Ingresa tu contraseña"
-                            autocomplete="current-password"
-                            required>
-                    </div>
+                        <div class="auth-campo">
+                            <label for="contrasena">Contraseña</label>
+                            <div class="campo-clave">
+                                <input
+                                    id="contrasena"
+                                    name="contrasena"
+                                    type="password"
+                                    placeholder="Ingresa tu contraseña"
+                                    autocomplete="current-password"
+                                    required>
+                                <button type="button" class="ver-clave"
+                                        id="verClave"
+                                        aria-label="Mostrar contraseña">👁</button>
+                            </div>
+                        </div>
 
-                    <button class="auth-boton" type="submit">
-                        Iniciar sesión
-                    </button>
+                        <button class="auth-boton" type="submit">
+                            Iniciar sesión
+                        </button>
 
-                    <p id="mensajeLogin" class="mensaje-demo" hidden></p>
+                        <p style="text-align:right; margin:10px 0 0;">
+                            <a href="#" id="abrirRecuperar">¿Olvidaste tu contraseña?</a>
+                        </p>
 
-                </form>
+                        <p id="mensajeLogin" class="mensaje-demo" hidden></p>
+
+                    </form>
+                </div>
+
+                <!-- ===== VISTA: RECUPERAR CONTRASEÑA ===== -->
+                <div id="vistaRecuperar" hidden>
+                    <h2>Restablecer contraseña</h2>
+                    <p>Ingresa tu correo y tu fecha de nacimiento.</p>
+
+                    <form id="formRecuperar">
+
+                        <div class="auth-campo">
+                            <label for="rCorreo">Correo electrónico</label>
+                            <input id="rCorreo" type="email"
+                                   placeholder="usuario@unilibre.edu.co" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="rFecha">Fecha de nacimiento</label>
+                            <input id="rFecha" type="date" required>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="rNueva">Nueva contraseña</label>
+                            <div class="campo-clave">
+                                <input id="rNueva" type="password"
+                                       placeholder="Mínimo 8 caracteres"
+                                       minlength="8" required>
+                                <button type="button" class="ver-clave"
+                                        id="verNueva"
+                                        aria-label="Mostrar contraseña">👁</button>
+                            </div>
+                        </div>
+
+                        <div class="auth-campo">
+                            <label for="rConfirmar">Confirmar contraseña</label>
+                            <input id="rConfirmar" type="password"
+                                   placeholder="Repite la nueva contraseña"
+                                   minlength="8" required>
+                        </div>
+
+                        <button class="auth-boton" type="submit">
+                            Cambiar contraseña
+                        </button>
+
+                        <p style="text-align:center; margin-top:12px;">
+                            <a href="/recuperar-contrasena">¿Olvidaste tu contraseña?</a>
+                            <a href="#" id="volverLogin">Volver a iniciar sesión</a>
+                        </p>
+
+                        <p id="mensajeRecuperar" class="mensaje-demo" hidden></p>
+
+                    </form>
+                </div>
 
             </div>
         </section>
 
     </main>
+
+
+        <script>
+        const vistaLogin = document.getElementById('vistaLogin');
+        const vistaRecuperar = document.getElementById('vistaRecuperar');
+        const msgRec = document.getElementById('mensajeRecuperar');
+
+        // Cambiar entre las dos vistas
+        document.getElementById('abrirRecuperar').addEventListener('click', function (e) {
+            e.preventDefault();
+            vistaLogin.hidden = true;
+            vistaRecuperar.hidden = false;
+        });
+
+        document.getElementById('volverLogin').addEventListener('click', function (e) {
+            e.preventDefault();
+            vistaRecuperar.hidden = true;
+            vistaLogin.hidden = false;
+            msgRec.hidden = true;
+        });
+
+        // Ojito de la contraseña del login
+        const btnVer = document.getElementById('verClave');
+        const campoClave = document.getElementById('contrasena');
+
+        btnVer.addEventListener('click', function () {
+            const oculta = campoClave.type === 'password';
+            campoClave.type = oculta ? 'text' : 'password';
+            btnVer.textContent = oculta ? '' : '👁';
+            btnVer.setAttribute('aria-label',
+                oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        });
+
+        // Ojito de la nueva contraseña
+        const nueva = document.getElementById('rNueva');
+        const confirmar = document.getElementById('rConfirmar');
+        const btnVerNueva = document.getElementById('verNueva');
+
+        btnVerNueva.addEventListener('click', function () {
+            const oculta = nueva.type === 'password';
+            nueva.type = oculta ? 'text' : 'password';
+            confirmar.type = nueva.type;
+            btnVerNueva.textContent = oculta ? '' : '👁';
+        });
+
+        function mostrarRec(texto) {
+            msgRec.textContent = texto;
+            msgRec.hidden = false;
+        }
+
+        // Enviar el restablecimiento
+        document.getElementById('formRecuperar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (nueva.value !== confirmar.value) {
+                mostrarRec('La confirmación no coincide con la nueva contraseña.');
+                return;
+            }
+
+            mostrarRec('Procesando...');
+
+            try {
+                const r = await fetch('/api/recuperar-contrasena', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        correo: document.getElementById('rCorreo').value,
+                        fecha_nacimiento: document.getElementById('rFecha').value,
+                        nueva: nueva.value
+                    })
+                });
+                const datos = await r.json();
+                mostrarRec(datos.mensaje);
+
+                if (r.ok) {
+                    setTimeout(function () {
+                        vistaRecuperar.hidden = true;
+                        vistaLogin.hidden = false;
+                        msgRec.hidden = true;
+                        document.getElementById('formRecuperar').reset();
+                    }, 2000);
+                }
+            } catch (error) {
+                mostrarRec('No fue posible conectar con el servidor.');
+            }
+        });
+    </script>
 
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 
