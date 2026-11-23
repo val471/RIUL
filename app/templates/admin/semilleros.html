@@ -23,19 +23,19 @@
 
     <!-- RESUMEN -->
     <div class="resumen-semilleros">
-        <div class="resumen-card"> 
+        <div class="resumen-card">
             <span>Semilleros</span>
             <strong>{{ total_semilleros }}</strong>
-        </div> 
+        </div>
         <div class="resumen-card">
             <span>Proyectos</span>
             <strong>{{ total_proyectos }}</strong>
         </div>
-    </div> 
+    </div>
 
     <!-- DISTRIBUCION POR FACULTAD -->
     <div class="distribucion-semilleros">
-         <h2>Distribución por facultad</h2>
+        <h2>Distribución por facultad</h2>
         <div class="distribucion-lista">
             {% for facultad in distribucion %}
             <div class="distribucion-item">
@@ -74,10 +74,17 @@
                 </div>
 
                 <div class="semillero-acciones">
+
                     <button class="btn-detalle"
                             data-id="{{ semillero.id_semillero }}"
                             onclick="verDetalleSemillero(this.dataset.id)">
                         Ver detalles
+                    </button>
+
+                    <button class="btn-docente-lider"
+                            data-id="{{ semillero.id_semillero }}"
+                            onclick="abrirAsignacionDocente(this.dataset.id)">
+                        Asignar docente líder
                     </button>
 
                     <button data-id="{{ semillero.id_semillero }}"
@@ -96,6 +103,7 @@
                         Reactivar
                     </button>
                     {% endif %}
+
                 </div>
 
             </article>
@@ -110,6 +118,7 @@
     <!-- VENTANA: CREAR / EDITAR SEMILLERO -->
     <div class="modal-fac" id="modalSemillero" hidden
          onclick="if (event.target === this) cerrarModalFac('modalSemillero')">
+
         <div class="modal-fac-contenido">
             <h2 id="tituloModalSemillero">Nuevo semillero</h2>
             <p class="modal-fac-ayuda">Completa los datos del semillero.</p>
@@ -151,8 +160,15 @@
             <p class="modal-fac-error" id="errorModalSemillero" hidden></p>
 
             <div class="modal-fac-botones">
-                <button type="button" class="btn" onclick="cerrarModalFac('modalSemillero')">Cancelar</button>
-                <button type="button" class="btn btn-red" id="btnGuardarSemillero" onclick="guardarSemillero()">Guardar</button>
+                <button type="button" class="btn"
+                        onclick="cerrarModalFac('modalSemillero')">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-red"
+                        id="btnGuardarSemillero"
+                        onclick="guardarSemillero()">
+                    Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -160,6 +176,7 @@
     <!-- VENTANA: DETALLE DEL SEMILLERO -->
     <div class="modal-fac" id="modalDetalleSemillero" hidden
          onclick="if (event.target === this) cerrarModalFac('modalDetalleSemillero')">
+
         <div class="modal-fac-contenido modal-fac-ancho">
             <h2 id="detSemNombre">Semillero</h2>
             <p class="modal-fac-ayuda" id="detSemSubtitulo"></p>
@@ -170,7 +187,11 @@
             <div class="modal-fac-tabla">
                 <table>
                     <thead>
-                        <tr><th>Integrante</th><th>Programa</th><th>Ingreso</th></tr>
+                        <tr>
+                            <th>Integrante</th>
+                            <th>Programa</th>
+                            <th>Ingreso</th>
+                        </tr>
                     </thead>
                     <tbody id="detSemIntegrantes"></tbody>
                 </table>
@@ -180,9 +201,51 @@
             <ul class="det-sem-lista" id="detSemProyectos"></ul>
 
             <div class="modal-fac-botones">
-                <button type="button" class="btn" onclick="cerrarModalFac('modalDetalleSemillero')">Cerrar</button>
+                <button type="button" class="btn"
+                        onclick="cerrarModalFac('modalDetalleSemillero')">
+                    Cerrar
+                </button>
             </div>
         </div>
     </div>
 
-</div> 
+    <!-- VENTANA: ASIGNAR DOCENTE LIDER -->
+    <div class="modal-fac" id="modalAsignarDocente" hidden
+         onclick="if (event.target === this) cerrarModalFac('modalAsignarDocente')">
+
+        <div class="modal-fac-contenido">
+
+            <h2>Asignar docente líder</h2>
+
+            <p class="modal-fac-ayuda">
+                Selecciona el docente que estará a cargo de este semillero.
+            </p>
+
+            <input type="hidden" id="idSemilleroAsignacion">
+
+            <div class="campo">
+                <label for="selectDocenteLider">Docente líder</label>
+                <select id="selectDocenteLider">
+                    <option value="">Cargando docentes...</option>
+                </select>
+            </div>
+
+            <p class="modal-fac-error" id="errorAsignarDocente" hidden></p>
+
+            <div class="modal-fac-botones">
+                <button type="button" class="btn"
+                        onclick="cerrarModalFac('modalAsignarDocente')">
+                    Cancelar
+                </button>
+
+                <button type="button" class="btn btn-red"
+                        id="btnGuardarAsignacion"
+                        onclick="guardarAsignacionDocente()">
+                    Guardar asignación
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>

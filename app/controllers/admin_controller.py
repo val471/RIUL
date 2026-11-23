@@ -5,6 +5,7 @@ from app.extensions import db
 import secrets
 from datetime import datetime
 
+
 def _contar(sql):
     """Ejecuta un COUNT y devuelve 0 si la consulta falla."""
     try:
@@ -397,6 +398,154 @@ def mostrar_semilleros():
         total_proyectos=total_proyectos,
         facultades=facultades
     )
+
+
+def asignar_docente_lider(id_semillero):
+    datos = request.get_json(silent=True) or {}
+    id_usuario = datos.get("id_usuario")
+
+    try:
+        # Verificar que el semillero exista
+        semillero = db.session.execute(text("""
+            SELECT id_semillero, nombre
+            FROM semillero
+            WHERE id_semillero = :id
+            FOR UPDATE
+        """), {"id": id_semillero}).mappings().first()
+
+        if not semillero:
+            return jsonify({
+                "mensaje": "El semillero no existe."
+            }), 404
+
+        # Consultar el docente que actualmente lo dirige
+        actual = db.session.execute(text("""
+            SELECT id_usuario
+            FROM docentelider
+            WHERE id_semillero_liderado = :id
+        """), {"id": id_semillero}).first()
+
+        id_anterior = actual[0] if actual else None
+
+        # Si se envía vacío, quitar la asignación
+        if id_usuario in (None, ""):
+            if id_anterior is not None:
+                db.session.execute(text("""
+                    UPDATE docentelider
+                    SET id_semillero_liderado = NULL
+                    WHERE id_usuario = :id
+                """), {"id": id_anterior})
+
+            db.session.commit()
+
+            return jsonify({
+                "mensaje": "Docente líder desasignado correctamente."
+            })
+
+        try:
+            id_usuario = int(id_usuario)
+        except (TypeError, ValueError):
+            return jsonify({
+                "mensaje": "El docente seleccionado no es válido."
+            }), 400
+
+        # Verificar que sea un docente líder registrado
+        docente = db.session.execute(text("""
+            SELECT id_usuario
+            FROM docentelider
+            WHERE id_usuario = :id
+            FOR UPDATE
+        """), {"id": id_usuario}).first()
+
+        if not docente:
+            return jsonify({
+                "mensaje": "El usuario seleccionado no es docente líder."
+            }), 404
+
+        # Evitar que el docente dirija otro semillero
+        otra_asignacion = db.session.execute(text("""
+            SELECT id_semillero_liderado
+            FROM docentelider
+            WHERE id_usuario = :id
+        """), {"id": id_usuario}).scalar()
+
+        if otra_asignacion is not None and otra_asignacion != id_semillero:
+            return jsonify({
+                "mensaje": "Este docente líder ya tiene otro semillero asignado."
+            }), 409
+
+        # Liberar al docente anterior
+        if id_anterior is not None and id_anterior != id_usuario:
+            db.session.execute(text("""
+                UPDATE docentelider
+                SET id_semillero_liderado = NULL
+                WHERE id_usuario = :id
+            """), {"id": id_anterior})
+
+        # Asignar el nuevo docente
+        db.session.execute(text("""
+            UPDATE docentelider
+            SET id_semillero_liderado = :semillero
+            WHERE id_usuario = :usuario
+        """), {
+            "semillero": id_semillero,
+            "usuario": id_usuario
+        })
+
+        _registrar_historial(
+            session.get("id_usuario"),
+            "ASIGNAR_DOCENTE_LIDER",
+            "semillero",
+            id_semillero,
+            str(id_anterior) if id_anterior else "Sin asignar",
+            str(id_usuario)
+        )
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Docente líder asignado correctamente."
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL ASIGNAR DOCENTE LIDER:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible asignar el docente líder."
+        }), 500
+
+
+def obtener_docentes_disponibles(id_semillero):
+    try:
+        docentes = db.session.execute(text("""
+            SELECT
+                u.id_usuario,
+                u.nombre_institucional,
+                dl.id_semillero_liderado
+            FROM docentelider dl
+            INNER JOIN usuario u
+                ON u.id_usuario = dl.id_usuario
+            WHERE u.rol = 'DOCENTE_LIDER'
+              AND u.estado = 'ACTIVO'
+              AND (
+                  dl.id_semillero_liderado IS NULL
+                  OR dl.id_semillero_liderado = :id_semillero
+              )
+            ORDER BY u.nombre_institucional
+        """), {"id_semillero": id_semillero}).mappings().all()
+
+        return jsonify({
+            "docentes": [dict(d) for d in docentes]
+        })
+
+    except Exception as error:
+        print("ERROR AL CONSULTAR DOCENTES DISPONIBLES:", repr(error))
+        return jsonify({
+            "mensaje": "No fue posible consultar los docentes líderes."
+        }), 500
+
+
 def mostrar_convocatorias():
     convocatorias = db.session.execute(text("""
         SELECT
@@ -643,16 +792,19 @@ def aprobar_solicitud_registro(id_solicitud):
                 INSERT INTO docentelider (
                     id_usuario,
                     codigo_docente_lider,
-                    id_semillero_liderado
+                    id_semillero_liderado,
+                    id_programa
                 )
                 VALUES (
                     :id_usuario,
                     :codigo,
-                    NULL
+                    NULL,
+                    :id_programa,
                 )
             """), {
                 "id_usuario": id_usuario,
-                "codigo": codigo
+                "codigo": codigo,
+                "id_prgrama": solicitud.id_programa
             })
 
         # Actualizar solicitud

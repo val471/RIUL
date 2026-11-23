@@ -652,37 +652,140 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO PROYECTOS
     // ========================================
 
-    function configurarModuloProyectos() {
+        async function configurarModuloProyectos() {
 
         const tablaProyectos = document.getElementById("tablaProyectos");
 
         if (!tablaProyectos) {
             return;
-        }
-
-        const filas = tablaProyectos.querySelectorAll("tr[data-proyecto]");
+        } 
 
         const total = document.getElementById("totalProyectos");
         const activos = document.getElementById("proyectosActivos");
         const revision = document.getElementById("proyectosRevision");
 
-        if (total) {
-            total.textContent = filas.length;
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        function mensajeVacio(texto) {
+            tablaProyectos.innerHTML =
+                '<tr><td colspan="4" class="proyectos-vacio">' + texto + "</td></tr>";
+            if (total) total.textContent = 0;
+            if (activos) activos.textContent = 0;
+            if (revision) revision.textContent = 0;
         }
 
-        if (activos) {
-            activos.textContent = tablaProyectos.querySelectorAll(
-                '[data-estado="Activo"]'
-            ).length;
+        // ----- Formulario "Cargar proyecto" -----
+        const btnCargar = document.getElementById("btnCargarProyecto");
+        const form = document.getElementById("formProyecto");
+        const msgProyecto = document.getElementById("mensajeProyecto");
+
+        if (btnCargar && form && form.dataset.configurado !== "true") {
+
+            form.dataset.configurado = "true";
+
+            const mostrarMsg = (texto) => {
+                msgProyecto.textContent = texto;
+                msgProyecto.hidden = false;
+            };
+
+            btnCargar.addEventListener("click", () => {
+                form.reset();
+                msgProyecto.hidden = true;
+                document.getElementById("inicioProyecto").value =
+                    new Date().toLocaleDateString("en-CA");
+                form.style.display = "grid";
+            });
+
+            document.getElementById("cancelarProyecto")
+                .addEventListener("click", () => {
+                    form.style.display = "none";
+                });
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                mostrarMsg("Guardando...");
+
+                try {
+                    const r = await fetch("/docentelider/api/proyectos", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            titulo: document.getElementById("tituloProyecto").value,
+                            descripcion: document.getElementById("descripcionProyecto").value,
+                            inicio: document.getElementById("inicioProyecto").value
+                        })
+                    });
+
+                    if (sesionVencida(r)) {
+                        return;
+                    }
+
+                    const datos = await r.json();
+                    mostrarMsg(datos.mensaje);
+
+                    if (r.ok) {
+                        form.style.display = "none";
+                        configurarModuloProyectos();
+                    }
+                } catch (error) {
+                    mostrarMsg("No fue posible conectar con el servidor.");
+                }
+            });
         }
 
-        if (revision) {
-            revision.textContent = tablaProyectos.querySelectorAll(
-                '[data-estado="En revisión"]'
-            ).length;
+        // ----- Listar proyectos desde MySQL -----
+        try {
+
+            const respuesta = await fetch("/docentelider/api/proyectos");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const proyectos = await respuesta.json();
+
+            if (proyectos.length === 0) {
+                mensajeVacio("Todavía no has cargado proyectos.");
+                return;
+            }
+
+            tablaProyectos.innerHTML = proyectos.map(p => `
+                <tr data-proyecto data-estado="${esc(p.estado)}">
+                    <td>${esc(p.titulo)}<br><small>${esc(p.descripcion)}</small></td>
+                    <td>${esc(p.inicio)}</td>
+                    <td>${esc(p.avances)}</td>
+                    <td>${esc(p.estado)}</td>
+                </tr>
+            `).join("");
+
+            if (total) {
+                total.textContent = proyectos.length;
+            }
+
+            if (activos) {
+                activos.textContent = proyectos.filter(
+                    p => p.estado === "Activo"
+                ).length;
+            }
+
+            if (revision) {
+                revision.textContent = proyectos.filter(
+                    p => p.estado === "En revisión"
+                ).length;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar proyectos:", error);
+            mensajeVacio("No se pudieron cargar los proyectos.");
         }
     }
-
     // ========================================
     // MODULO DE MI SEMILLERO
     // ========================================
@@ -765,44 +868,52 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // ========================================
     // MODULO USUARIO
-    // ========================================
+   // ========================================
 
-    function configurarModuloUsuario() {
+
+    async function configurarModuloUsuario() {
 
         const buscarIntegrante = document.getElementById("buscarIntegrante");
-        const filtroRol = document.getElementById("filtroRol");
+        const filtroSemestre = document.getElementById("filtroSemestre");
         const tablaIntegrantes = document.getElementById("tablaIntegrantes");
         const totalIntegrantes = document.getElementById("totalIntegrantes");
 
-        if (!tablaIntegrantes || tablaIntegrantes.dataset.configurado === "true") {
+        if (!tablaIntegrantes) {
             return;
         }
 
-        tablaIntegrantes.dataset.configurado = "true";
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        function mensajeVacio(texto) {
+            tablaIntegrantes.innerHTML =
+                '<tr><td colspan="5" class="usuario-vacio">' + texto + "</td></tr>";
+            if (totalIntegrantes) {
+                totalIntegrantes.textContent = 0;
+            }
+        }
 
         function filtrarIntegrantes() {
 
             const texto = buscarIntegrante?.value.toLowerCase().trim() || "";
-            const rolSeleccionado = filtroRol?.value.toLowerCase() || "";
+            const semestre = filtroSemestre?.value || "";
 
             const filas = tablaIntegrantes.querySelectorAll("tr[data-integrante]");
+            let visibles = 0; 
 
-            let visibles = 0;
+            filas.forEach(fila => {
 
-             filas.forEach(fila => {
-
-                const nombre = fila.dataset.nombre?.toLowerCase() || "";
-                const programa = fila.dataset.programa?.toLowerCase() || "";
-                const rol = fila.dataset.rol?.toLowerCase() || "";
+                const nombre = fila.dataset.nombre.toLowerCase();
+                const programa = fila.dataset.programa.toLowerCase();
 
                 const coincideTexto =
                     nombre.includes(texto) || programa.includes(texto);
+                const coincideSemestre =
+                    !semestre || fila.dataset.semestre === semestre;
 
-                const coincideRol =
-                    !rolSeleccionado || rol === rolSeleccionado;
-
-                const mostrar = coincideTexto && coincideRol;
-
+                const mostrar = coincideTexto && coincideSemestre;
                 fila.style.display = mostrar ? "" : "none";
 
                 if (mostrar) {
@@ -815,10 +926,60 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        buscarIntegrante?.addEventListener("input", filtrarIntegrantes);
-        filtroRol?.addEventListener("change", filtrarIntegrantes);
+        // Los filtros se conectan una sola vez
+        if (tablaIntegrantes.dataset.configurado !== "true") {
+            tablaIntegrantes.dataset.configurado = "true";
+            buscarIntegrante?.addEventListener("input", filtrarIntegrantes);
+            filtroSemestre?.addEventListener("change", filtrarIntegrantes);
+        }
 
-        filtrarIntegrantes();
+        try {
+
+            const respuesta = await fetch("/docentelider/api/integrantes");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const integrantes = await respuesta.json();
+
+            if (integrantes.length === 0) {
+                mensajeVacio("Tu semillero todavía no tiene integrantes.");
+                return;
+            }
+
+            tablaIntegrantes.innerHTML = integrantes.map(i => `
+                <tr data-integrante
+                    data-nombre="${esc(i.nombre)}"
+                    data-programa="${esc(i.programa)}"
+                    data-semestre="${esc(i.semestre)}">
+                    <td>${esc(i.nombre)}<br><small>${esc(i.correo)}</small></td>
+                    <td>${esc(i.programa)}</td>
+                    <td>${esc(i.semestre)}</td>
+                    <td>${esc(i.nivel)}</td>
+                    <td>${esc(i.ingreso)}</td>
+                </tr>
+            `).join("");
+
+            const semestres = [...new Set(integrantes.map(i => i.semestre))]
+                .sort((a, b) => a - b);
+
+            filtroSemestre.innerHTML =
+                '<option value="">Todos los semestres</option>' +
+                semestres.map(s =>
+                    `<option value="${s}">Semestre ${s}</option>`
+                ).join("");
+
+            filtrarIntegrantes();
+
+        } catch (error) {
+            console.error("Error al cargar integrantes:", error);
+            mensajeVacio("No se pudieron cargar los integrantes.");
+        }
     }
 
     // ========================================
@@ -984,29 +1145,75 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO CONVOCATORIAS
     // ========================================
 
-    function configurarModuloConvocatorias() {
+        async function configurarModuloConvocatorias() {
 
         const tablaConvocatorias = document.getElementById("tablaConvocatorias");
 
         if (!tablaConvocatorias) {
             return;
-        }
-
-        const filas = tablaConvocatorias.querySelectorAll(
-            "tr[data-convocatoria]"
-        );
+        } 
 
         const totalConvocatorias = document.getElementById("totalConvocatorias");
         const totalInscripciones = document.getElementById("totalInscripciones");
 
-        if (totalConvocatorias) {
-            totalConvocatorias.textContent = filas.length;
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        const MODALIDADES = {
+            semillero: "Semillero",
+            ambas: "Semillero o individual"
+        };
+
+        function mensajeVacio(texto) {
+            tablaConvocatorias.innerHTML =
+                '<tr><td colspan="6" class="convocatorias-vacio">' + texto + "</td></tr>";
+            if (totalConvocatorias) totalConvocatorias.textContent = 0;
         }
 
-        if (totalInscripciones) {
-            totalInscripciones.textContent = tablaConvocatorias.querySelectorAll(
-                '[data-inscripcion="realizada"]'
-            ).length;
+        try {
+
+            const respuesta = await fetch("/docentelider/api/convocatorias");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const datos = await respuesta.json();
+            const convocatorias = datos.convocatorias;
+
+            if (totalInscripciones) {
+                totalInscripciones.textContent = datos.inscripciones;
+            }
+
+            if (convocatorias.length === 0) {
+                mensajeVacio("Todavía no hay convocatorias disponibles.");
+                return;
+            }
+
+            tablaConvocatorias.innerHTML = convocatorias.map(c => `
+                <tr data-convocatoria="${c.id}">
+                    <td>${esc(c.titulo)}<br><small>${esc(c.descripcion)}</small></td>
+                    <td>${esc(c.inicio)}</td>
+                    <td>${esc(c.cierre)}</td>
+                    <td>${esc(MODALIDADES[c.modalidad] || c.modalidad)}</td>
+                    <td>${c.inscrito ? "Inscrito" : "Disponible"}</td>
+                    <td>—</td>
+                </tr>
+            `).join("");
+
+            if (totalConvocatorias) {
+                totalConvocatorias.textContent = convocatorias.length;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar convocatorias:", error);
+            mensajeVacio("No se pudieron cargar las convocatorias.");
         }
     }
 
@@ -1014,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO EVENTOS
     // ========================================
 
-    function configurarModuloEventos() {
+        async function configurarModuloEventos() {
 
         const tablaEventos = document.getElementById("tablaEventos");
 
@@ -1022,19 +1229,69 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const filas = tablaEventos.querySelectorAll("tr[data-evento]");
-
         const totalEventos = document.getElementById("totalEventos");
         const totalParticipaciones = document.getElementById("totalParticipaciones");
 
-        if (totalEventos) {
-            totalEventos.textContent = filas.length;
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        const MODALIDADES = {
+            semillero: "Semillero",
+            ambas: "Semillero o individual"
+        };
+
+        function mensajeVacio(texto) {
+            tablaEventos.innerHTML =
+                '<tr><td colspan="7" class="eventos-vacio">' + texto + "</td></tr>";
+            if (totalEventos) totalEventos.textContent = 0;
         }
 
-        if (totalParticipaciones) {
-            totalParticipaciones.textContent = tablaEventos.querySelectorAll(
-                '[data-participacion="registrada"]'
-            ).length;
+        try {
+
+            const respuesta = await fetch("/docentelider/api/eventos");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const datos = await respuesta.json();
+            const eventos = datos.eventos;
+
+            if (totalParticipaciones) {
+                totalParticipaciones.textContent = datos.participaciones;
+            }
+
+            if (eventos.length === 0) {
+                mensajeVacio("Todavía no hay eventos disponibles.");
+                return;
+            }
+
+            tablaEventos.innerHTML = eventos.map(e => `
+                <tr data-evento="${e.id}">
+                    <td>${esc(e.nombre)}<br><small>${esc(e.descripcion)}</small></td>
+                    <td>${esc(e.fecha)}</td>
+                    <td>${esc(e.lugar)}</td>
+                    <td>${esc(MODALIDADES[e.modalidad] || e.modalidad)}</td>
+                    <td>${esc(e.participantes)}</td>
+                    <td>${e.finalizado ? "Finalizado" : "Próximo"}</td>
+                    <td>—</td>
+                </tr>
+            `).join("");
+
+            if (totalEventos) {
+                totalEventos.textContent =
+                    eventos.filter(e => !e.finalizado).length;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar eventos:", error);
+            mensajeVacio("No se pudieron cargar los eventos.");
         }
     }
 
@@ -1042,15 +1299,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO LOGROS
     // ========================================
 
-    function configurarModuloLogros() {
+        async function configurarModuloLogros() {
 
         const tablaLogros = document.getElementById("tablaLogros");
 
-        if (!tablaLogros || tablaLogros.dataset.configurado === "true") {
+        if (!tablaLogros) {
             return;
         }
-
-        tablaLogros.dataset.configurado = "true";
 
         const buscarLogro = document.getElementById("buscarLogro");
         const filtroEstado = document.getElementById("filtroEstadoLogro");
@@ -1059,6 +1314,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalRevision = document.getElementById("totalLogrosRevision");
         const totalAprobados = document.getElementById("totalLogrosAprobados");
         const totalRechazados = document.getElementById("totalLogrosRechazados");
+
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        const ESTADOS = {
+            PENDIENTE: "Pendiente",
+            EN_VALIDACION: "En validación",
+            APROBADO: "Aprobado",
+            RECHAZADO: "Rechazado"
+        };
 
         function actualizarLogros() {
 
@@ -1099,114 +1366,503 @@ document.addEventListener("DOMContentLoaded", () => {
             if (totalRechazados) totalRechazados.textContent = rechazados;
         }
 
-        buscarLogro?.addEventListener("input", actualizarLogros);
-        filtroEstado?.addEventListener("change", actualizarLogros);
+        // Los filtros se conectan una sola vez
+        if (tablaLogros.dataset.configurado !== "true") {
+            tablaLogros.dataset.configurado = "true";
+            buscarLogro?.addEventListener("input", actualizarLogros);
+            filtroEstado?.addEventListener("change", actualizarLogros);
+        }
 
-        actualizarLogros();
+        function mensajeVacio(texto) {
+            tablaLogros.innerHTML =
+                '<tr><td colspan="7" class="logros-vacio">' + texto + "</td></tr>";
+            actualizarLogros();
+        }
+
+        try {
+
+            const respuesta = await fetch("/docentelider/api/logros");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const logros = await respuesta.json();
+
+            if (logros.length === 0) {
+                mensajeVacio("Todavía no hay logros registrados.");
+                return;
+            }
+
+            tablaLogros.innerHTML = logros.map(l => {
+
+                const estado = ESTADOS[l.estado] || l.estado;
+
+                return `
+                <tr data-logro="${l.id}"
+                    data-estudiante="${esc(l.estudiante)}"
+                    data-titulo="${esc(l.titulo)}"
+                    data-estado="${esc(estado)}">
+                    <td>${esc(l.estudiante)}</td>
+                    <td>${esc(l.titulo)}<br><small>${esc(l.descripcion)}</small></td>
+                    <td>${esc(l.tipo)}</td>
+                    <td>${esc(l.fecha)}</td>
+                    <td>${esc(estado)}</td>
+                    <td>${l.calidad === null ? "—" : esc(l.calidad) + "%"}</td>
+                    <td>—</td>
+                </tr>`;
+            }).join("");
+
+            actualizarLogros();
+
+        } catch (error) {
+            console.error("Error al cargar logros:", error);
+            mensajeVacio("No se pudieron cargar los logros.");
+        }
     }
 
-    // ========================================
+   // ========================================
     // MODULO PUBLICACIONES
     // ========================================
-
-    function configurarModuloPublicaciones() {
+          async function configurarModuloPublicaciones() {
 
         const formulario = document.getElementById("formPublicacion");
+        const contenido = document.getElementById("contenidoPublicacion");
+        const academica = document.getElementById("publicacionAcademica");
         const archivo = document.getElementById("archivoPublicacion");
         const nombreArchivo = document.getElementById("nombreArchivoPublicacion");
+        const btnPublicar = document.getElementById("btnPublicar");
         const listaPublicaciones = document.getElementById("listaPublicaciones");
 
-        if (!listaPublicaciones || listaPublicaciones.dataset.configurado === "true") {
+        if (!listaPublicaciones) {
             return;
         }
 
-        listaPublicaciones.dataset.configurado = "true";
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
 
-        archivo?.addEventListener("change", () => {
+        // ----- COMENTARIOS -----
+        async function cargarComentarios(id) {
 
-            if (nombreArchivo) {
-                nombreArchivo.textContent = archivo.files.length
-                    ? archivo.files[0].name
-                    : "";
-            }
-        });
+            const caja = document.getElementById("comentarios-" + id);
 
-        function actualizarContadores() {
-
-            const publicaciones = listaPublicaciones.querySelectorAll(
-                "[data-publicacion]"
-            );
-
-            const academicas = listaPublicaciones.querySelectorAll(
-                '[data-tipo="academica"]'
-            );
-
-            const totalPublicaciones = document.getElementById("totalPublicaciones");
-            const totalAcademicas = document.getElementById("totalAcademicas");
-
-            if (totalPublicaciones) {
-                totalPublicaciones.textContent = publicaciones.length;
+            if (!caja) {
+                return;
             }
 
-            if (totalAcademicas) {
-                totalAcademicas.textContent = academicas.length;
+            try {
+
+                const r = await fetch(
+                    "/docentelider/api/publicaciones/" + id + "/comentarios"
+                );
+
+                if (sesionVencida(r)) {
+                    return;
+                }
+
+                if (!r.ok) {
+                    throw new Error("Error " + r.status);
+                }
+
+                const comentarios = await r.json();
+
+                caja.innerHTML = comentarios.map(c => `
+                    <div style="padding:8px 0;">
+                        <strong>${esc(c.autor)}</strong>
+                        <small>${esc(c.fecha)}</small>
+                        <p style="margin:4px 0 0; white-space:pre-wrap;">${esc(c.contenido)}</p>
+                    </div>
+                `).join("") + `
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        <input type="text" class="campo-comentario" maxlength="1000"
+                               placeholder="Escribe un comentario..."
+                               style="flex:1; padding:8px;">
+                        <button type="button" class="btn-enviar-comentario"
+                                data-id="${id}">Comentar</button>
+                    </div>
+                `;
+
+                const boton = listaPublicaciones.querySelector(
+                    '.btn-comentarios[data-id="' + id + '"]'
+                );
+
+                if (boton) {
+                    boton.textContent = "💬 Comentarios (" + comentarios.length + ")";
+                }
+
+            } catch (error) {
+                console.error("Error al cargar comentarios:", error);
+                caja.innerHTML = "<small>No se pudieron cargar los comentarios.</small>";
             }
         }
 
-        formulario?.addEventListener("submit", event => {
+        // ----- PUBLICACIONES -----
+        async function cargarPublicaciones() {
 
-            event.preventDefault();
+            try {
 
-            alert(
-                "El formulario quedará conectado cuando implementemos el registro de publicaciones."
-            );
-        });
+                const respuesta = await fetch("/docentelider/api/publicaciones");
 
-        actualizarContadores();
-    }
+                if (sesionVencida(respuesta)) {
+                    return;
+                }
 
+                if (!respuesta.ok) {
+                    throw new Error("Error " + respuesta.status);
+                }
+
+                const datos = await respuesta.json();
+
+                const totalPublicaciones = document.getElementById("totalPublicaciones");
+                const totalAcademicas = document.getElementById("totalAcademicas");
+
+                if (totalPublicaciones) totalPublicaciones.textContent = datos.total;
+                if (totalAcademicas) totalAcademicas.textContent = datos.academicas;
+
+                if (datos.publicaciones.length === 0) {
+                    listaPublicaciones.innerHTML =
+                        '<div class="publicaciones-vacio">Todavía no hay publicaciones disponibles.</div>';
+                    return;
+                }
+
+                listaPublicaciones.innerHTML = datos.publicaciones.map(p => `
+                   <article class="publicacion-card" data-publicacion="${p.id}"
+                            data-tipo="${p.academica ? "academica" : "general"}">
+                        </div>class="publicacion-cabecera">
+                            <div class="publicacion-autor">
+                                <div class="publicacion-avatar">
+                                    ${esc(p.autor).charAt(0).toUpperCase()}
+                        </div>
+                    
+                        <div>
+                           <strong>
+                               ${esc(p.autor)}${p.propia ? " (tú)" : ""}
+                           </strong>
+
+                        
+                    <span>
+                        ${esc(p.fecha)}
+                        · ${p.academica ? "Publicación académica" : "Publicación general"}
+                    </span>
+
+                     ${p.semillero ? `
+                        <small>${esc(p.semillero)}</small>
+                    ` : ""}
+                </div>
+             </div>
+            </div>
+
+
+                        <footer style="margin-top:14px; border-top:1px solid #eee; padding-top:10px;">
+                            <div style="display:flex; gap:12px;">
+                                <button type="button" class="btn-reaccion" data-id="${p.id}">
+                                    ${p.yo_reaccione ? "❤️" : "🤍"} Me gusta (${p.reacciones})
+                                </button>
+                                <button type="button" class="btn-comentarios" data-id="${p.id}">
+                                    💬 Comentarios (${p.comentarios})
+                                </button>
+                            </div>
+                            <div class="caja-comentarios" id="comentarios-${p.id}" hidden></div>
+                        </footer>
+                    </article>
+                `).join("");
+
+            } catch (error) {
+                console.error("Error al cargar publicaciones:", error);
+                listaPublicaciones.innerHTML =
+                    '<div class="publicaciones-vacio">No se pudieron cargar las publicaciones.</div>';
+            }
+        }
+
+        // Los eventos se conectan una sola vez
+        if (listaPublicaciones.dataset.configurado !== "true") {
+
+            listaPublicaciones.dataset.configurado = "true";
+
+            archivo?.addEventListener("change", () => {
+                if (nombreArchivo) {
+                    nombreArchivo.textContent = archivo.files.length
+                        ? archivo.files[0].name
+                        : "";
+                }
+            });
+
+            formulario?.addEventListener("submit", async event => {
+
+                event.preventDefault();
+
+                btnPublicar.disabled = true;
+
+                try {
+
+                    const respuesta = await fetch("/docentelider/api/publicaciones", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contenido: contenido.value,
+                            academica: academica.checked
+                        })
+                    });
+
+                    if (sesionVencida(respuesta)) {
+                        return;
+                    }
+
+                    const datos = await respuesta.json();
+
+                    if (!respuesta.ok) {
+                        alert(datos.mensaje);
+                        return;
+                    }
+
+                    formulario.reset();
+                    if (nombreArchivo) nombreArchivo.textContent = "";
+                    await cargarPublicaciones();
+
+                } catch (error) {
+                    alert("No fue posible conectar con el servidor.");
+                } finally {
+                    btnPublicar.disabled = false;
+                }
+            });
+
+            // Abrir comentarios y enviar un comentario
+            listaPublicaciones.addEventListener("click", async e => {
+
+                const reaccion = e.target.closest(".btn-reaccion");
+
+                if (reaccion) {
+
+                    reaccion.disabled = true;
+
+                    try {
+
+                        const r = await fetch(
+                            "/docentelider/api/publicaciones/" +
+                            reaccion.dataset.id + "/reaccion",
+                            { method: "POST" }
+                        );
+
+                        if (sesionVencida(r)) {
+                            return;
+                        }
+
+                        const datos = await r.json();
+
+                        if (!r.ok) {
+                            alert(datos.mensaje);
+                            return;
+                        }
+
+                        reaccion.textContent =
+                            (datos.reaccionado ? "❤️" : "🤍") +
+                            " Me gusta (" + datos.total + ")";
+
+                    } catch (error) {
+                        alert("No fue posible conectar con el servidor.");
+                    } finally {
+                        reaccion.disabled = false;
+                    }
+
+                    return;
+                }
+
+                const boton = e.target.closest(".btn-comentarios");
+
+                if (boton) {
+                    const caja = document.getElementById("comentarios-" + boton.dataset.id);
+
+                    if (!caja.hidden) {
+                        caja.hidden = true;
+                        return;
+                    }
+
+                    caja.hidden = false;
+                    await cargarComentarios(boton.dataset.id);
+                    return;
+                }
+
+                const enviar = e.target.closest(".btn-enviar-comentario");
+
+                if (enviar) {
+                    const id = enviar.dataset.id;
+                    const campo = enviar.parentElement.querySelector(".campo-comentario");
+                    const texto = campo.value.trim();
+
+                    if (!texto) {
+                        return;
+                    }
+
+                    enviar.disabled = true;
+
+                    try {
+
+                        const r = await fetch(
+                            "/docentelider/api/publicaciones/" + id + "/comentarios",
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ contenido: texto })
+                            }
+                        );
+
+                        if (sesionVencida(r)) {
+                            return;
+                        }
+
+                        const datos = await r.json();
+
+                        if (!r.ok) {
+                            alert(datos.mensaje);
+                            return;
+                        }
+
+                        await cargarComentarios(id);
+
+                    } catch (error) {
+                        alert("No fue posible conectar con el servidor.");
+                    } finally {
+                        enviar.disabled = false;
+                    }
+                }
+            });
+
+            // Enviar el comentario con la tecla Enter
+            listaPublicaciones.addEventListener("keydown", e => {
+
+                if (e.key === "Enter" &&
+                    e.target.classList.contains("campo-comentario")) {
+
+                    e.preventDefault();
+                    e.target.parentElement
+                        .querySelector(".btn-enviar-comentario")
+                        .click();
+                }
+            });
+        }
+
+        await cargarPublicaciones();
+    } 
     // ========================================
     // MODULO RANKING
     // ========================================
 
-    function configurarModuloRanking() {
+        async function configurarModuloRanking() {
 
         const pestanas = document.querySelectorAll(".ranking-pestana");
         const listas = document.querySelectorAll(".ranking-lista");
 
-        if (!pestanas.length || pestanas[0].dataset.configurado === "true") {
+        if (!pestanas.length) {
             return;
         }
 
-        pestanas.forEach(pestana => {
+        // Las pestañas se conectan una sola vez
+        if (pestanas[0].dataset.configurado !== "true") {
 
-            pestana.dataset.configurado = "true";
+            pestanas.forEach(pestana => {
 
-            pestana.addEventListener("click", () => {
+                pestana.dataset.configurado = "true";
 
-                const rankingSeleccionado = pestana.dataset.ranking;
+                pestana.addEventListener("click", () => {
 
-                pestanas.forEach(item => {
-                    item.classList.remove("activa");
+                    const rankingSeleccionado = pestana.dataset.ranking;
+
+                    pestanas.forEach(item => {
+                        item.classList.remove("activa");
+                    });
+
+                    pestana.classList.add("activa");
+
+                    listas.forEach(lista => {
+                        lista.classList.remove("activa");
+                    });
+
+                    if (rankingSeleccionado === "estudiantes") {
+                        document.getElementById("rankingEstudiantes")?.classList.add("activa");
+                    }
+
+                    if (rankingSeleccionado === "semilleros") {
+                        document.getElementById("rankingSemilleros")?.classList.add("activa");
+                    }
                 });
-
-                pestana.classList.add("activa");
-
-                listas.forEach(lista => {
-                    lista.classList.remove("activa");
-                });
-
-                if (rankingSeleccionado === "estudiantes") {
-                    document.getElementById("rankingEstudiantes")?.classList.add("activa");
-                }
-
-                if (rankingSeleccionado === "semilleros") {
-                    document.getElementById("rankingSemilleros")?.classList.add("activa");
-                }
             });
-        });
-    }
+        }
 
+        const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;",
+            '"': "&quot;", "'": "&#39;"
+        }[c]));
+
+        const tablaEstudiantes = document.getElementById("tablaRankingEstudiantes");
+        const tablaSemilleros = document.getElementById("tablaRankingSemilleros");
+
+        function pintar(tabla, filas, textoVacio) {
+
+            if (!tabla) {
+                return;
+            }
+
+            if (filas.length === 0) {
+                tabla.innerHTML =
+                    '<tr><td colspan="6" class="ranking-vacio">' + textoVacio + "</td></tr>";
+                return;
+            }
+
+            tabla.innerHTML = filas.map(f => `
+                <tr>
+                    <td>${esc(f.posicion)}</td>
+                    <td>${esc(f.nombre)}</td>
+                    <td>${esc(f.nivel)}</td>
+                    <td>${esc(f.estrellas)}</td>
+                    <td>${esc(f.xp)}</td>
+                    <td>${esc(f.insignias)}</td>
+                </tr>
+            `).join("");
+        }
+
+        try {
+
+            const respuesta = await fetch("/docentelider/api/ranking");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const datos = await respuesta.json();
+
+            pintar(tablaEstudiantes, datos.estudiantes,
+                "No hay investigadores en el ranking.");
+            pintar(tablaSemilleros, datos.semilleros,
+                "No hay semilleros en el ranking.");
+
+            const posicion = document.getElementById("posicionSemillero");
+            const xp = document.getElementById("xpSemillero");
+
+            if (posicion) {
+                posicion.textContent =
+                    datos.mi_posicion === null ? "--" : "#" + datos.mi_posicion;
+            }
+
+            if (xp) {
+                xp.textContent = datos.mi_xp;
+            }
+
+        } catch (error) {
+            console.error("Error al cargar el ranking:", error);
+            pintar(tablaEstudiantes, [], "No se pudo cargar el ranking.");
+            pintar(tablaSemilleros, [], "No se pudo cargar el ranking.");
+        }
+    }
     // ========================================
     // CAMBIAR DE MODULO
     // ========================================
@@ -1238,7 +1894,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         // CONFIGURAR USUARIO
 
-        if (id === "usuario") {
+        if (id === "usuarios") {
             configurarModuloUsuario();
         }
 

@@ -24,12 +24,12 @@ const titles = {
     eventos: 'Convocatorias y Eventos',
     logros: 'Validacion de logros',
     solicitudes: 'Solicitudes',
-    informes: 'Informes',
+    reportes: 'reportes',
     ranking: 'Top 10 de clasificacion'
 };
 
 
-// NAVEGACION ENTRE MODULOS
+ // NAVEGACION ENTRE MODULOS
 document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
     link.addEventListener('click', async event => {
         event.preventDefault();
@@ -37,19 +37,50 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
         const page = link.dataset.page;
         const section = document.getElementById('page-' + page);
 
-        document.querySelectorAll('.admin-page').forEach(section => {
-            section.classList.remove('active-page');
+        if (!section) {
+            console.error('No existe el modulo:', page);
+            return;
+        }
+
+        // Ocultar los demas modulos
+        document.querySelectorAll('.admin-page').forEach(seccion => {
+            seccion.classList.remove('active-page');
         });
 
+        // Mostrar el modulo seleccionado
         section.classList.add('active-page');
 
+        // Actualizar menu
         document.querySelectorAll('.admin-nav a').forEach(a => {
             a.classList.toggle('active', a === link);
         });
 
-        document.getElementById('topTitle').textContent = titles[page];
-          
-        // Modudo facultad
+        // Actualizar titulo
+        document.getElementById('topTitle').textContent =
+            titles[page] || 'Administracion';
+
+        // CARGAR MODULO DE USUARIOS
+        if (page === 'usuarios' && section.dataset.loaded !== 'true') {
+            section.innerHTML = '<p>Cargando usuarios...</p>';
+
+            try {
+                const response = await fetch('/admin/usuarios');
+
+                if (!response.ok) {
+                    throw new Error('Error ' + response.status);
+                }
+
+                section.innerHTML = await response.text();
+                section.dataset.loaded = 'true';
+
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                section.innerHTML =
+                    '<p>No se pudieron cargar los usuarios.</p>';
+            }
+        }
+
+        // CARGAR MODULO DE FACULTADES
         if (page === 'facultades' && section.dataset.loaded !== 'true') {
             section.innerHTML = '<p>Cargando facultades...</p>';
 
@@ -57,69 +88,68 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
                 const response = await fetch('/admin/facultades');
 
                 if (!response.ok) {
-                    throw new Error('Error al cargar facultades');
+                    throw new Error('Error ' + response.status);
                 }
 
                 section.innerHTML = await response.text();
                 section.dataset.loaded = 'true';
 
             } catch (error) {
-                console.error(error);
-                section.innerHTML = '<p>No se pudieron cargar las facultades.</p>';
+                console.error('Error al cargar facultades:', error);
+                section.innerHTML =
+                    '<p>No se pudieron cargar las facultades.</p>';
             }
-        }
-
+        } 
 
         // CARGAR MODULO DE SEMILLEROS
         if (page === 'semilleros' && section.dataset.loaded !== 'true') {
-        section.innerHTML = '<p>Cargando semilleros...</p>';
+            section.innerHTML = '<p>Cargando semilleros...</p>';
 
-        try {
-        const response = await fetch('/admin/semilleros');
+            try {
+                const response = await fetch('/admin/semilleros');
 
-        if (!response.ok) {
-            throw new Error('Error al cargar semilleros');
-        }
+                if (!response.ok) {
+                    throw new Error('Error ' + response.status);
+                }
 
-        section.innerHTML = await response.text();
-        section.dataset.loaded = 'true';
+                section.innerHTML = await response.text();
+                section.dataset.loaded = 'true';
 
-        } catch (error) {
-        console.error(error);
-        section.innerHTML = '<p>No se pudieron cargar los semilleros.</p>';
-        }
+            } catch (error) {
+                console.error('Error al cargar semilleros:', error);
+                section.innerHTML =
+                    '<p>No se pudieron cargar los semilleros.</p>';
+            }
         }
 
         // CARGAR MODULO DE CONVOCATORIAS
         if (page === 'eventos' && section.dataset.loaded !== 'true') {
-        section.innerHTML = '<p>Cargando convocatorias...</p>';
+            section.innerHTML = '<p>Cargando convocatorias...</p>';
 
-        try {
-        const response = await fetch('/admin/convocatorias');
+            try {
+                const response = await fetch('/admin/convocatorias');
 
-        if (!response.ok) {
-            throw new Error('Error al cargar convocatorias');
+                if (!response.ok) {
+                    throw new Error('Error ' + response.status);
+                }
+
+                section.innerHTML = await response.text();
+                section.dataset.loaded = 'true';
+
+            } catch (error) {
+                console.error('Error al cargar convocatorias:', error);
+                section.innerHTML =
+                    '<p>No se pudieron cargar las convocatorias.</p>';
+            }
         }
 
-        section.innerHTML = await response.text();
-        section.dataset.loaded = 'true';
-
-        } catch (error) {
-        console.error(error);
-        section.innerHTML = '<p>No se pudieron cargar las convocatorias.</p>';
-       }
-       }
-       
-        // CARGAR MODULO DE SOLICITUDES (se recarga cada vez que se abre)
+        // CARGAR SOLICITUDES
+        // Se recargan cada vez que se abre el modulo
         if (page === 'solicitudes') {
             await cargarSolicitudes(section);
         }
-
-
-    });
-
-   
-});
+    }); 
+}); 
 
 
 // BOTONES "VER SOLICITUDES" DEL INICIO
@@ -468,12 +498,12 @@ async function toggleUser(button) {
     button.disabled = false;
 }
 
-// GENERAR INFORME
+// GENERAR reporte
 function generateReport() {
     const output = document.getElementById('reportOutput');
 
     output.textContent =
-        'Informe demostrativo RIUL\n' +
+        'reporte demostrativo RIUL\n' +
         'Usuarios mostrados: ' +
         document.querySelectorAll('#usersTable tr').length +
         '\nFecha: ' +
@@ -768,6 +798,93 @@ async function recargarSemilleros() {
 function limpiarErrorSemillero() {
     document.getElementById('errorModalSemillero').hidden = true;
 }
+
+
+// ASIGNAR DOCENTE LIDER
+async function abrirAsignacionDocente(id) {
+    const modal = document.getElementById('modalAsignarDocente');
+    const select = document.getElementById('selectDocenteLider');
+    const error = document.getElementById('errorAsignarDocente');
+
+    document.getElementById('idSemilleroAsignacion').value = id;
+
+    select.innerHTML = '<option value="">Sin docente líder</option>';
+    error.hidden = true;
+    error.textContent = '';
+
+    modal.hidden = false;
+
+    try {
+        const respuesta = await fetch(
+            '/admin/api/semilleros/' + id + '/docentes-disponibles'
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.mensaje || 'No fue posible cargar los docentes.');
+        }
+
+        datos.docentes.forEach(docente => {
+            const opcion = document.createElement('option');
+            opcion.value = docente.id_usuario;
+            opcion.textContent = docente.nombre_institucional;
+
+            if (Number(docente.id_semillero_liderado) === Number(id)) {
+                opcion.selected = true;
+            }
+
+            select.appendChild(opcion);
+        });
+
+    } catch (e) {
+        console.error('Error al cargar docentes:', e);
+        error.textContent = e.message;
+        error.hidden = false;
+    }
+}
+
+async function guardarAsignacionDocente() {
+    const id = document.getElementById('idSemilleroAsignacion').value;
+    const select = document.getElementById('selectDocenteLider');
+    const error = document.getElementById('errorAsignarDocente');
+    const boton = document.getElementById('btnGuardarAsignacion');
+
+    error.hidden = true;
+    boton.disabled = true;
+
+    try {
+        const respuesta = await fetch(
+            '/admin/api/semilleros/' + id + '/docente-lider',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_usuario: select.value || null
+                })
+            }
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.mensaje || 'No fue posible guardar la asignación.');
+        }
+
+        cerrarModalFac('modalAsignarDocente');
+        await recargarSemilleros();
+
+    } catch (e) {
+        console.error('Error al asignar docente:', e);
+        error.textContent = e.message;
+        error.hidden = false;
+    } finally {
+        boton.disabled = false;
+    }
+}
+
 
 // ---------- CREAR ----------
 function crearSemillero() {

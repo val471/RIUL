@@ -17,3 +17,9 @@ class DocenteLider(db.Model):
         unique=True,
         nullable=True
     )
+
+    id_programa = db.Column(
+    db.Integer,
+    db.ForeignKey("programa.id_programa"),
+    nullable=True
+    )

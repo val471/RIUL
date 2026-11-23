@@ -116,14 +116,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     rolRegistro?.addEventListener("change", function () {
 
-        if (campoPrograma) {
-            campoPrograma.hidden = rolRegistro.value !== "ESTUDIANTE";
-        }
+        const necesitaPrograma =
+        rolRegistro.value === "ESTUDIANTE" ||
+        rolRegistro.value === "DOCENTE_LIDER";
 
-        if (programaRegistro) {
-            programaRegistro.required = rolRegistro.value === "ESTUDIANTE";
-        }
+    if (campoPrograma) {
+        campoPrograma.hidden = !necesitaPrograma;
+    }
 
+    if (programaRegistro) {
+        programaRegistro.required = necesitaPrograma;
+    }
     });
 
     // ========================================

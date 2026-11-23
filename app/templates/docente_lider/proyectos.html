@@ -13,6 +13,35 @@
         </button>
     </div>
 
+
+        <form id="formProyecto" 
+         style="display:none; background:#fff; border-radius:16px; padding:24px; margin-bottom:24px; gap:14px;"></form>
+
+        <h3 style="margin:0;">Nuevo proyecto</h3>
+
+        <label>Título
+            <input id="tituloProyecto" type="text" maxlength="150"
+                   style="width:100%; padding:10px; box-sizing:border-box;" required>
+        </label>
+
+        <label>Descripción
+            <textarea id="descripcionProyecto" rows="3"
+                      style="width:100%; padding:10px; box-sizing:border-box;"></textarea>
+        </label>
+
+        <label>Fecha de inicio
+            <input id="inicioProyecto" type="date"
+                   style="width:100%; padding:10px; box-sizing:border-box;" required>
+        </label>
+
+        <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn-cargar-proyecto">Guardar proyecto</button>
+            <button type="button" id="cancelarProyecto">Cancelar</button>
+        </div>
+
+        <p id="mensajeProyecto" hidden></p>
+    </form>
+
     <div class="proyectos-resumen">
         <div class="proyectos-resumen-card">
             <span>Total de proyectos</span>

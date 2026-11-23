@@ -264,25 +264,6 @@ def admin_facultades():
 def admin_semilleros():
     return admin_controller.mostrar_semilleros()
 
-@web.route("/admin/api/semilleros", methods=["POST"])
-def admin_crear_semillero():
-    return admin_controller.crear_semillero()
-
-
-@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["GET"])
-def admin_detalle_semillero(id_semillero):
-    return admin_controller.detalle_semillero(id_semillero)
-
-
-@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["PUT"])
-def admin_editar_semillero(id_semillero):
-    return admin_controller.editar_semillero(id_semillero)
-
-
-@web.route("/admin/api/semilleros/<int:id_semillero>/estado", methods=["POST"])
-def admin_estado_semillero(id_semillero):
-    return admin_controller.cambiar_estado_semillero(id_semillero)
-
 
 @web.route("/admin/convocatorias")
 def admin_convocatorias():
@@ -450,7 +431,7 @@ def api_registro():
     if rol not in ["ESTUDIANTE", "DOCENTE_LIDER"]:
        return jsonify({"mensaje": "El rol seleccionado no es válido."}), 400
 
-    if rol == "ESTUDIANTE" and not id_programa:
+    if rol == ["ESTUDIANTE", "DOCENTE_LIDER"] and not id_programa:
         return jsonify({"mensaje": "Selecciona tu programa académico."}), 400
 
     if Usuario.query.filter_by(correo_institucional=correo).first():
@@ -472,7 +453,7 @@ def api_registro():
             documento=documento,
             telefono=telefono,
             id_facultad=int(id_facultad),
-            id_programa=int(id_programa) if rol == "ESTUDIANTE" else None,
+            id_programa=int(id_programa),
             contrasena_hash=generate_password_hash(contrasena),
             rol_solicitado=rol,
             estado="PENDIENTE",
@@ -544,235 +525,7 @@ def api_eventos_estudiante():
     return jsonify(resultado)
 
 
-@web.route("/docentelider/api/perfil")
-def docente_api_perfil():
-    usuario = _usuario_actual()
-    if not usuario:
-        return jsonify({"mensaje": "Usuario no encontrado."}), 404
 
-    # La facultad sale del semillero que lidera el docente
-    facultad = db.session.execute(text("""
-        SELECT f.nombre
-        FROM docentelider d
-        JOIN semillero s ON s.id_semillero = d.id_semillero_liderado
-        JOIN facultad f ON f.id_facultad = s.id_facultad
-        WHERE d.id_usuario = :id
-    """), {"id": usuario.id_usuario}).scalar()
-
-    # Última solicitud de cambio por cada dato (pendiente, aprobada o rechazada)
-    solicitudes = {}
-    historial = (SolicitudActualizacion.query
-                 .filter_by(id_usuario=usuario.id_usuario)
-                 .order_by(SolicitudActualizacion.fecha_solicitud.desc())
-                 .all())
-    for s in historial:
-        if s.campo_modificado not in solicitudes:
-            solicitudes[s.campo_modificado] = {
-                "estado": s.estado,
-                "valor_nuevo": s.valor_nuevo,
-                "motivo_rechazo": s.motivo_rechazo,
-            }
-
-    return jsonify({
-        "nombre_institucional": usuario.nombre_institucional,
-        "correo_institucional": usuario.correo_institucional,
-        "foto_perfil": usuario.foto_perfil,
-        "facultad": facultad or "Sin facultad asignada",
-        "solicitudes": solicitudes,
-    })
-
-
-@web.route("/docentelider/api/perfil/solicitud", methods=["POST"])
-def docente_solicitar_cambio():
-    usuario = _usuario_actual()
-    if not usuario:
-        return jsonify({"mensaje": "Usuario no encontrado."}), 404
-
-    datos = request.get_json(silent=True) or {}
-    cambios = {}
-
-    nombre = (datos.get("nombre") or "").strip()
-    if nombre and nombre != usuario.nombre_institucional:
-        if len(nombre) < 3 or len(nombre) > 150:
-            return jsonify({
-                "mensaje": "El nombre debe tener entre 3 y 150 caracteres."
-            }), 400
-        cambios["nombre_institucional"] = (usuario.nombre_institucional, nombre)
-
-    correo = (datos.get("correo") or "").strip().lower()
-    if correo and correo != usuario.correo_institucional:
-        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", correo):
-            return jsonify({"mensaje": "El correo no tiene un formato válido."}), 400
-        if not correo.endswith("@unilibre.edu.co"):
-            return jsonify({
-                "mensaje": "Debes utilizar tu correo institucional (@unilibre.edu.co)."
-            }), 400
-        if Usuario.query.filter_by(correo_institucional=correo).first():
-            return jsonify({"mensaje": "Este correo ya está registrado."}), 409
-        cambios["correo_institucional"] = (usuario.correo_institucional, correo)
-
-    if not cambios:
-        return jsonify({"mensaje": "No hiciste ningún cambio en tus datos."}), 400
-
-    for campo in cambios:
-        pendiente = SolicitudActualizacion.query.filter_by(
-            id_usuario=usuario.id_usuario,
-            campo_modificado=campo,
-            estado="PENDIENTE"
-        ).first()
-        if pendiente:
-            return jsonify({
-                "mensaje": "Ya tienes una solicitud pendiente para este dato. "
-                           "Espera la respuesta del Administrador."
-            }), 409
-
-    try:
-        for campo, (anterior, nuevo) in cambios.items():
-            db.session.add(SolicitudActualizacion(
-                id_usuario=usuario.id_usuario,
-                campo_modificado=campo,
-                valor_anterior=anterior,
-                valor_nuevo=nuevo,
-                estado="PENDIENTE",
-                fecha_solicitud=datetime.now()
-            ))
-        db.session.commit()
-        return jsonify({
-            "mensaje": "Tu solicitud fue enviada y está pendiente de aprobación "
-                       "del Administrador."
-        }), 201
-    except Exception as error:
-        db.session.rollback()
-        print("ERROR AL GUARDAR SOLICITUD DE ACTUALIZACION:", repr(error))
-        return jsonify({"mensaje": "No fue posible enviar la solicitud."}), 500
-
-
-@web.route("/docentelider/api/perfil/contrasena", methods=["POST"])
-def docente_cambiar_contrasena():
-    usuario = _usuario_actual()
-    if not usuario:
-        return jsonify({"mensaje": "Usuario no encontrado."}), 404
-
-    datos = request.get_json(silent=True) or {}
-    actual = datos.get("actual") or ""
-    nueva = datos.get("nueva") or ""
-    confirmar = datos.get("confirmar") or ""
-
-    if not check_password_hash(usuario.contrasena_hash, actual):
-        return jsonify({"mensaje": "La contraseña actual no es correcta."}), 400
-    if len(nueva) < 8:
-        return jsonify({
-            "mensaje": "La nueva contraseña debe tener mínimo 8 caracteres."
-        }), 400
-    if nueva != confirmar:
-        return jsonify({
-            "mensaje": "La confirmación no coincide con la nueva contraseña."
-        }), 400
-    if check_password_hash(usuario.contrasena_hash, nueva):
-        return jsonify({
-            "mensaje": "La nueva contraseña debe ser diferente a la actual."
-        }), 400
-
-    try:
-        usuario.contrasena_hash = generate_password_hash(nueva)
-        usuario.fecha_actualizacion = datetime.now()
-        db.session.commit()
-        return jsonify({"mensaje": "Tu contraseña fue actualizada."})
-    except Exception as error:
-        db.session.rollback()
-        print("ERROR AL CAMBIAR CONTRASENA:", repr(error))
-        return jsonify({"mensaje": "No fue posible actualizar la contraseña."}), 500
-
-
-@web.route("/docentelider/api/perfil/foto", methods=["POST"])
-def docente_cambiar_foto():
-    usuario = _usuario_actual()
-    if not usuario:
-        return jsonify({"mensaje": "Usuario no encontrado."}), 404
-
-    archivo = request.files.get("foto")
-    if not archivo or not archivo.filename:
-        return jsonify({"mensaje": "Selecciona una imagen."}), 400
-
-    extension = ""
-    if "." in archivo.filename:
-        extension = archivo.filename.rsplit(".", 1)[-1].lower()
-    if extension not in EXTENSIONES_FOTO:
-        return jsonify({"mensaje": "Formato no permitido. Usa PNG, JPG o WEBP."}), 400
-
-    archivo.seek(0, os.SEEK_END)
-    peso = archivo.tell()
-    archivo.seek(0)
-    if peso > PESO_MAX_FOTO:
-        return jsonify({"mensaje": "La imagen no debe superar 2 MB."}), 400
-
-    carpeta = os.path.join(current_app.static_folder, "uploads", "perfiles")
-    os.makedirs(carpeta, exist_ok=True)
-
-    nombre_archivo = f"usuario_{usuario.id_usuario}_{int(time.time())}.{extension}"
-
-    try:
-        archivo.save(os.path.join(carpeta, nombre_archivo))
-
-        # Borra la foto anterior para no acumular archivos
-        anterior = usuario.foto_perfil or ""
-        if anterior.startswith("/static/uploads/perfiles/"):
-            ruta_anterior = os.path.join(carpeta, os.path.basename(anterior))
-            if os.path.exists(ruta_anterior):
-                os.remove(ruta_anterior)
-
-        usuario.foto_perfil = f"/static/uploads/perfiles/{nombre_archivo}"
-        usuario.fecha_actualizacion = datetime.now()
-        db.session.commit()
-
-        return jsonify({
-            "mensaje": "Tu foto fue actualizada.",
-            "foto_perfil": usuario.foto_perfil
-        })
-    except Exception as error:
-        db.session.rollback()
-        print("ERROR AL GUARDAR FOTO:", repr(error))
-        return jsonify({"mensaje": "No fue posible guardar la foto."}), 500
-
-@web.route("/docentelider/api/registros")
-def docente_api_registros():
-    id_semillero = _semillero_del_docente()
-
-    if not id_semillero:
-        return jsonify([])
-
-    filas = db.session.execute(text("""
-        SELECT
-            sr.nombre_completo,
-            sr.correo_institucional,
-            sr.fecha_solicitud,
-            p.nombre AS programa
-        FROM solicitudregistro sr
-        INNER JOIN semillero s
-            ON s.id_facultad = sr.id_facultad
-        LEFT JOIN programa p
-            ON p.id_programa = sr.id_programa
-        WHERE s.id_semillero = :semillero
-          AND sr.estado = 'PENDIENTE'
-          AND sr.rol_solicitado = 'ESTUDIANTE'
-        ORDER BY sr.fecha_solicitud
-    """), {"semillero": id_semillero}).mappings().all()
-
-    return jsonify([{
-        "nombre": f["nombre_completo"],
-        "correo": f["correo_institucional"],
-        "programa": f["programa"] or "Sin programa",
-        "fecha": f["fecha_solicitud"].strftime("%d/%m/%Y"),
-    } for f in filas])
-
-@web.route("/admin/api/solicitudes/<int:id_solicitud>/aprobar", methods=["POST"])
-def admin_aprobar_solicitud(id_solicitud):
-    return admin_controller.aprobar_solicitud_registro(id_solicitud)
-
-
-@web.route("/admin/api/solicitudes/<int:id_solicitud>/rechazar", methods=["POST"])
-def admin_rechazar_solicitud(id_solicitud):
-    return admin_controller.rechazar_solicitud_registro(id_solicitud)
 
 
 
@@ -902,10 +655,10 @@ def estudiante_seguir_semillero(id_semillero):
 
         # Verificar si ya lo sigue
         existe = db.session.execute(text("""
-            SELECT 1
-            FROM seguimientoesemillero
-            WHERE id_usuario = :usuario
-              AND id_semillero = :semillero
+             SELECT 1
+             FROM seguimientosemillero
+             WHERE id_usuario = :usuario
+               AND id_semillero = :semillero
         """), {
             "usuario": id_usuario,
             "semillero": id_semillero
@@ -981,179 +734,7 @@ def estudiante_api_proyectos():
         return jsonify({"mensaje": "No fue posible consultar los proyectos."}), 500
     
 
-@web.route("/docentelider/api/semillero")
-def docente_api_semillero():
-    id_semillero = _semillero_del_docente()
-
-    if not id_semillero:
-        return jsonify({"asignado": False})
-
-    s = db.session.execute(text("""
-        SELECT
-            s.nombre,
-            s.descripcion,
-            s.linea_investigacion,
-            s.estado,
-            s.cupo_maximo,
-            f.nombre AS facultad,
-            (
-                SELECT COUNT(*)
-                FROM membresiasemillero m
-                WHERE m.id_semillero = s.id_semillero
-                  AND m.fecha_salida IS NULL
-            ) AS integrantes,
-            (
-                SELECT COUNT(*)
-                FROM proyecto p
-                WHERE p.id_semillero = s.id_semillero
-            ) AS proyectos
-        FROM semillero s
-        INNER JOIN facultad f
-            ON f.id_facultad = s.id_facultad
-        WHERE s.id_semillero = :id
-    """), {"id": id_semillero}).mappings().first()
-
-    if not s:
-        return jsonify({"asignado": False})
-
-    return jsonify({
-        "asignado": True,
-        "nombre": s["nombre"],
-        "descripcion": s["descripcion"],
-        "linea": s["linea_investigacion"],
-        "estado": s["estado"],
-        "cupo_maximo": s["cupo_maximo"],
-        "facultad": s["facultad"],
-        "integrantes": s["integrantes"],
-        "proyectos": s["proyectos"],
-    })
-
-def _resolver_vinculacion(id_solicitud, aceptar):
-    id_docente = session.get("id_usuario") 
-
-    if not id_docente:
-        return jsonify({"mensaje": "Debes iniciar sesión."}), 401
-
-    try:
-        # Buscar la solicitud
-        solicitud = db.session.execute(text("""
-            SELECT
-                id_estudiante,
-                id_semillero,
-                estado,
-                tipo
-            FROM solicitudvinculacion
-            WHERE id_solicitud_vinc = :id
-        """), {"id": id_solicitud}).mappings().first()
-
-        if not solicitud:
-            return jsonify({"mensaje": "La solicitud no existe."}), 404
-
-        if solicitud["estado"] != "PENDIENTE":
-            return jsonify({"mensaje": "La solicitud ya fue resuelta."}), 409
-
-        # Verificar que el semillero pertenezca al docente
-        semillero = db.session.execute(text("""
-            SELECT id_semillero_liderado
-            FROM docentelider
-            WHERE id_usuario = :docente
-        """), {"docente": id_docente}).scalar()
-
-        if semillero != solicitud["id_semillero"]:
-            return jsonify({
-                "mensaje": "No puedes resolver solicitudes de otro semillero."
-            }), 403
-
-        if aceptar:
-            # Verificar que el estudiante no pertenezca a otro semillero
-            miembro = db.session.execute(text("""
-                SELECT 1
-                FROM membresiasemillero
-                WHERE id_estudiante = :estudiante
-                  AND fecha_salida IS NULL
-            """), {"estudiante": solicitud["id_estudiante"]}).first()
-
-            if miembro:
-                return jsonify({
-                    "mensaje": "El estudiante ya pertenece a un semillero."
-                }), 409
-
-            # Verificar cupo
-            cupo = db.session.execute(text("""
-                SELECT
-                    s.cupo_maximo,
-                    (
-                        SELECT COUNT(*)
-                        FROM membresiasemillero m
-                        WHERE m.id_semillero = s.id_semillero
-                          AND m.fecha_salida IS NULL
-                    ) AS integrantes
-                FROM semillero s
-                WHERE s.id_semillero = :semillero
-            """), {"semillero": semillero}).mappings().first()
-
-            if not cupo or cupo["integrantes"] >= cupo["cupo_maximo"]:
-                return jsonify({
-                    "mensaje": "El semillero no tiene cupos disponibles."
-                }), 409
-
-            # Registrar membresia
-            db.session.execute(text("""
-                INSERT INTO membresiasemillero
-                    (id_estudiante, id_semillero, fecha_ingreso)
-                VALUES
-                    (:estudiante, :semillero, NOW())
-            """), {
-                "estudiante": solicitud["id_estudiante"],
-                "semillero": semillero
-            })
-
-            nuevo_estado = "APROBADA"
-
-        else:
-            nuevo_estado = "RECHAZADA"
-
-        # Actualizar solicitud
-        db.session.execute(text("""
-            UPDATE solicitudvinculacion
-            SET estado = :estado,
-                id_docente_revisor = :docente,
-                fecha_resolucion = NOW()
-            WHERE id_solicitud_vinc = :id
-        """), {
-            "estado": nuevo_estado,
-            "docente": id_docente,
-            "id": id_solicitud
-        }) 
-
-        db.session.commit()
-
-        return jsonify({
-            "mensaje": (
-                "Solicitud aprobada correctamente."
-                if aceptar else "Solicitud rechazada correctamente."
-            )
-        }), 200
-
-    except Exception as error:
-        db.session.rollback()
-        print("ERROR AL RESOLVER VINCULACION:", repr(error))
-        return jsonify({
-            "mensaje": "No fue posible resolver la solicitud."
-        }), 500
-
-@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/aceptar",
-           methods=["POST"])
-def docente_aceptar_vinculacion(id_solicitud):
-    return _resolver_vinculacion(id_solicitud, True)
-
-
-@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/rechazar",
-           methods=["POST"])
-def docente_rechazar_vinculacion(id_solicitud):
-    return _resolver_vinculacion(id_solicitud, False)
-
-# ==============================
+# ============================== 
 # ADMIN: CREAR CONVOCATORIA (RF-02)
 # ==============================
 
@@ -1614,3 +1195,134 @@ def admin_api_notificaciones():
         "notificaciones": items[:20],
         "errores": errores,
     })
+
+@web.route("/docentelider/api/perfil")
+def docente_api_perfil():
+    return docentelider_controller.obtener_perfil()
+
+
+@web.route("/docentelider/api/perfil/solicitud", methods=["POST"])
+def docente_solicitar_cambio():
+    return docentelider_controller.solicitar_cambio_perfil()
+
+
+@web.route("/docentelider/api/perfil/contrasena", methods=["POST"])
+def docente_cambiar_contrasena():
+    return docentelider_controller.cambiar_contrasena()
+
+
+@web.route("/docentelider/api/perfil/foto", methods=["POST"])
+def docente_cambiar_foto():
+    return docentelider_controller.cambiar_foto()
+
+@web.route("/docentelider/api/semillero")
+def docente_api_semillero():
+    return docentelider_controller.obtener_semillero()
+
+@web.route("/docentelider/api/integrantes")
+def docente_api_integrantes():
+    return docentelider_controller.obtener_integrantes()
+
+@web.route("/docentelider/api/registros")
+def docente_api_registros():
+    return docentelider_controller.obtener_registros()
+
+
+@web.route("/docentelider/api/vinculaciones")
+def docente_api_vinculaciones():
+    return docentelider_controller.obtener_vinculaciones()
+
+
+@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/aceptar", methods=["POST"])
+def docente_aceptar_vinculacion(id_solicitud):
+    return docentelider_controller.aceptar_vinculacion(id_solicitud)
+
+
+@web.route("/docentelider/api/vinculaciones/<int:id_solicitud>/rechazar", methods=["POST"])
+def docente_rechazar_vinculacion(id_solicitud):
+    return docentelider_controller.rechazar_vinculacion(id_solicitud)
+
+@web.route("/docentelider/api/proyectos")
+def docente_api_proyectos():
+    return docentelider_controller.obtener_proyectos()
+
+
+@web.route("/docentelider/api/proyectos", methods=["POST"])
+def docente_api_proyectos_crear():
+    return docentelider_controller.crear_proyecto()
+
+@web.route("/docentelider/api/convocatorias")
+def docente_api_convocatorias():
+    return docentelider_controller.obtener_convocatorias()
+
+
+@web.route("/docentelider/api/eventos")
+def docente_api_eventos():
+    return docentelider_controller.obtener_eventos()
+
+@web.route("/docentelider/api/logros")
+def docente_api_logros():
+    return docentelider_controller.obtener_logros()
+
+@web.route("/docentelider/api/publicaciones")
+def docente_api_publicaciones():
+    return docentelider_controller.obtener_publicaciones()
+
+
+@web.route("/docentelider/api/publicaciones", methods=["POST"])
+def docente_api_publicaciones_crear():
+    return docentelider_controller.crear_publicacion()
+
+
+@web.route("/docentelider/api/publicaciones/<int:id_publicacion>/reaccion",
+           methods=["POST"])
+def docente_api_reaccion(id_publicacion):
+    return docentelider_controller.reaccionar_publicacion(id_publicacion)
+
+
+@web.route("/docentelider/api/publicaciones/<int:id_publicacion>/comentarios")
+def docente_api_comentarios(id_publicacion):
+    return docentelider_controller.obtener_comentarios(id_publicacion)
+
+
+@web.route("/docentelider/api/publicaciones/<int:id_publicacion>/comentarios",
+           methods=["POST"])
+def docente_api_comentarios_crear(id_publicacion):
+    return docentelider_controller.crear_comentario(id_publicacion)
+
+@web.route("/docentelider/api/ranking")
+def docente_api_ranking():
+    return docentelider_controller.obtener_ranking()
+
+@web.route("/admin/api/semilleros", methods=["POST"])
+def admin_crear_semillero():
+    return admin_controller.crear_semillero()
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["GET"])
+def admin_detalle_semillero(id_semillero):
+    return admin_controller.detalle_semillero(id_semillero)
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>", methods=["PUT"])
+def admin_editar_semillero(id_semillero):
+    return admin_controller.editar_semillero(id_semillero)
+
+
+@web.route("/admin/api/semilleros/<int:id_semillero>/estado", methods=["POST"])
+def admin_estado_semillero(id_semillero):
+    return admin_controller.cambiar_estado_semillero(id_semillero)
+
+@web.route(
+    "/admin/api/semilleros/<int:id_semillero>/docente-lider",
+    methods=["POST"]
+)
+def admin_asignar_docente_lider(id_semillero):
+    return admin_controller.asignar_docente_lider(id_semillero)
+
+@web.route(
+    "/admin/api/semilleros/<int:id_semillero>/docentes-disponibles",
+    methods=["GET"]
+)
+def admin_docentes_disponibles(id_semillero):
+    return admin_controller.obtener_docentes_disponibles(id_semillero)
