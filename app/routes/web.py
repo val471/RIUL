@@ -1264,6 +1264,15 @@ def docente_aceptar_vinculacion(id_solicitud):
 def docente_rechazar_vinculacion(id_solicitud):
     return docentelider_controller.rechazar_vinculacion(id_solicitud)
 
+@web.route("/admin/api/solicitudes/<int:id_solicitud>/aprobar", methods=["POST"])
+def admin_api_aprobar_solicitud_registro(id_solicitud):
+    return admin_controller.aprobar_solicitud_registro(id_solicitud)
+
+
+@web.route("/admin/api/solicitudes/<int:id_solicitud>/rechazar", methods=["POST"])
+def admin_api_rechazar_solicitud_registro(id_solicitud):
+    return admin_controller.rechazar_solicitud_registro(id_solicitud)
+
 @web.route("/docentelider/api/proyectos")
 def docente_api_proyectos():
     return docentelider_controller.obtener_proyectos()
