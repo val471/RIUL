@@ -283,9 +283,43 @@ def admin_cambiar_estado_usuario(id_usuario):
     return admin_controller.cambiar_estado_usuario(id_usuario)
 
 
+# =====================================================
+# FACULTADES
+# =====================================================
+
 @web.route("/admin/facultades")
 def admin_facultades():
     return admin_controller.mostrar_facultades()
+
+
+# CREAR FACULTAD
+@web.route("/admin/api/facultades", methods=["POST"])
+def admin_crear_facultad():
+    return admin_controller.crear_facultad()
+
+
+# EDITAR FACULTAD
+@web.route("/admin/api/facultades/<int:id_facultad>", methods=["PUT"])
+def admin_editar_facultad(id_facultad):
+    return admin_controller.editar_facultad(id_facultad)
+
+
+# CREAR PROGRAMA
+@web.route(
+    "/admin/api/facultades/<int:id_facultad>/programas",
+    methods=["POST"]
+)
+def admin_crear_programa(id_facultad):
+    return admin_controller.crear_programa(id_facultad)
+
+
+# CONSULTAR USUARIOS DE UNA FACULTAD
+@web.route(
+    "/admin/api/facultades/<int:id_facultad>/usuarios",
+    methods=["GET"]
+)
+def admin_usuarios_facultad(id_facultad):
+    return admin_controller.usuarios_facultad(id_facultad)
 
 
 @web.route("/admin/semilleros")
@@ -311,6 +345,14 @@ def admin_logros():
 @web.route("/admin/ranking")
 def admin_ranking():
     return admin_controller.mostrar_ranking()
+
+# =====================================================
+# API RANKING ADMINISTRADOR
+# =====================================================
+
+@web.route("/admin/api/ranking", methods=["GET"])
+def admin_api_ranking():
+    return admin_controller.obtener_ranking_admin()
 
 
 @web.route("/admin/reportes")
@@ -1251,6 +1293,11 @@ def docente_api_inicio():
 def docente_api_semillero():
     return docentelider_controller.obtener_semillero()
 
+@web.route( "/docentelider/api/semillero",methods=["PUT"]
+)
+def docente_actualizar_semillero():
+    return docentelider_controller.actualizar_semillero()
+
 @web.route("/docentelider/api/integrantes")
 def docente_api_integrantes():
     return docentelider_controller.obtener_integrantes()
@@ -1399,3 +1446,44 @@ def admin_rechazar_logro(id_logro):
 @web.route("/docentelider/api/logros/<int:id_logro>/calificar", methods=["POST"])
 def docente_calificar_logro(id_logro):
     return docentelider_controller.calificar_logro(id_logro)
+
+
+# =====================================================
+# API PUBLICACIONES DEL ESTUDIANTE
+# =====================================================
+
+@web.route("/estudiante/api/publicaciones")
+def estudiante_api_publicaciones():
+    return estudiante_controller.obtener_publicaciones()
+
+
+@web.route("/estudiante/api/publicaciones", methods=["POST"])
+def estudiante_api_publicar():
+    return estudiante_controller.crear_publicacion()
+
+
+@web.route(
+    "/estudiante/api/publicaciones/<int:id_publicacion>/reaccion",
+    methods=["POST"]
+)
+def estudiante_api_reaccion_publicacion(id_publicacion):
+    return estudiante_controller.reaccionar_publicacion(id_publicacion)
+
+
+@web.route(
+    "/estudiante/api/publicaciones/<int:id_publicacion>/comentarios"
+)
+def estudiante_api_comentarios_publicacion(id_publicacion):
+    return estudiante_controller.obtener_comentarios_publicacion(
+        id_publicacion
+    )
+
+
+@web.route(
+    "/estudiante/api/publicaciones/<int:id_publicacion>/comentarios",
+    methods=["POST"]
+)
+def estudiante_api_crear_comentario_publicacion(id_publicacion):
+    return estudiante_controller.crear_comentario_publicacion(
+        id_publicacion
+    )

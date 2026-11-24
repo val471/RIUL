@@ -181,8 +181,8 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
             await cargarLogrosAdmin(section);
         }
 
-        if (id === "reportes") {
-          cargarHistorialReportes();
+        if (page === "reportes") {
+          await cargarHistorialReportes();
         }
     }); 
 }); 

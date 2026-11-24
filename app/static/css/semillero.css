@@ -3,13 +3,21 @@
    ADAPTACION DOCENTE LIDER
 ===================================== */
 
+
+/* =========================================
+   MI SEMILLERO - DOCENTE LIDER
+========================================= */
+
 .semilleros-pagina {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    color: #15151a;
+    gap: 26px;
+    color: #17233b;
+    font-family: 'Inter', sans-serif;
 }
+
+/* ENCABEZADO */
 
 .semilleros-pagina .pagina-encabezado {
     display: flex;
@@ -17,46 +25,170 @@
     align-items: center;
 }
 
+.semilleros-pagina .pagina-encabezado .eyebrow {
+    color: #c8102e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    margin-bottom: 9px;
+}
+
 .semilleros-pagina .pagina-encabezado h2 {
-    font-size: 26px;
+    font-size: 28px;
+    font-weight: 750;
+    color: #17233b;
     margin: 0 0 8px;
 }
 
 .semilleros-pagina .pagina-encabezado p {
-    color: #6b6f7b;
+    color: #748096;
     font-size: 14px;
+    margin: 0;
 }
+
+/* INDICADORES */
 
 .semilleros-pagina .resumen-semilleros {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
+    gap: 17px;
 }
 
-.semilleros-pagina .seccion-listado-semilleros {
+.semilleros-pagina .tarjeta-resumen-sem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 112px;
     padding: 21px;
     background: #ffffff;
-    border: 1px solid #ececef;
-    border-radius: 12px;
+    border: 1px solid #e9edf3;
+    border-radius: 15px;
+    box-shadow: 0 3px 12px rgba(25, 42, 70, .035);
+    transition: transform .2s, box-shadow .2s;
+    overflow: hidden;
 }
 
-.semilleros-pagina .lista-semilleros {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+.semilleros-pagina .tarjeta-resumen-sem:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(25, 42, 70, .08);
 }
+
+.semilleros-pagina .resumen-icono {
+    width: 47px;
+    height: 47px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fcecef;
+    border-radius: 13px;
+    font-size: 21px;
+}
+
+.semilleros-pagina .tarjeta-resumen-sem:nth-child(2) .resumen-icono {
+    background: #edf3ff;
+}
+
+.semilleros-pagina .tarjeta-resumen-sem:nth-child(3) .resumen-icono {
+    background: #fff5e7;
+}
+
+.semilleros-pagina .tarjeta-resumen-sem:nth-child(4) .resumen-icono {
+    background: #eaf7f0;
+}
+
+.semilleros-pagina .tarjeta-resumen-sem span {
+    display: block;
+    color: #778399;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.semilleros-pagina .tarjeta-resumen-sem h3 {
+    color: #17233b;
+    font-size: 19px;
+    font-weight: 750;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* PANEL DE INFORMACION */
+
+.semilleros-pagina .seccion-listado-semilleros {
+    padding: 27px;
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 16px;
+    box-shadow: 0 3px 14px rgba(25, 42, 70, .035);
+}
+
+.semilleros-pagina .encabezado-listado-sem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.semilleros-pagina .encabezado-listado-sem h3 {
+    color: #17233b;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 7px;
+}
+
+.semilleros-pagina .encabezado-listado-sem p {
+    color: #8490a3;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* BOTON EDITAR */
 
 .semilleros-pagina .btn-crear-sem {
+    min-height: 42px;
+    padding: 0 19px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #c8102e;
+    color: #ffffff;
+    border: none;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+    white-space: nowrap;
 }
 
 .semilleros-pagina .btn-crear-sem:hover {
     background: #a50d26;
+    transform: translateY(-1px);
+}
+
+.semilleros-pagina .btn-crear-sem:focus-visible {
+    outline: 3px solid rgba(200, 16, 46, .2);
+    outline-offset: 3px;
+}
+
+/* DETALLE */
+
+.semilleros-pagina .lista-semilleros {
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
 }
 
 .semilleros-pagina .semillero-detalle-item {
-    padding: 17px 0;
-    border-bottom: 1px solid #ececef;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: 1px solid #edf0f5;
 }
 
 .semilleros-pagina .semillero-detalle-item:last-child {
@@ -64,31 +196,237 @@
 }
 
 .semilleros-pagina .semillero-detalle-item span {
-    display: block;
-    color: #6b6f7b;
+    color: #8994a7;
     font-size: 12px;
-    margin-bottom: 7px;
+    font-weight: 600;
 }
 
-.semilleros-pagina .semillero-detalle-item strong,
-.semilleros-pagina .semillero-detalle-item p {
-    color: #15151a;
+.semilleros-pagina .semillero-detalle-item strong {
+    color: #26344d;
     font-size: 14px;
+    font-weight: 650;
+}
+
+.semilleros-pagina .semillero-detalle-item p {
+    color: #56647a;
+    font-size: 14px;
+    line-height: 1.7;
     margin: 0;
 }
 
-@media (max-width: 1050px) {
+/* ESTADO VACIO */
+
+.semilleros-pagina .estado-vacio-sem {
+    text-align: center;
+    padding: 45px 20px;
+}
+
+.semilleros-pagina .vacio-icono {
+    font-size: 38px;
+    margin-bottom: 14px;
+}
+
+.semilleros-pagina .estado-vacio-sem h3 {
+    color: #26344d;
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.semilleros-pagina .estado-vacio-sem p {
+    color: #8994a7;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ELEMENTOS OCULTOS */
+
+.semilleros-pagina [hidden] {
+    display: none !important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
     .semilleros-pagina .resumen-semilleros {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 650px) {
+    .semilleros-pagina {
+        gap: 19px;
+    }
+
+    .semilleros-pagina .pagina-encabezado h2 {
+        font-size: 23px;
+    }
+
     .semilleros-pagina .resumen-semilleros {
         grid-template-columns: 1fr;
     }
 
     .semilleros-pagina .seccion-listado-semilleros {
-        padding: 15px;
+        padding: 19px;
+    }
+
+    .semilleros-pagina .encabezado-listado-sem {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .semilleros-pagina .btn-crear-sem {
+        width: 100%;
+    }
+}
+/* =========================================
+   MODAL EDITAR SEMILLERO
+========================================= */
+
+.modal-sem-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 25, 43, .58);
+    backdrop-filter: blur(3px);
+}
+
+.modal-sem-caja {
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    background: #fff;
+    border-radius: 17px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+}
+
+.modal-sem-encabezado {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.modal-sem-encabezado span {
+    color: #c8102e;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.2px;
+}
+
+.modal-sem-encabezado h3 {
+    margin: 8px 0;
+    color: #17233b;
+    font-size: 22px;
+}
+
+.modal-sem-encabezado p {
+    margin: 0;
+    color: #788398;
+    font-size: 13px;
+}
+
+.modal-sem-cerrar {
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 9px;
+    background: #f1f3f7;
+    color: #344054;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.modal-sem-caja form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-sem-caja label {
+    margin-top: 9px;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.modal-sem-caja input,
+.modal-sem-caja textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #dce2eb;
+    border-radius: 9px;
+    outline: none;
+    color: #26344d;
+    background: #fff;
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.modal-sem-caja input:focus,
+.modal-sem-caja textarea:focus {
+    border-color: #c8102e;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, .09);
+}
+
+.modal-sem-caja textarea {
+    resize: vertical;
+    min-height: 105px;
+}
+
+.modal-sem-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-sem-acciones button {
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.btn-sem-cancelar {
+    color: #475467;
+    background: #fff;
+    border: 1px solid #dce2eb;
+}
+
+.btn-sem-guardar {
+    color: #fff;
+    background: #c8102e;
+    border: 1px solid #c8102e;
+}
+
+.btn-sem-guardar:hover {
+    background: #a50d26;
+}
+
+.btn-sem-guardar:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 550px) {
+    .modal-sem-caja {
+        padding: 21px;
+    }
+
+    .modal-sem-acciones {
+        flex-direction: column-reverse;
+    }
+
+    .modal-sem-acciones button {
+        width: 100%;
     }
 }

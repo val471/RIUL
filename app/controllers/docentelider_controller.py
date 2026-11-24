@@ -378,6 +378,59 @@ def obtener_semillero():
         "integrantes": s["integrantes"],
         "proyectos": s["proyectos"],
     })
+
+# ==========================================
+# ACTUALIZAR INFORMACION DEL SEMILLERO
+# ==========================================
+
+def actualizar_semillero():
+    id_semillero = _obtener_semillero_del_docente()
+
+    if not id_semillero:
+        return jsonify({
+            "mensaje": "No tienes un semillero asignado."
+        }), 404
+
+    datos = request.get_json(silent=True) or {}
+
+    nombre = (datos.get("nombre") or "").strip()
+    linea = (datos.get("linea") or "").strip()
+    descripcion = (datos.get("descripcion") or "").strip()
+
+    if not nombre or not linea or not descripcion:
+        return jsonify({
+            "mensaje": "Completa todos los campos."
+        }), 400
+
+    try:
+        db.session.execute(text("""
+            UPDATE semillero
+            SET nombre = :nombre,
+                linea_investigacion = :linea,
+                descripcion = :descripcion,
+                fecha_actualizacion = NOW()
+            WHERE id_semillero = :id
+        """), {
+            "nombre": nombre,
+            "linea": linea,
+            "descripcion": descripcion,
+            "id": id_semillero
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "La información del semillero fue actualizada."
+        }), 200
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL ACTUALIZAR SEMILLERO:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible actualizar la información."
+        }), 500
 def obtener_resumen_inicio():
     id_semillero = _obtener_semillero_del_docente()
 

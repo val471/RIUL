@@ -307,3 +307,7 @@
         flex-direction: column;
     }
 }
+/* Ocultar mensajes de estado de solicitudes rechazadas */
+.perfil-estado {
+    display: none !important;
+}

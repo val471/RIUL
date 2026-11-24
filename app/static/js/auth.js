@@ -89,46 +89,49 @@ document.addEventListener("DOMContentLoaded", function () {
     const programaRegistro = document.getElementById("programa");
     const campoPrograma = document.getElementById("campoPrograma");
 
-    // ========================================
-    // FILTRAR PROGRAMAS POR FACULTAD
-    // ========================================
+  // ========================================
+// FILTRAR PROGRAMAS POR FACULTAD
+// ========================================
 
-    function actualizarProgramas() {
+function actualizarProgramas() {
+    if (!programaRegistro || !facultadRegistro) return;
 
-        if (!programaRegistro || !facultadRegistro) return;
+    const idFacultad = facultadRegistro.value;
 
-        const idFacultad = facultadRegistro.value;
+    Array.from(programaRegistro.options).forEach(opcion => {
+        if (!opcion.value) return;
 
-        Array.from(programaRegistro.options).forEach(opcion => {
+        const pertenece = opcion.dataset.facultad === idFacultad;
 
-            if (!opcion.value) return;
+        opcion.hidden = !pertenece;
+        opcion.disabled = !pertenece;
+    });
 
-            opcion.hidden = opcion.dataset.facultad !== idFacultad;
+    programaRegistro.value = "";
+}
 
-        });
+// ========================================
+// MOSTRAR PROGRAMA SOLO PARA ESTUDIANTES
+// ========================================
 
-        programaRegistro.value = "";
-    }
-
-    // ========================================
-    // MOSTRAR PROGRAMA SOLO PARA ESTUDIANTES
-    // ========================================
-
-    rolRegistro?.addEventListener("change", function () {
-
-        const necesitaPrograma =
-        rolRegistro.value === "ESTUDIANTE" ||
-        rolRegistro.value === "DOCENTE_LIDER";
+function actualizarCamposRegistro() {
+    const esEstudiante = rolRegistro.value === "ESTUDIANTE";
 
     if (campoPrograma) {
-        campoPrograma.hidden = !necesitaPrograma;
+        campoPrograma.hidden = !esEstudiante;
     }
 
     if (programaRegistro) {
-        programaRegistro.required = necesitaPrograma;
+        programaRegistro.required = esEstudiante;
     }
-    });
+}
 
+ rolRegistro?.addEventListener("change", actualizarCamposRegistro);
+ facultadRegistro?.addEventListener("change", actualizarProgramas);
+
+  // Ejecutar al cargar el formulario
+  actualizarCamposRegistro();
+  actualizarProgramas();
     // ========================================
     // ACTUALIZAR PROGRAMAS AL CAMBIAR FACULTAD
     // ========================================

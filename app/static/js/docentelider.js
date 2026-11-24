@@ -863,12 +863,8 @@ document.addEventListener("DOMContentLoaded", () => {
         semillerosConfigurados = true;
 
         btnEditar?.addEventListener("click", () => {
-
-            document.dispatchEvent(
-                new CustomEvent("editarInformacionSemillero")
-            );
-
-        });
+            abrirModalEdicionSemillero(contenedor, estadoVacio, detalleSemillero);
+      });
 
         await cargarMiSemillero(contenedor, estadoVacio, detalleSemillero);
     }
@@ -916,6 +912,160 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error al cargar mi semillero:", error);
         }
     }
+
+
+
+    // ========================================
+// MODAL PARA EDITAR MI SEMILLERO
+// ========================================
+
+async function abrirModalEdicionSemillero(contenedor, estadoVacio, detalle) {
+
+    try {
+        const respuesta = await fetch("/docentelider/api/semillero");
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudo consultar el semillero.");
+        }
+
+        const semillero = await respuesta.json();
+
+        if (!semillero.asignado) {
+            await mostrarAviso("No tienes un semillero asignado.", "error");
+            return;
+        }
+
+        const anterior = document.getElementById("modalEditarSemillero");
+        anterior?.remove();
+
+        const modal = document.createElement("div");
+        modal.id = "modalEditarSemillero";
+        modal.className = "modal-sem-overlay";
+
+        const escapar = (valor) => String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+        modal.innerHTML = `
+            <div class="modal-sem-caja" role="dialog" aria-modal="true">
+                <div class="modal-sem-encabezado">
+                    <div>
+                        <span>GESTION DE INVESTIGACION</span>
+                        <h3>Editar información</h3>
+                        <p>Actualiza los datos generales de tu semillero.</p>
+                    </div>
+                    <button type="button" class="modal-sem-cerrar"
+                            id="cerrarModalSemillero" aria-label="Cerrar">
+                        &times;
+                    </button>
+                </div>
+
+                <form id="formEditarSemillero">
+                    <label for="editarNombreSemillero">Nombre del semillero</label>
+                    <input
+                        type="text"
+                        id="editarNombreSemillero"
+                        maxlength="100"
+                        required
+                        value="${escapar(semillero.nombre)}"
+                    >
+
+                    <label for="editarLineaSemillero">Línea de investigación</label>
+                    <input
+                        type="text"
+                        id="editarLineaSemillero"
+                        required
+                        value="${escapar(semillero.linea)}"
+                    >
+
+                    <label for="editarDescripcionSemillero">Descripción</label>
+                    <textarea
+                        id="editarDescripcionSemillero"
+                        rows="4"
+                        required
+                    >${escapar(semillero.descripcion)}</textarea>
+
+                    <div class="modal-sem-acciones">
+                        <button type="button" class="btn-sem-cancelar"
+                                id="cancelarEdicionSemillero">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-sem-guardar"
+                                id="guardarEdicionSemillero">
+                            Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const cerrar = () => modal.remove();
+
+        modal.querySelector("#cerrarModalSemillero")
+            .addEventListener("click", cerrar);
+
+        modal.querySelector("#cancelarEdicionSemillero")
+            .addEventListener("click", cerrar);
+
+        modal.addEventListener("click", (evento) => {
+            if (evento.target === modal) cerrar();
+        });
+
+        modal.querySelector("#formEditarSemillero")
+            .addEventListener("submit", async (evento) => {
+
+                evento.preventDefault();
+
+                const boton = modal.querySelector("#guardarEdicionSemillero");
+                boton.disabled = true;
+                boton.textContent = "Guardando...";
+
+                const datos = {
+                    nombre: modal.querySelector("#editarNombreSemillero").value.trim(),
+                    linea: modal.querySelector("#editarLineaSemillero").value.trim(),
+                    descripcion: modal.querySelector("#editarDescripcionSemillero").value.trim()
+                };
+
+                try {
+                    const respuestaGuardar = await fetch(
+                        "/docentelider/api/semillero",
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(datos)
+                        }
+                    );
+
+                    const resultado = await respuestaGuardar.json();
+
+                    if (!respuestaGuardar.ok) {
+                        throw new Error(resultado.mensaje || "No se pudieron guardar los cambios.");
+                    }
+
+                    cerrar();
+
+                    await cargarMiSemillero(contenedor, estadoVacio, detalle);
+                    await mostrarAviso(resultado.mensaje, "exito");
+
+                } catch (error) {
+                    await mostrarAviso(error.message, "error");
+                    boton.disabled = false;
+                    boton.textContent = "Guardar cambios";
+                }
+            });
+
+    } catch (error) {
+        console.error("Error al abrir edicion del semillero:", error);
+        await mostrarAviso(error.message, "error");
+    }
+}
 
 
 

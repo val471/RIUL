@@ -1004,3 +1004,414 @@ def solicitar_cambio_foto():
         return jsonify({
             "mensaje": "No fue posible enviar la solicitud."
         }), 500
+
+
+# =====================================================
+# PUBLICACIONES GENERALES DEL ESTUDIANTE
+# =====================================================
+
+def obtener_publicaciones():
+    yo = session.get("id_usuario")
+
+    filas = db.session.execute(text("""
+        SELECT
+            p.id_publicacion,
+            p.id_usuario,
+            p.contenido,
+            p.tipo_publicacion,
+            p.vistas,
+            p.fecha_publicacion,
+            u.nombre_institucional AS autor,
+            u.rol AS rol_autor,
+            s.nombre AS semillero,
+
+            (
+                SELECT COUNT(*)
+                FROM comentario c
+                WHERE c.id_publicacion = p.id_publicacion
+            ) AS comentarios,
+
+            (
+                SELECT COUNT(*)
+                FROM reaccion r
+                WHERE r.id_publicacion = p.id_publicacion
+            ) AS reacciones,
+
+            EXISTS (
+                SELECT 1
+                FROM reaccion r2
+                WHERE r2.id_publicacion = p.id_publicacion
+                  AND r2.id_usuario = :yo
+            ) AS yo_reaccione
+
+        FROM publicacion p
+        INNER JOIN usuario u
+            ON u.id_usuario = p.id_usuario
+        LEFT JOIN semillero s
+            ON s.id_semillero = p.id_semillero
+
+        ORDER BY p.fecha_publicacion DESC, p.id_publicacion DESC
+        LIMIT 100
+    """), {"yo": yo}).mappings().all()
+
+    archivos = {}
+    ids = [f["id_publicacion"] for f in filas]
+
+    if ids:
+        marcadores = ", ".join(
+            f":p{i}" for i in range(len(ids))
+        )
+        parametros = {
+            f"p{i}": valor
+            for i, valor in enumerate(ids)
+        }
+
+        filas_archivo = db.session.execute(text(f"""
+            SELECT
+                id_publicacion,
+                nombre_original,
+                ruta,
+                tipo_archivo
+            FROM archivo
+            WHERE id_publicacion IN ({marcadores})
+            ORDER BY id_archivo ASC
+        """), parametros).mappings().all()
+
+        for archivo in filas_archivo:
+            archivos.setdefault(archivo["id_publicacion"], {
+                "nombre": archivo["nombre_original"],
+                "ruta": archivo["ruta"],
+                "tipo": archivo["tipo_archivo"]
+            })
+
+    total = db.session.execute(text("""
+        SELECT COUNT(*) FROM publicacion
+    """)).scalar() or 0
+
+    academicas = db.session.execute(text("""
+        SELECT COUNT(*)
+        FROM publicacion
+        WHERE tipo_publicacion = 'ACADEMICA'
+    """)).scalar() or 0
+
+    return jsonify({
+        "total": total,
+        "academicas": academicas,
+        "publicaciones": [{
+            "id": f["id_publicacion"],
+            "autor": f["autor"],
+            "rol": f["rol_autor"],
+            "semillero": f["semillero"] or "",
+            "contenido": f["contenido"],
+            "academica": f["tipo_publicacion"] == "ACADEMICA",
+            "vistas": f["vistas"],
+            "fecha": (
+                f["fecha_publicacion"].strftime("%d/%m/%Y %H:%M")
+                if f["fecha_publicacion"] else ""
+            ),
+            "propia": f["id_usuario"] == yo,
+            "comentarios": f["comentarios"],
+            "reacciones": f["reacciones"],
+            "yo_reaccione": bool(f["yo_reaccione"]),
+            "archivo": archivos.get(f["id_publicacion"])
+        } for f in filas]
+    })
+
+
+def crear_publicacion():
+    id_usuario = session.get("id_usuario")
+
+    contenido = (request.form.get("contenido") or "").strip()
+    academica = (
+        request.form.get("academica") or ""
+    ).lower() in {"true", "1", "on"}
+
+    archivo = request.files.get("archivo")
+
+    if not contenido:
+        return jsonify({
+            "mensaje": "Escribe algo para publicar."
+        }), 400
+
+    if len(contenido) > 3000:
+        return jsonify({
+            "mensaje": "La publicación no puede superar 3000 caracteres."
+        }), 400
+
+    extension = ""
+    peso = 0
+
+    if archivo and archivo.filename:
+        if "." in archivo.filename:
+            extension = archivo.filename.rsplit(".", 1)[-1].lower()
+
+        if extension not in {"pdf", "png", "jpg", "jpeg", "webp"}:
+            return jsonify({
+                "mensaje": "Formato no permitido. Usa PDF, PNG, JPG o WEBP."
+            }), 400
+
+        archivo.seek(0, os.SEEK_END)
+        peso = archivo.tell()
+        archivo.seek(0)
+
+        if peso > 5 * 1024 * 1024:
+            return jsonify({
+                "mensaje": "El archivo no debe superar 5 MB."
+            }), 400
+
+    ruta_disco = None
+
+    try:
+        id_semillero = db.session.execute(text("""
+            SELECT id_semillero
+            FROM estudianteinvestigador
+            WHERE id_usuario = :usuario
+        """), {"usuario": id_usuario}).scalar()
+
+        resultado = db.session.execute(text("""
+            INSERT INTO publicacion (
+                id_usuario,
+                id_semillero,
+                contenido,
+                tipo_publicacion,
+                vistas,
+                fecha_publicacion,
+                fecha_actualizacion
+            )
+            VALUES (
+                :usuario,
+                :semillero,
+                :contenido,
+                :tipo,
+                0,
+                NOW(),
+                NOW()
+            )
+        """), {
+            "usuario": id_usuario,
+            "semillero": id_semillero,
+            "contenido": contenido,
+            "tipo": "ACADEMICA" if academica else "GENERAL"
+        })
+
+        id_publicacion = resultado.lastrowid
+
+        if archivo and archivo.filename:
+            carpeta = os.path.join(
+                current_app.static_folder,
+                "uploads",
+                "publicaciones"
+            )
+            os.makedirs(carpeta, exist_ok=True)
+
+            nombre_seguro = secure_filename(archivo.filename)
+            nombre_final = (
+                f"pub_{id_publicacion}_{int(time.time())}.{extension}"
+            )
+
+            ruta_disco = os.path.join(carpeta, nombre_final)
+            archivo.save(ruta_disco)
+
+            db.session.execute(text("""
+                INSERT INTO archivo (
+                    id_usuario,
+                    id_publicacion,
+                    nombre_original,
+                    ruta,
+                    tipo_archivo,
+                    peso_archivo,
+                    fecha_carga,
+                    fecha_actualizacion
+                )
+                VALUES (
+                    :usuario,
+                    :publicacion,
+                    :nombre,
+                    :ruta,
+                    :tipo,
+                    :peso,
+                    NOW(),
+                    NOW()
+                )
+            """), {
+                "usuario": id_usuario,
+                "publicacion": id_publicacion,
+                "nombre": nombre_seguro[:150],
+                "ruta": f"/static/uploads/publicaciones/{nombre_final}",
+                "tipo": extension,
+                "peso": peso
+            })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Publicación creada correctamente.",
+            "id": id_publicacion
+        }), 201
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR PUBLICACION ESTUDIANTE:", repr(error))
+
+        if ruta_disco and os.path.exists(ruta_disco):
+            os.remove(ruta_disco)
+
+        return jsonify({
+            "mensaje": "No fue posible guardar la publicación."
+        }), 500
+
+
+def reaccionar_publicacion(id_publicacion):
+    yo = session.get("id_usuario")
+
+    try:
+        existe = db.session.execute(text("""
+            SELECT 1
+            FROM publicacion
+            WHERE id_publicacion = :id
+        """), {"id": id_publicacion}).first()
+
+        if not existe:
+            return jsonify({
+                "mensaje": "La publicación no existe."
+            }), 404
+
+        reaccion = db.session.execute(text("""
+            SELECT id_reaccion
+            FROM reaccion
+            WHERE id_publicacion = :publicacion
+              AND id_usuario = :usuario
+        """), {
+            "publicacion": id_publicacion,
+            "usuario": yo
+        }).first()
+
+        if reaccion:
+            db.session.execute(text("""
+                DELETE FROM reaccion
+                WHERE id_publicacion = :publicacion
+                  AND id_usuario = :usuario
+            """), {
+                "publicacion": id_publicacion,
+                "usuario": yo
+            })
+        else:
+            db.session.execute(text("""
+                INSERT INTO reaccion (
+                    id_publicacion,
+                    id_usuario,
+                    fecha
+                )
+                VALUES (:publicacion, :usuario, NOW())
+            """), {
+                "publicacion": id_publicacion,
+                "usuario": yo
+            })
+
+        db.session.commit()
+
+        total = db.session.execute(text("""
+            SELECT COUNT(*)
+            FROM reaccion
+            WHERE id_publicacion = :id
+        """), {"id": id_publicacion}).scalar() or 0
+
+        return jsonify({
+            "reaccionado": not bool(reaccion),
+            "total": total
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR REACCION PUBLICACION:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible registrar la reacción."
+        }), 500
+
+
+def obtener_comentarios_publicacion(id_publicacion):
+    filas = db.session.execute(text("""
+        SELECT
+            c.id_comentario,
+            c.contenido,
+            c.fecha,
+            u.nombre_institucional AS autor
+        FROM comentario c
+        INNER JOIN usuario u
+            ON u.id_usuario = c.id_usuario
+        WHERE c.id_publicacion = :id
+        ORDER BY c.fecha ASC, c.id_comentario ASC
+    """), {"id": id_publicacion}).mappings().all()
+
+    return jsonify([{
+        "id": f["id_comentario"],
+        "autor": f["autor"],
+        "contenido": f["contenido"],
+        "fecha": (
+            f["fecha"].strftime("%d/%m/%Y %H:%M")
+            if f["fecha"] else ""
+        )
+    } for f in filas])
+
+
+def crear_comentario_publicacion(id_publicacion):
+    datos = request.get_json(silent=True) or {}
+    contenido = (datos.get("contenido") or "").strip()
+
+    if not contenido:
+        return jsonify({
+            "mensaje": "Escribe un comentario."
+        }), 400
+
+    if len(contenido) > 1000:
+        return jsonify({
+            "mensaje": "El comentario no puede superar 1000 caracteres."
+        }), 400
+
+    try:
+        existe = db.session.execute(text("""
+            SELECT 1
+            FROM publicacion
+            WHERE id_publicacion = :id
+        """), {"id": id_publicacion}).first()
+
+        if not existe:
+            return jsonify({
+                "mensaje": "La publicación no existe."
+            }), 404
+
+        db.session.execute(text("""
+            INSERT INTO comentario (
+                id_publicacion,
+                id_usuario,
+                contenido,
+                fecha,
+                fecha_actualizacion
+            )
+            VALUES (
+                :publicacion,
+                :usuario,
+                :contenido,
+                NOW(),
+                NOW()
+            )
+        """), {
+            "publicacion": id_publicacion,
+            "usuario": session.get("id_usuario"),
+            "contenido": contenido
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Comentario publicado."
+        }), 201
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR COMENTARIO PUBLICACION:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible guardar el comentario."
+        }), 500

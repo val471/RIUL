@@ -9,6 +9,7 @@ from flask import send_file
 from reportlab.pdfgen import canvas
 from io import BytesIO
 from openpyxl import Workbook
+from decimal import Decimal
 
 def _contar(sql):
     """Ejecuta un COUNT y devuelve 0 si la consulta falla."""
@@ -1655,6 +1656,18 @@ def obtener_resumen_reportes():
         return jsonify({
             "mensaje": "No fue posible generar el reporte."
         }), 500
+
+# Convertir valores Decimal para poder guardarlos como JSON
+def convertir_valor_json(valor):
+    if isinstance(valor, Decimal):
+        if valor == valor.to_integral_value():
+            return int(valor)
+        return float(valor)
+
+    raise TypeError(
+        f"Tipo de dato no serializable: {type(valor).__name__}"
+    )
+
 def guardar_reporte():
     try:
         datos = obtener_datos_resumen_reportes()
@@ -1688,7 +1701,7 @@ def guardar_reporte():
             "admin": id_admin,
             "nombre": nombre,
             "periodo": periodo,
-            "contenido": json.dumps(datos, ensure_ascii=False)
+            "contenido": json.dumps(datos, ensure_ascii=False,  default=convertir_valor_json)
         })
 
         db.session.commit()

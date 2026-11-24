@@ -1124,129 +1124,6 @@ document.addEventListener("input", e => {
     }
 });
 
-
-// ---------- PUBLICACIONES ----------
-const pubs = [
-    {
-        a: "Dra. Laura Gómez", i: "LG",
-        m: "Hace 2 horas · Publicación académica · 5 XP",
-        x: "Nuestro semillero presentó avances del proyecto de analítica educativa. Gracias a todo el equipo por su trabajo riguroso.",
-        f: "memorias_congreso.pdf", r: 34, c: 8, v: 186, like: false, mia: false
-    },
-    {
-        a: "Andrés Martínez", i: "AM",
-        m: "Ayer · Publicación académica",
-        x: "Terminé la revisión de literatura de mi proyecto. Comparto el resumen para recibir comentarios.",
-        f: "", r: 12, c: 3, v: 74, like: false, mia: true
-    }
-];
-
-function pintarPubs() {
-    const buscador = document.getElementById("buscarPub");
-    const lista = document.getElementById("listaPubs");
-
-    if (!buscador || !lista) return;
-
-    const q = buscador.value.trim().toLowerCase();
-
-    const resultados = pubs.map((p, i) => ({ p, i }))
-        .filter(({ p }) => (p.a + " " + p.x).toLowerCase().includes(q));
-
-    lista.innerHTML = resultados.length
-        ? resultados.map(({ p, i }) =>
-            '<article class="tarjeta pub">' +
-            '<div class="pub-cab"><span class="pub-avatar">' + p.i + '</span>' +
-            '<div><b>' + esc(p.a) + '</b><small>' + esc(p.m) + '</small></div>' +
-            (p.mia
-                ? '<div class="acc"><button class="link-accion" data-accion="editar" data-i="' + i + '">Editar</button>' +
-                  '<button class="link-accion" data-accion="eliminar" data-i="' + i + '">Eliminar</button></div>'
-                : '') +
-            '</div><p class="pub-texto">' + esc(p.x) + '</p>' +
-            (p.f ? '<div class="pub-archivo">' + svg("book") + '<span>' + esc(p.f) + '</span></div>' : '') +
-            '<div class="pub-stats"><span>' + p.r + ' reacciones · ' + p.c + ' comentarios</span>' +
-            '<span class="vistas">' + svg("eye") + p.v + ' vistas</span></div>' +
-            '<div class="pub-botones">' +
-            '<button type="button" class="' + (p.like ? 'activo' : '') + '" data-accion="like" data-i="' + i + '">' + svg("heart") + 'Me gusta</button>' +
-            '<button type="button" data-accion="comentar" data-i="' + i + '">' + svg("chat") + 'Comentar</button>' +
-            '<button type="button" data-accion="compartir" data-i="' + i + '">' + svg("share") + 'Compartir</button>' +
-            '</div></article>'
-        ).join("")
-        : '<p class="vacio">No se encontraron publicaciones.</p>';
-}
-
-function inicializarPublicaciones() {
-    const buscador = document.getElementById("buscarPub");
-    const lista = document.getElementById("listaPubs");
-    const btnPublicar = document.getElementById("btnPublicar");
-    const formPub = document.getElementById("formPub");
-
-    if (!lista) return;
-
-    pintarPubs();
-
-    if (buscador) {
-        buscador.addEventListener("input", pintarPubs);
-    }
-
-    lista.addEventListener("click", e => {
-        const b = e.target.closest("[data-accion]");
-        if (!b) return;
-
-        const i = Number(b.dataset.i);
-        const p = pubs[i];
-        if (!p) return;
-
-        const ac = b.dataset.accion;
-
-        if (ac === "like") {
-            p.like = !p.like;
-            p.r += p.like ? 1 : -1;
-        } else if (ac === "comentar") {
-            const t = prompt("Escribe tu comentario:");
-            if (t && t.trim()) p.c++;
-        } else if (ac === "compartir") {
-            navigator.clipboard?.writeText(location.href + "#publicaciones");
-            alert("Enlace copiado.");
-        } else if (ac === "editar") {
-            const t = prompt("Editar publicación:", p.x);
-            if (t && t.trim()) p.x = t.trim();
-        } else if (ac === "eliminar") {
-            if (confirm("¿Eliminar esta publicación?")) pubs.splice(i, 1);
-        }
-
-        pintarPubs();
-    });
-
-    if (btnPublicar && formPub) {
-        btnPublicar.addEventListener("click", () => {
-            formPub.hidden = !formPub.hidden;
-        });
-
-        formPub.addEventListener("submit", e => {
-            e.preventDefault();
-
-            const texto = document.getElementById("pubTexto");
-            const archivo = document.getElementById("pubArchivo");
-            const arch = archivo.files[0];
-
-            if (!texto.value.trim()) return;
-
-            pubs.unshift({
-                a: "Andrés Martínez",
-                i: "AM",
-                m: "Hace un momento · Publicación académica",
-                x: texto.value.trim(),
-                f: arch ? arch.name : "",
-                r: 0, c: 0, v: 0, like: false, mia: true
-            });
-
-            e.target.reset();
-            e.target.hidden = true;
-            pintarPubs();
-        });
-    }
-
-
  // ---------- NOTIFICACIONES ----------//
 function inicializarNotificaciones() {
     
@@ -1275,7 +1152,348 @@ function inicializarNotificaciones() {
 
     actualizarContador();
 }
+
+
+/* =========================================
+   PUBLICACIONES GENERALES RIUL
+========================================= */
+
+let publicacionesEstudiante = [];
+
+async function cargarPublicacionesEstudiante() {
+    const lista = document.getElementById("listaPubs");
+    const buscador = document.getElementById("buscarPub");
+
+    if (!lista) return;
+
+    lista.innerHTML = '<p class="vacio">Cargando publicaciones...</p>';
+
+    try {
+        const respuesta = await fetch("/estudiante/api/publicaciones");
+
+        if (!respuesta.ok) {
+            throw new Error("No fue posible consultar las publicaciones.");
+        }
+
+        const datos = await respuesta.json();
+
+        publicacionesEstudiante = datos.publicaciones || [];
+
+        const total = document.getElementById("totalPublicaciones");
+        const academicas = document.getElementById("totalAcademicas");
+
+        if (total) total.textContent = datos.total || 0;
+        if (academicas) academicas.textContent = datos.academicas || 0;
+
+        pintarPublicacionesEstudiante();
+
+    } catch (error) {
+        console.error("Error al cargar publicaciones:", error);
+        lista.innerHTML =
+            '<p class="vacio">No fue posible cargar las publicaciones.</p>';
+    }
 }
+
+function pintarPublicacionesEstudiante() {
+    const lista = document.getElementById("listaPubs");
+    const buscador = document.getElementById("buscarPub");
+
+    if (!lista) return;
+
+    const busqueda = (buscador?.value || "").trim().toLowerCase();
+
+    const resultados = publicacionesEstudiante.filter(p => {
+        return (
+            (p.autor || "").toLowerCase().includes(busqueda) ||
+            (p.contenido || "").toLowerCase().includes(busqueda) ||
+            (p.semillerо || "").toLowerCase().includes(busqueda)
+        );
+    });
+
+    if (!resultados.length) {
+        lista.innerHTML =
+            '<p class="vacio">Todavía no hay publicaciones disponibles.</p>';
+        return;
+    }
+
+    lista.innerHTML = resultados.map(p => {
+        const iniciales = (p.autor || "Usuario")
+            .split(" ")
+            .slice(0, 2)
+            .map(nombre => nombre.charAt(0))
+            .join("")
+            .toUpperCase();
+
+        const archivo = p.archivo
+            ? `<a class="pub-archivo" href="${esc(p.archivo.ruta)}" target="_blank" rel="noopener">
+                    ${esc(p.archivo.nombre)}
+               </a>`
+            : "";
+
+        return `
+            <article class="tarjeta pub" data-publicacion="${p.id}">
+
+                <div class="pub-cab">
+                    <span class="pub-avatar">${esc(iniciales)}</span>
+
+                    <div class="pub-autor">
+                        <b>${esc(p.autor)}</b>
+                        <small>${esc(p.rol || "Usuario")} · ${esc(p.fecha)}</small>
+                        ${p.semillero
+                            ? `<small>Semillero: ${esc(p.semillero)}</small>`
+                            : ""}
+                    </div>
+                </div>
+
+                ${p.academica
+                    ? '<span class="pub-etiqueta-academica">Publicación académica</span>'
+                    : ""}
+
+                <p class="pub-texto">${esc(p.contenido)}</p>
+
+                ${archivo}
+
+                <div class="pub-stats">
+                    <span>${p.reacciones} reacciones · ${p.comentarios} comentarios</span>
+                </div>
+
+                <div class="pub-botones">
+                    <button
+                        type="button"
+                        data-accion="like"
+                        data-id="${p.id}"
+                        class="${p.yo_reaccione ? "activo" : ""}">
+                        ${svg("heart")} Me gusta
+                    </button>
+
+                    <button
+                        type="button"
+                        data-accion="comentar"
+                        data-id="${p.id}">
+                        ${svg("chat")} Comentar
+                    </button>
+                </div>
+
+                <div class="pub-comentarios" id="comentarios-${p.id}" hidden></div>
+
+            </article>
+        `;
+    }).join("");
+}
+
+function inicializarPublicaciones() {
+    const buscador = document.getElementById("buscarPub");
+    const lista = document.getElementById("listaPubs");
+    const btnPublicar = document.getElementById("btnPublicar");
+    const formPub = document.getElementById("formPub");
+
+    if (!lista || lista.dataset.inicializado === "true") return;
+
+    lista.dataset.inicializado = "true";
+
+    cargarPublicacionesEstudiante();
+
+    buscador?.addEventListener("input", pintarPublicacionesEstudiante);
+
+    btnPublicar?.addEventListener("click", () => {
+        if (formPub) {
+            formPub.hidden = !formPub.hidden;
+        }
+    });
+
+    formPub?.addEventListener("submit", async evento => {
+        evento.preventDefault();
+
+        const texto = document.getElementById("pubTexto");
+        const archivo = document.getElementById("pubArchivo");
+
+        if (!texto.value.trim()) return;
+
+        const datos = new FormData();
+        datos.append("contenido", texto.value.trim());
+
+        if (archivo.files.length) {
+            datos.append("archivo", archivo.files[0]);
+        }
+
+        const boton = formPub.querySelector('[type="submit"]');
+        boton.disabled = true;
+        boton.textContent = "Publicando...";
+
+        try {
+            const respuesta = await fetch("/estudiante/api/publicaciones", {
+                method: "POST",
+                body: datos
+            });
+
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(resultado.mensaje || "No se pudo publicar.");
+            }
+
+            formPub.reset();
+            formPub.hidden = true;
+
+            await cargarPublicacionesEstudiante();
+            mostrarMensajePublicaciones(resultado.mensaje, "exito");
+
+        } catch (error) {
+            mostrarMensajePublicaciones(error.message, "error");
+        } finally {
+            boton.disabled = false;
+            boton.textContent = "Publicar contenido";
+        }
+    });
+
+    lista.addEventListener("click", async evento => {
+        const boton = evento.target.closest("[data-accion]");
+        if (!boton) return;
+
+        const id = boton.dataset.id;
+        const accion = boton.dataset.accion;
+
+        if (accion === "like") {
+            boton.disabled = true;
+
+            try {
+                const respuesta = await fetch(
+                    `/estudiante/api/publicaciones/${id}/reaccion`,
+                    { method: "POST" }
+                );
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(resultado.mensaje);
+                }
+
+                await cargarPublicacionesEstudiante();
+
+            } catch (error) {
+                mostrarMensajePublicaciones(error.message, "error");
+            } finally {
+                boton.disabled = false;
+            }
+        }
+
+        if (accion === "comentar") {
+            await cargarComentariosEstudiante(id);
+        }
+    });
+}
+
+async function cargarComentariosEstudiante(id) {
+    const contenedor = document.getElementById(`comentarios-${id}`);
+
+    if (!contenedor) return;
+
+    if (!contenedor.hidden) {
+        contenedor.hidden = true;
+        return;
+    }
+
+    contenedor.hidden = false;
+    contenedor.innerHTML = '<p>Cargando comentarios...</p>';
+
+    try {
+        const respuesta = await fetch(
+            `/estudiante/api/publicaciones/${id}/comentarios`
+        );
+
+        if (!respuesta.ok) {
+            throw new Error("No fue posible cargar los comentarios.");
+        }
+
+        const comentarios = await respuesta.json();
+
+        contenedor.innerHTML = `
+            <div class="pub-comentarios-lista">
+                ${comentarios.length
+                    ? comentarios.map(c => `
+                        <div class="pub-comentario">
+                            <b>${esc(c.autor)}</b>
+                            <p>${esc(c.contenido)}</p>
+                            <small>${esc(c.fecha)}</small>
+                        </div>
+                    `).join("")
+                    : "<p>Sé el primero en comentar.</p>"
+                }
+            </div>
+
+            <form class="form-comentario" data-id="${id}">
+                <input
+                    type="text"
+                    name="contenido"
+                    maxlength="1000"
+                    placeholder="Escribe un comentario..."
+                    required
+                >
+                <button type="submit">Enviar</button>
+            </form>
+        `;
+
+        contenedor.querySelector("form").addEventListener("submit", async e => {
+            e.preventDefault();
+
+            const input = e.target.elements.contenido;
+            const contenido = input.value.trim();
+
+            if (!contenido) return;
+
+            try {
+                const respuesta = await fetch(
+                    `/estudiante/api/publicaciones/${id}/comentarios`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ contenido })
+                    }
+                );
+
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    throw new Error(resultado.mensaje);
+                }
+
+                await cargarComentariosEstudiante(id);
+                contenedor.hidden = false;
+                await cargarPublicacionesEstudiante();
+
+                mostrarMensajePublicaciones(resultado.mensaje, "exito");
+
+            } catch (error) {
+                mostrarMensajePublicaciones(error.message, "error");
+            }
+        });
+
+    } catch (error) {
+        contenedor.innerHTML =
+            `<p>${esc(error.message)}</p>`;
+    }
+}
+
+function mostrarMensajePublicaciones(mensaje, tipo) {
+    let elemento = document.getElementById("mensajePublicaciones");
+
+    if (!elemento) {
+        elemento = document.createElement("p");
+        elemento.id = "mensajePublicaciones";
+
+        const contenido = document.getElementById("contenido-publicaciones");
+        contenido?.prepend(elemento);
+    }
+
+    if (!elemento) return;
+
+    elemento.className = `mensaje-publicaciones ${tipo}`;
+    elemento.textContent = mensaje;
+    elemento.hidden = false;
+}
+
 // ==============================
 // PANEL DE NOTIFICACIONES
 // ==============================
