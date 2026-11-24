@@ -1329,3 +1329,209 @@ def cambiar_estado_semillero(id_semillero):
         db.session.rollback()
         print("ERROR AL CAMBIAR ESTADO DE SEMILLERO:", repr(error))
         return jsonify({"mensaje": "No fue posible cambiar el estado."}), 500
+CONDICION_LOGROS_ADMIN = """
+    (l.estado = 'EN_VALIDACION'
+     OR (l.estado = 'PENDIENTE'
+         AND NOT EXISTS (
+             SELECT 1 FROM membresiasemillero mm
+             WHERE mm.id_estudiante = l.id_estudiante
+               AND mm.fecha_salida IS NULL)))
+"""
+
+
+def obtener_logros_validacion():
+    filas = db.session.execute(text(f"""
+        SELECT
+            l.id_logro,
+            l.titulo,
+            l.descripcion,
+            l.estado,
+            l.fecha_registro,
+            l.porcentaje_calidad,
+            u.nombre_institucional AS estudiante,
+            tl.nombre AS tipo,
+            tl.xp_otorgado,
+            s.nombre AS semillero
+        FROM logro l
+        INNER JOIN usuario u
+            ON u.id_usuario = l.id_estudiante
+        LEFT JOIN tipologro tl
+            ON tl.id_tipo_logro = l.id_tipo_logro
+        LEFT JOIN membresiasemillero m
+            ON m.id_estudiante = l.id_estudiante
+           AND m.fecha_salida IS NULL
+        LEFT JOIN semillero s
+            ON s.id_semillero = m.id_semillero
+        WHERE {CONDICION_LOGROS_ADMIN}
+        ORDER BY l.fecha_registro
+    """)).mappings().all()
+
+    respuesta = []
+
+    for f in filas:
+        base = f["xp_otorgado"] or 0
+        calidad = f["porcentaje_calidad"] or 100
+
+        respuesta.append({
+            "id": f["id_logro"],
+            "estudiante": f["estudiante"],
+            "titulo": f["titulo"] or f["tipo"] or "Logro",
+            "descripcion": f["descripcion"] or "",
+            "tipo": f["tipo"] or "—",
+            "semillero": f["semillero"] or "Sin semillero",
+            "fecha": f["fecha_registro"].strftime("%d/%m/%Y"),
+            "estado": f["estado"],
+            "xp_base": base,
+            "calidad": f["porcentaje_calidad"],
+            "xp_final": (base * calidad) // 100,
+        })
+
+    return jsonify(respuesta)
+
+
+def _buscar_logro_validable(id_logro):
+    return db.session.execute(text(f"""
+        SELECT
+            l.id_logro,
+            l.id_estudiante,
+            l.id_tipo_logro,
+            l.porcentaje_calidad,
+            l.estado,
+            tl.xp_otorgado,
+            tl.limite_semanal
+        FROM logro l
+        LEFT JOIN tipologro tl
+            ON tl.id_tipo_logro = l.id_tipo_logro
+        WHERE l.id_logro = :id
+          AND {CONDICION_LOGROS_ADMIN}
+        FOR UPDATE
+    """), {"id": id_logro}).mappings().first()
+
+
+def aprobar_logro(id_logro):
+    id_admin = session.get("id_usuario")
+
+    try:
+        logro = _buscar_logro_validable(id_logro)
+
+        if not logro:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "El logro no existe o ya fue resuelto."
+            }), 409
+
+        if logro["limite_semanal"]:
+            aprobados = db.session.execute(text("""
+                SELECT COUNT(*) FROM logro
+                WHERE id_estudiante = :estudiante
+                  AND id_tipo_logro = :tipo
+                  AND estado = 'APROBADO'
+                  AND YEARWEEK(fecha_validacion, 1) = YEARWEEK(NOW(), 1)
+            """), {
+                "estudiante": logro["id_estudiante"],
+                "tipo": logro["id_tipo_logro"]
+            }).scalar() or 0
+
+            if aprobados >= logro["limite_semanal"]:
+                db.session.rollback()
+                return jsonify({
+                    "mensaje": "El estudiante ya alcanzó el límite "
+                               "semanal para este tipo de logro."
+                }), 409
+
+        base = logro["xp_otorgado"] or 0
+        calidad = logro["porcentaje_calidad"] or 100
+        xp = (base * calidad) // 100
+
+        id_semillero = db.session.execute(text("""
+            SELECT id_semillero FROM membresiasemillero
+            WHERE id_estudiante = :id AND fecha_salida IS NULL
+            LIMIT 1
+        """), {"id": logro["id_estudiante"]}).scalar()
+
+        db.session.execute(text("""
+            INSERT IGNORE INTO administrador (id_usuario) VALUES (:id)
+        """), {"id": id_admin})
+
+        db.session.execute(text("""
+            UPDATE logro
+            SET estado = 'APROBADO',
+                id_admin_validador = :admin,
+                fecha_validacion = NOW()
+            WHERE id_logro = :id
+        """), {"admin": id_admin, "id": id_logro})
+
+        db.session.execute(text("""
+            UPDATE estudianteinvestigador
+            SET xp_total = xp_total + :xp,
+                fecha_actualizacion = NOW()
+            WHERE id_usuario = :estudiante
+        """), {"xp": xp, "estudiante": logro["id_estudiante"]})
+
+        db.session.execute(text("""
+            INSERT INTO historialxp
+                (id_estudiante, id_semillero, id_logro, cantidad_xp, fecha)
+            VALUES
+                (:estudiante, :semillero, :logro, :xp, NOW())
+        """), {
+            "estudiante": logro["id_estudiante"],
+            "semillero": id_semillero,
+            "logro": id_logro,
+            "xp": xp
+        })
+
+        _registrar_historial(
+            id_admin, "APROBAR_LOGRO", "logro", id_logro,
+            logro["estado"], "APROBADO (+" + str(xp) + " XP)"
+        )
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Logro aprobado. Se acreditaron "
+                       + str(xp) + " XP al estudiante."
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR APROBAR LOGRO:", repr(error))
+        return jsonify({"mensaje": "No fue posible aprobar el logro."}), 500
+
+
+def rechazar_logro(id_logro):
+    id_admin = session.get("id_usuario")
+
+    try:
+        logro = _buscar_logro_validable(id_logro)
+
+        if not logro:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "El logro no existe o ya fue resuelto."
+            }), 409
+
+        db.session.execute(text("""
+            INSERT IGNORE INTO administrador (id_usuario) VALUES (:id)
+        """), {"id": id_admin})
+
+        db.session.execute(text("""
+            UPDATE logro
+            SET estado = 'RECHAZADO',
+                id_admin_validador = :admin,
+                fecha_validacion = NOW()
+            WHERE id_logro = :id
+        """), {"admin": id_admin, "id": id_logro})
+
+        _registrar_historial(
+            id_admin, "RECHAZAR_LOGRO", "logro", id_logro,
+            logro["estado"], "RECHAZADO"
+        )
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Logro rechazado. No se otorgó XP."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR RECHAZAR LOGRO:", repr(error))
+        return jsonify({"mensaje": "No fue posible rechazar el logro."}), 500

@@ -1,4 +1,3 @@
-
 <section class="proyectos-pagina" id="contenido-proyectos">
 
     <div class="proyectos-encabezado">
@@ -13,33 +12,37 @@
         </button>
     </div>
 
+    <form id="formProyecto" class="proyectos-formulario" hidden>
 
-        <form id="formProyecto" 
-         style="display:none; background:#fff; border-radius:16px; padding:24px; margin-bottom:24px; gap:14px;"></form>
+        <h3>Nuevo proyecto</h3>
 
-        <h3 style="margin:0;">Nuevo proyecto</h3>
-
-        <label>Título
+        <div class="proyectos-campo">
+            <label for="tituloProyecto">Título</label>
             <input id="tituloProyecto" type="text" maxlength="150"
-                   style="width:100%; padding:10px; box-sizing:border-box;" required>
-        </label>
-
-        <label>Descripción
-            <textarea id="descripcionProyecto" rows="3"
-                      style="width:100%; padding:10px; box-sizing:border-box;"></textarea>
-        </label>
-
-        <label>Fecha de inicio
-            <input id="inicioProyecto" type="date"
-                   style="width:100%; padding:10px; box-sizing:border-box;" required>
-        </label>
-
-        <div style="display:flex; gap:10px;">
-            <button type="submit" class="btn-cargar-proyecto">Guardar proyecto</button>
-            <button type="button" id="cancelarProyecto">Cancelar</button>
+                   placeholder="Nombre del proyecto" required>
         </div>
 
-        <p id="mensajeProyecto" hidden></p>
+        <div class="proyectos-campo">
+            <label for="descripcionProyecto">Descripción</label>
+            <textarea id="descripcionProyecto" rows="3"
+                      placeholder="¿De qué trata el proyecto?"></textarea>
+        </div>
+
+        <div class="proyectos-campo proyectos-campo-fecha">
+            <label for="inicioProyecto">Fecha de inicio</label>
+            <input id="inicioProyecto" type="date" required>
+        </div>
+
+        <div class="proyectos-form-acciones">
+            <button type="submit" class="btn-cargar-proyecto" id="guardarProyecto">
+                Guardar proyecto
+            </button>
+            <button type="button" class="btn-cancelar-proyecto" id="cancelarProyecto">
+                Cancelar
+            </button>
+        </div>
+
+        <p id="mensajeProyecto" class="proyectos-mensaje" hidden></p>
     </form>
 
     <div class="proyectos-resumen">
@@ -47,12 +50,10 @@
             <span>Total de proyectos</span>
             <strong id="totalProyectos">0</strong>
         </div>
-
         <div class="proyectos-resumen-card">
             <span>Proyectos activos</span>
             <strong id="proyectosActivos">0</strong>
         </div>
-
         <div class="proyectos-resumen-card">
             <span>En revisión</span>
             <strong id="proyectosRevision">0</strong>
@@ -65,16 +66,14 @@
                 <thead>
                     <tr>
                         <th>Proyecto</th>
-                        <th>Fase</th>
-                        <th>Avance</th>
+                        <th>Inicio</th>
+                        <th>Avances registrados</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
+                    </tr> 
+                </thead> 
                 <tbody id="tablaProyectos">
                     <tr>
-                        <td colspan="5" class="proyectos-vacio">
+                        <td colspan="4" class="proyectos-vacio">
                             Todavía no has cargado proyectos.
                         </td>
                     </tr>
@@ -83,4 +82,4 @@
         </div>
     </div>
 
-</section>
+</section> 

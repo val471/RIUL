@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 
-        // ========================================
+    // ========================================
     // IDENTIDAD (AVATAR Y NOMBRE EN EL MENU)
     // ========================================
 
@@ -148,8 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function consultarPerfil() {
 
         const respuesta = await fetch("/docentelider/api/perfil");
-        
-        
+
+
 
         if (!respuesta.ok) {
             throw new Error("No se pudieron consultar los datos");
@@ -246,9 +246,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-        // ========================================
+    // ========================================
     // CARGAR DATOS DEL PERFIL
     // ========================================
+
+    async function cargarDatosPerfil() {
+
+    try {
+
+        const datos = await consultarPerfil();
+
+        const nombre = document.getElementById("nombrePerfil");
+        const correo = document.getElementById("correoPerfil");
+        const facultad = document.getElementById("facultadPerfil");
+
+        if (nombre) nombre.value = datos.nombre_institucional || "";
+        if (correo) correo.value = datos.correo_institucional || "";
+        if (facultad) facultad.value = datos.facultad || "";
+
+        pintarAvatar(document.getElementById("fotoPerfil"), datos);
+
+        mostrarEstadoSolicitud(
+            "estadoNombre",
+            datos.solicitudes?.nombre_institucional
+        );
+
+        mostrarEstadoSolicitud(
+            "estadoCorreo",
+            datos.solicitudes?.correo_institucional
+        );
+
+    } catch (error) {
+
+        console.error("Error al cargar los datos del perfil:", error);
+    }
+}
 
     function mostrarEstadoSolicitud(id, solicitud) {
 
@@ -264,6 +296,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const estado = (solicitud.estado || "").toUpperCase();
+        const claveVista = "solicitud_vista_" + solicitud.id;
+
+        // Las respuestas ya resueltas (aprobada / rechazada) se muestran
+        // hasta que el docente las cierre con la X
+        if (estado !== "PENDIENTE") {
+            let yaVista = false;
+
+            try {
+                yaVista = localStorage.getItem(claveVista) === "1";
+            } catch (error) {
+                yaVista = false;
+            }
+
+            if (yaVista) {
+                elemento.hidden = true;
+                return;
+            }
+        }
+
         let texto = "";
 
         if (estado === "PENDIENTE") {
@@ -281,37 +332,25 @@ document.addEventListener("DOMContentLoaded", () => {
         elemento.textContent = texto;
         elemento.className = "perfil-estado " + estado.toLowerCase();
         elemento.hidden = !texto;
-    }
 
-    async function cargarDatosPerfil() {
+        if (texto && estado !== "PENDIENTE") {
+            const cerrar = document.createElement("button");
+            cerrar.type = "button";
+            cerrar.className = "perfil-estado-cerrar";
+            cerrar.title = "Cerrar aviso";
+            cerrar.setAttribute("aria-label", "Cerrar aviso");
+            cerrar.textContent = "✕";
 
-        try {
+            cerrar.addEventListener("click", () => {
+                try {
+                    localStorage.setItem(claveVista, "1");
+                } catch (error) {
+                    // Si el navegador no deja guardar, solo se oculta ahora
+                }
+                elemento.hidden = true;
+            });
 
-            const datos = await consultarPerfil();
-
-            const nombre = document.getElementById("nombrePerfil");
-            const correo = document.getElementById("correoPerfil");
-            const facultad = document.getElementById("facultadPerfil");
-
-            if (nombre) nombre.value = datos.nombre_institucional || "";
-            if (correo) correo.value = datos.correo_institucional || "";
-            if (facultad) facultad.value = datos.facultad || "";
-
-            pintarAvatar(document.getElementById("fotoPerfil"), datos);
-
-            mostrarEstadoSolicitud(
-                "estadoNombre",
-                datos.solicitudes?.nombre_institucional
-            );
-
-            mostrarEstadoSolicitud(
-                "estadoCorreo",
-                datos.solicitudes?.correo_institucional
-            );
-
-        } catch (error) {
-
-            console.error("Error al cargar los datos del perfil:", error);
+            elemento.appendChild(cerrar);
         }
     }
 
@@ -571,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedor.innerHTML = "<p>Cargando semilleros...</p>";
 
             const respuesta = await fetch("/docentelider/semilleros");
-            
+
             if (sesionVencida(respuesta)) {
                 return;
             }
@@ -598,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-        // ========================================
+    // ========================================
     // CARGAR HTML DEL RESTO DE MODULOS
     // ========================================
 
@@ -652,13 +691,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO PROYECTOS
     // ========================================
 
-        async function configurarModuloProyectos() {
+    async function configurarModuloProyectos() {
 
         const tablaProyectos = document.getElementById("tablaProyectos");
 
         if (!tablaProyectos) {
             return;
-        } 
+        }
 
         const total = document.getElementById("totalProyectos");
         const activos = document.getElementById("proyectosActivos");
@@ -686,8 +725,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             form.dataset.configurado = "true";
 
-            const mostrarMsg = (texto) => {
+            const mostrarMsg = (texto, esError) => {
                 msgProyecto.textContent = texto;
+                msgProyecto.className =
+                    "proyectos-mensaje" + (esError ? " error" : "");
                 msgProyecto.hidden = false;
             };
 
@@ -696,16 +737,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 msgProyecto.hidden = true;
                 document.getElementById("inicioProyecto").value =
                     new Date().toLocaleDateString("en-CA");
-                form.style.display = "grid";
+                form.hidden = false;
+                document.getElementById("tituloProyecto").focus();
             });
 
             document.getElementById("cancelarProyecto")
                 .addEventListener("click", () => {
-                    form.style.display = "none";
+                    form.hidden = true;
                 });
 
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
+                const btnGuardar = document.getElementById("guardarProyecto");
+                btnGuardar.disabled = true;
                 mostrarMsg("Guardando...");
 
                 try {
@@ -723,15 +767,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    const datos = await r.json();
-                    mostrarMsg(datos.mensaje);
+                    const datos = await r.json().catch(() => ({}));
 
                     if (r.ok) {
-                        form.style.display = "none";
+                        form.hidden = true;
                         configurarModuloProyectos();
+                    } else {
+                        mostrarMsg(
+                            datos.mensaje || "No fue posible guardar el proyecto.",
+                            true
+                        );
                     }
                 } catch (error) {
-                    mostrarMsg("No fue posible conectar con el servidor.");
+                    mostrarMsg("No fue posible conectar con el servidor.", true);
+                } finally {
+                    btnGuardar.disabled = false;
                 }
             });
         }
@@ -757,11 +807,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             tablaProyectos.innerHTML = proyectos.map(p => `
-                <tr data-proyecto data-estado="${esc(p.estado)}">
-                    <td>${esc(p.titulo)}<br><small>${esc(p.descripcion)}</small></td>
+                    <tr data-proyecto data-estado="${esc(p.estado)}">
+                    <td><strong>${esc(p.titulo)}</strong><small>${esc(p.descripcion)}</small></td>
                     <td>${esc(p.inicio)}</td>
                     <td>${esc(p.avances)}</td>
-                    <td>${esc(p.estado)}</td>
+                    <td><span class="proyectos-estado ${
+                        p.estado === "Activo" ? "activo" :
+                        p.estado === "En revisión" ? "revision" : "otro"
+                    }">${esc(p.estado)}</span></td>
                 </tr>
             `).join("");
 
@@ -791,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================
 
     let semillerosConfigurados = false;
-        async function configurarModuloSemilleros() {
+    async function configurarModuloSemilleros() {
 
         const contenedor = document.getElementById("contenido-semilleros");
 
@@ -865,10 +918,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    
+
     // ========================================
     // MODULO USUARIO
-   // ========================================
+    // ========================================
 
 
     async function configurarModuloUsuario() {
@@ -901,7 +954,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const semestre = filtroSemestre?.value || "";
 
             const filas = tablaIntegrantes.querySelectorAll("tr[data-integrante]");
-            let visibles = 0; 
+            let visibles = 0;
 
             filas.forEach(fila => {
 
@@ -986,7 +1039,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO SOLICITUDES
     // ========================================
 
-        async function configurarModuloSolicitudes() {
+    async function configurarModuloSolicitudes() {
 
         const tablaSolicitudes = document.getElementById("tablaSolicitudes");
         const totalSolicitudes = document.getElementById("totalSolicitudesPendientes");
@@ -1000,7 +1053,7 @@ document.addEventListener("DOMContentLoaded", () => {
             c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
         );
 
-                async function dibujarRegistros() {
+        async function dibujarRegistros() {
 
             const tablaRegistros = document.getElementById("tablaRegistros");
 
@@ -1145,13 +1198,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO CONVOCATORIAS
     // ========================================
 
-        async function configurarModuloConvocatorias() {
+    async function configurarModuloConvocatorias() {
 
         const tablaConvocatorias = document.getElementById("tablaConvocatorias");
 
         if (!tablaConvocatorias) {
             return;
-        } 
+        }
 
         const totalConvocatorias = document.getElementById("totalConvocatorias");
         const totalInscripciones = document.getElementById("totalInscripciones");
@@ -1221,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO EVENTOS
     // ========================================
 
-        async function configurarModuloEventos() {
+    async function configurarModuloEventos() {
 
         const tablaEventos = document.getElementById("tablaEventos");
 
@@ -1299,7 +1352,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODULO LOGROS
     // ========================================
 
-        async function configurarModuloLogros() {
+    async function configurarModuloLogros() {
 
         const tablaLogros = document.getElementById("tablaLogros");
 
@@ -1398,7 +1451,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            tablaLogros.innerHTML = logros.map(l => {
+                        tablaLogros.innerHTML = logros.map(l => {
 
                 const estado = ESTADOS[l.estado] || l.estado;
 
@@ -1413,11 +1466,71 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${esc(l.fecha)}</td>
                     <td>${esc(estado)}</td>
                     <td>${l.calidad === null ? "—" : esc(l.calidad) + "%"}</td>
-                    <td>—</td>
+                    <td>${l.estado === "PENDIENTE" ? `
+                        <div class="logro-accion">
+                            <select class="logro-calidad">
+                                <option value="" selected disabled>Calidad</option>
+                                <option value="50">50 %</option>
+                                <option value="75">75 %</option>
+                                <option value="100">100 %</option>
+                            </select>
+                            <button type="button" class="btn-enviar-logro"
+                                    data-id="${l.id}">Enviar a validación</button>
+                        </div>` : "—"}</td>
                 </tr>`;
-            }).join("");
+            }).join(""); 
+            tablaLogros.onclick = async function (evento) {
 
-            actualizarLogros();
+                const boton = evento.target.closest(".btn-enviar-logro");
+
+                if (!boton) {
+                    return;
+                }
+
+                const select = boton.closest(".logro-accion")
+                    .querySelector(".logro-calidad");
+
+                if (!select.value) {
+                    await mostrarAviso(
+                        "Elige primero la calidad: 50 %, 75 % o 100 %.",
+                        "error"
+                    );
+                    return;
+                }
+
+                boton.disabled = true;
+
+                try {
+                    const r = await fetch(
+                        "/docentelider/api/logros/" + boton.dataset.id + "/calificar",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ porcentaje: Number(select.value) })
+                        }
+                    );
+
+                    const datos = await r.json().catch(() => ({}));
+
+                    await mostrarAviso(
+                        datos.mensaje || (r.ok
+                            ? "Logro enviado a validación."
+                            : "No fue posible calificar el logro."),
+                        r.ok ? "exito" : "error"
+                    );
+
+                } catch (error) {
+                    await mostrarAviso(
+                        "No fue posible conectar con el servidor.",
+                        "error"
+                    );
+                }
+                 cargarNotificaciones(false);
+                configurarModuloLogros();
+
+                configurarModuloLogros();
+            };          
+           actualizarLogros();
 
         } catch (error) {
             console.error("Error al cargar logros:", error);
@@ -1425,10 +1538,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-   // ========================================
+    // ========================================
     // MODULO PUBLICACIONES
     // ========================================
-          async function configurarModuloPublicaciones() {
+    async function configurarModuloPublicaciones() {
 
         const formulario = document.getElementById("formPublicacion");
         const contenido = document.getElementById("contenidoPublicacion");
@@ -1446,6 +1559,103 @@ document.addEventListener("DOMContentLoaded", () => {
             "&": "&amp;", "<": "&lt;", ">": "&gt;",
             '"': "&quot;", "'": "&#39;"
         }[c]));
+
+        // ----- ICONOS Y PINTADO DE TARJETAS -----
+        const SVG = (contenido) =>
+            '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" ' +
+            'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + contenido + '</svg>';
+
+        const ICO = {
+            heart: SVG('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/>'),
+            chat: SVG('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+            share: SVG('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>'),
+            book: SVG('<path d="M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/>'),
+            eye: SVG('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>')
+        };
+
+        let publicacionesCargadas = [];
+
+        function iniciales(nombre) {
+            const partes = String(nombre ?? "").trim().split(/\s+/);
+            return ((partes[0] || "").charAt(0) + (partes[1] || "").charAt(0)).toUpperCase();
+        }
+
+        function pintarPublicaciones() {
+
+            const buscador = document.getElementById("buscarPublicacion");
+            const q = buscador ? buscador.value.trim().toLowerCase() : "";
+
+            const lista = publicacionesCargadas.filter(p =>
+                (p.autor + " " + p.contenido).toLowerCase().includes(q)
+            );
+
+            if (lista.length === 0) {
+                listaPublicaciones.innerHTML =
+                    '<div class="publicaciones-vacio">' +
+                    (publicacionesCargadas.length === 0
+                        ? "Todavía no hay publicaciones disponibles."
+                        : "No se encontraron publicaciones.") +
+                    '</div>';
+                return;
+            }
+
+            listaPublicaciones.innerHTML = lista.map(p => {
+
+                const meta = [
+                    p.fecha,
+                    p.academica ? "Publicación académica" : "",
+                    p.semillero
+                ].filter(Boolean).map(esc).join(" · ");
+
+                return `
+                <article class="publicacion-card" data-publicacion="${p.id}"
+                         data-tipo="${p.academica ? "academica" : "general"}">
+
+                    <div class="publicacion-cabecera">
+                        <div class="publicacion-avatar">${esc(iniciales(p.autor))}</div>
+                        <div class="publicacion-autor-info">
+                            <strong>${esc(p.autor)}${p.propia ? " (tú)" : ""}</strong>
+                            <small>${meta}</small>
+                        </div>
+                        ${p.propia ? `
+                        <div class="publicacion-acc">
+                            <button type="button" class="btn-eliminar" data-id="${p.id}">Eliminar</button>
+                        </div>` : ""}
+                    </div>
+
+                    <div class="publicacion-contenido">${esc(p.contenido)}</div>
+
+                    ${p.archivo ? `
+                        ${["png", "jpg", "jpeg", "webp"].includes(p.archivo.tipo) ? `
+                        <a href="${esc(p.archivo.ruta)}" target="_blank" rel="noopener">
+                            <img class="publicacion-imagen" src="${esc(p.archivo.ruta)}"
+                                 alt="${esc(p.archivo.nombre)}">
+                        </a>` : ""}
+                        <a class="publicacion-archivo" href="${esc(p.archivo.ruta)}"
+                           target="_blank" rel="noopener">
+                            ${ICO.book}<span>${esc(p.archivo.nombre)}</span>
+                        </a>` : ""}
+
+                    <div class="publicacion-stats">
+                        <span>
+                            <span class="stat-reacciones">${p.reacciones}</span> reacciones ·
+                            <span class="stat-comentarios">${p.comentarios}</span> comentarios
+                        </span>
+                        <span class="publicacion-vistas">${ICO.eye}${p.vistas ?? 0} vistas</span>
+                    </div>
+
+                    <div class="publicacion-botones">
+                        <button type="button" class="btn-reaccion ${p.yo_reaccione ? "activo" : ""}"
+                                data-id="${p.id}">${ICO.heart} Me gusta</button>
+                        <button type="button" class="btn-comentarios" data-id="${p.id}">${ICO.chat} Comentar</button>
+                        <button type="button" class="btn-compartir" data-id="${p.id}">${ICO.share} Compartir</button>
+                    </div>
+
+                    <div class="caja-comentarios" id="comentarios-${p.id}" hidden></div>
+
+                </article>`;
+            }).join("");
+        }
 
         // ----- COMENTARIOS -----
         async function cargarComentarios(id) {
@@ -1488,12 +1698,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
 
-                const boton = listaPublicaciones.querySelector(
-                    '.btn-comentarios[data-id="' + id + '"]'
-                );
+                const contador = caja.closest(".publicacion-card")
+                    ?.querySelector(".stat-comentarios");
 
-                if (boton) {
-                    boton.textContent = "💬 Comentarios (" + comentarios.length + ")";
+                if (contador) {
+                    contador.textContent = comentarios.length;
                 }
 
             } catch (error) {
@@ -1525,53 +1734,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (totalPublicaciones) totalPublicaciones.textContent = datos.total;
                 if (totalAcademicas) totalAcademicas.textContent = datos.academicas;
 
-                if (datos.publicaciones.length === 0) {
-                    listaPublicaciones.innerHTML =
-                        '<div class="publicaciones-vacio">Todavía no hay publicaciones disponibles.</div>';
-                    return;
-                }
-
-                listaPublicaciones.innerHTML = datos.publicaciones.map(p => `
-                   <article class="publicacion-card" data-publicacion="${p.id}"
-                            data-tipo="${p.academica ? "academica" : "general"}">
-                        </div>class="publicacion-cabecera">
-                            <div class="publicacion-autor">
-                                <div class="publicacion-avatar">
-                                    ${esc(p.autor).charAt(0).toUpperCase()}
-                        </div>
-                    
-                        <div>
-                           <strong>
-                               ${esc(p.autor)}${p.propia ? " (tú)" : ""}
-                           </strong>
-
-                        
-                    <span>
-                        ${esc(p.fecha)}
-                        · ${p.academica ? "Publicación académica" : "Publicación general"}
-                    </span>
-
-                     ${p.semillero ? `
-                        <small>${esc(p.semillero)}</small>
-                    ` : ""}
-                </div>
-             </div>
-            </div>
-
-
-                        <footer style="margin-top:14px; border-top:1px solid #eee; padding-top:10px;">
-                            <div style="display:flex; gap:12px;">
-                                <button type="button" class="btn-reaccion" data-id="${p.id}">
-                                    ${p.yo_reaccione ? "❤️" : "🤍"} Me gusta (${p.reacciones})
-                                </button>
-                                <button type="button" class="btn-comentarios" data-id="${p.id}">
-                                    💬 Comentarios (${p.comentarios})
-                                </button>
-                            </div>
-                            <div class="caja-comentarios" id="comentarios-${p.id}" hidden></div>
-                        </footer>
-                    </article>
-                `).join("");
+                publicacionesCargadas = datos.publicaciones;
+                pintarPublicaciones();
 
             } catch (error) {
                 console.error("Error al cargar publicaciones:", error);
@@ -1584,6 +1748,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (listaPublicaciones.dataset.configurado !== "true") {
 
             listaPublicaciones.dataset.configurado = "true";
+
+            // Abrir / cerrar el formulario
+            document.getElementById("btnAbrirPublicar")?.addEventListener("click", () => {
+                const caja = document.getElementById("cajaFormulario");
+                if (caja) caja.hidden = !caja.hidden;
+            });
+
+            // Buscador
+            document.getElementById("buscarPublicacion")
+                ?.addEventListener("input", pintarPublicaciones);
+
+            // Compartir (copia el enlace)
+            listaPublicaciones.addEventListener("click", e => {
+                if (e.target.closest(".btn-compartir")) {
+                    navigator.clipboard?.writeText(location.href.split("#")[0] + "#publicaciones");
+                    alert("Enlace copiado.");
+                }
+            });
 
             archivo?.addEventListener("change", () => {
                 if (nombreArchivo) {
@@ -1601,13 +1783,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 try {
 
+                    const formData = new FormData();
+                    formData.append("contenido", contenido.value);
+                    formData.append("academica", academica.checked);
+
+                    if (archivo && archivo.files.length) {
+                        formData.append("archivo", archivo.files[0]);
+                    }
+
                     const respuesta = await fetch("/docentelider/api/publicaciones", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contenido: contenido.value,
-                            academica: academica.checked
-                        })
+                        body: formData
                     });
 
                     if (sesionVencida(respuesta)) {
@@ -1622,6 +1808,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     formulario.reset();
+                    document.getElementById("cajaFormulario").hidden = true;
                     if (nombreArchivo) nombreArchivo.textContent = "";
                     await cargarPublicaciones();
 
@@ -1632,8 +1819,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            // Abrir comentarios y enviar un comentario
+            // Eliminar, reaccionar, abrir comentarios y enviar un comentario
             listaPublicaciones.addEventListener("click", async e => {
+
+                const eliminar = e.target.closest(".btn-eliminar");
+
+                if (eliminar) {
+
+                    if (!confirm("¿Eliminar esta publicación? Esta acción no se puede deshacer.")) {
+                        return;
+                    }
+
+                    eliminar.disabled = true;
+
+                    try {
+
+                        const r = await fetch(
+                            "/docentelider/api/publicaciones/" + eliminar.dataset.id,
+                            { method: "DELETE" }
+                        );
+
+                        if (sesionVencida(r)) {
+                            return;
+                        }
+
+                        const datos = await r.json();
+
+                        if (!r.ok) {
+                            alert(datos.mensaje);
+                            eliminar.disabled = false;
+                            return;
+                        }
+
+                        await cargarPublicaciones();
+
+                    } catch (error) {
+                        alert("No fue posible conectar con el servidor.");
+                        eliminar.disabled = false;
+                    }
+
+                    return;
+                }
 
                 const reaccion = e.target.closest(".btn-reaccion");
 
@@ -1660,9 +1886,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             return;
                         }
 
-                        reaccion.textContent =
-                            (datos.reaccionado ? "❤️" : "🤍") +
-                            " Me gusta (" + datos.total + ")";
+                        reaccion.classList.toggle("activo", datos.reaccionado);
+
+                        const contadorReacc = reaccion.closest(".publicacion-card")
+                            ?.querySelector(".stat-reacciones");
+
+                        if (contadorReacc) {
+                            contadorReacc.textContent = datos.total;
+                        }
 
                     } catch (error) {
                         alert("No fue posible conectar con el servidor.");
@@ -1748,12 +1979,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         await cargarPublicaciones();
-    } 
+    }
     // ========================================
     // MODULO RANKING
     // ========================================
 
-        async function configurarModuloRanking() {
+    async function configurarModuloRanking() {
 
         const pestanas = document.querySelectorAll(".ranking-pestana");
         const listas = document.querySelectorAll(".ranking-lista");
@@ -1863,6 +2094,45 @@ document.addEventListener("DOMContentLoaded", () => {
             pintar(tablaSemilleros, [], "No se pudo cargar el ranking.");
         }
     }
+     
+
+        // ========================================
+    // INICIO (tarjetas con datos reales)
+    // ========================================
+    async function cargarInicio() {
+
+        const poner = (id, valor) => {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.textContent = valor;
+            }
+        };
+
+        try {
+
+            const respuesta = await fetch("/docentelider/api/inicio");
+
+            if (sesionVencida(respuesta)) {
+                return;
+            }
+
+            if (!respuesta.ok) {
+                throw new Error("Error " + respuesta.status);
+            }
+
+            const datos = await respuesta.json();
+
+            poner("inicioSemilleros", datos.semilleros);
+            poner("inicioUsuarios", datos.integrantes);
+            poner("inicioSolicitudes", datos.solicitudes);
+            poner("inicioProyectos", datos.proyectos);
+
+        } catch (error) {
+            console.error("Error al cargar el inicio:", error);
+        }
+    }
+
+
     // ========================================
     // CAMBIAR DE MODULO
     // ========================================
@@ -1891,6 +2161,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (RUTAS_MODULOS[id]) {
             await cargarHTMLModulo(id);
+        }
+        // CARGAR LAS CIFRAS DEL INICIO
+
+        if (id === "inicio") {
+            cargarInicio();
         }
         // CONFIGURAR USUARIO
 
@@ -1987,12 +2262,110 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ========================================
+        // ========================================
     // NOTIFICACIONES
     // ========================================
 
     const btnNotificaciones = document.getElementById("btnNotificaciones");
     const panelNotificaciones = document.getElementById("panelNotificaciones");
+    const listaNotificaciones = document.getElementById("listaNotificaciones");
+    const badgeNotif = document.getElementById("badgeNotif");
+    const btnMarcarLeidas = document.getElementById("marcarTodasLeidas");
+
+    const TIPOS_NOTIF = {
+        VINCULACION:    { icono: "🤝", titulo: "Solicitud de vinculación" },
+        LOGRO:          { icono: "🏆", titulo: "Logro por calificar" },
+        LOGRO_RESUELTO: { icono: "✅", titulo: "Logro revisado" },
+        CONVOCATORIA:   { icono: "📢", titulo: "Convocatoria" },
+        EVENTO:         { icono: "📅", titulo: "Evento" },
+        REACCION:       { icono: "❤️", titulo: "Reacción" },
+        COMENTARIO:     { icono: "💬", titulo: "Comentario" },
+        GUARDADA:       { icono: "🔔", titulo: "Aviso" }
+    };
+
+    function escaparNotif(texto) {
+        const d = document.createElement("div");
+        d.textContent = texto == null ? "" : String(texto);
+        return d.innerHTML;
+    }
+
+    function haceCuanto(min) {
+        if (min == null) return "";
+        if (min < 1) return "Hace un momento";
+        if (min < 60) return "Hace " + min + " min";
+        const h = Math.floor(min / 60);
+        if (h < 24) return "Hace " + h + (h === 1 ? " hora" : " horas");
+        const d = Math.floor(h / 24);
+        return "Hace " + d + (d === 1 ? " día" : " días");
+    }
+
+    function pintarBadgeNotif(total) {
+        if (!badgeNotif) return;
+        badgeNotif.textContent = total > 9 ? "9+" : total;
+        badgeNotif.hidden = total === 0;
+    }
+
+    async function cargarNotificaciones(pintarLista) {
+
+        try {
+
+            const r = await fetch("/docentelider/api/notificaciones");
+
+            if (sesionVencida(r)) {
+                return;
+            }
+
+            if (!r.ok) {
+                throw new Error("Error " + r.status);
+            }
+
+            const datos = await r.json();
+
+            pintarBadgeNotif(datos.total);
+
+            if (!pintarLista || !listaNotificaciones) {
+                return;
+            }
+
+            if (!datos.notificaciones.length) {
+                listaNotificaciones.innerHTML =
+                    '<p class="notif-vacio">No tienes notificaciones.</p>';
+                return;
+            }
+
+            listaNotificaciones.innerHTML = datos.notificaciones.map(n => {
+                const t = TIPOS_NOTIF[n.tipo] || { icono: "🔔", titulo: "Notificación" };
+                const tiempo = haceCuanto(n.minutos);
+
+                return '<button type="button" class="notif-item' + (n.nueva ? " nueva" : "") +
+                    '" data-destino="' + escaparNotif(n.destino) + '">' +
+                    '<span class="notif-icono">' + t.icono + '</span>' +
+                    '<span><strong>' + t.titulo + '</strong>' +
+                    '<p>' + escaparNotif(n.mensaje) + '</p>' +
+                    (tiempo ? '<small>' + tiempo + '</small>' : '') +
+                    '</span></button>';
+            }).join("");
+
+        } catch (error) {
+
+            console.error("Error al cargar notificaciones:", error);
+
+            if (pintarLista && listaNotificaciones) {
+                listaNotificaciones.innerHTML =
+                    '<p class="notif-vacio">No fue posible cargar las notificaciones.</p>';
+            }
+        }
+    }
+
+    function cerrarPanelNotificaciones() {
+
+        if (!panelNotificaciones) {
+            return;
+        }
+
+        panelNotificaciones.hidden = true;
+        btnNotificaciones?.setAttribute("aria-expanded", "false");
+    }
 
     btnNotificaciones?.addEventListener("click", () => {
 
@@ -2008,6 +2381,43 @@ document.addEventListener("DOMContentLoaded", () => {
             "aria-expanded",
             String(!abierto)
         );
+
+        if (!abierto) {
+            cargarNotificaciones(true);
+        }
+    });
+
+    // Clic en una notificación: ir al módulo correspondiente
+    listaNotificaciones?.addEventListener("click", event => {
+
+        const item = event.target.closest(".notif-item");
+
+        if (!item) {
+            return;
+        }
+
+        cerrarPanelNotificaciones();
+        mostrarModulo(item.dataset.destino);
+    });
+
+    // Marcar los avisos guardados como leídos
+    btnMarcarLeidas?.addEventListener("click", async () => {
+
+        try {
+
+            const r = await fetch("/docentelider/api/notificaciones/leidas", {
+                method: "POST"
+            });
+
+            if (sesionVencida(r)) {
+                return;
+            }
+
+            await cargarNotificaciones(true);
+
+        } catch (error) {
+            console.error("Error al marcar las notificaciones:", error);
+        }
     });
 
     document.addEventListener("click", event => {
@@ -2019,13 +2429,16 @@ document.addEventListener("DOMContentLoaded", () => {
             !panelNotificaciones.contains(event.target) &&
             !btnNotificaciones.contains(event.target)
         ) {
-
-            panelNotificaciones.hidden = true;
-
-            btnNotificaciones.setAttribute("aria-expanded", "false");
+            cerrarPanelNotificaciones();
         }
     });
 
+    // Contador al entrar y cada minuto
+    cargarNotificaciones(false);
+    setInterval(() => cargarNotificaciones(
+        panelNotificaciones && !panelNotificaciones.hidden
+    ), 60000);
+    
     // ========================================
     // CERRAR SESION
     // ========================================
@@ -2067,3 +2480,54 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarModulo("inicio");
 
 });
+
+    // ========================================
+    // VENTANA EMERGENTE DE AVISOS
+    // ========================================
+
+    function mostrarAviso(mensaje, tipo) {
+
+        const esError = tipo === "error";
+
+        return new Promise(resolve => {
+
+            const fondo = document.createElement("div");
+            fondo.className = "aviso-fondo";
+
+            fondo.innerHTML = `
+                <div class="aviso-caja ${esError ? "error" : "exito"}"
+                     role="dialog" aria-modal="true">
+                    <div class="aviso-icono">${esError ? "!" : "✓"}</div>
+                    <h3>${esError ? "No se pudo completar" : "Listo"}</h3>
+                    <p></p>
+                    <button type="button" class="aviso-boton">Aceptar</button>
+                </div>
+            `;
+
+            fondo.querySelector("p").textContent = mensaje;
+
+            function cerrar() {
+                document.removeEventListener("keydown", alTeclear);
+                fondo.remove();
+                resolve();
+            }
+
+            function alTeclear(evento) {
+                if (evento.key === "Escape" || evento.key === "Enter") {
+                    cerrar();
+                }
+            }
+
+            fondo.addEventListener("click", evento => {
+                if (evento.target === fondo) {
+                    cerrar();
+                }
+            });
+
+            fondo.querySelector(".aviso-boton").addEventListener("click", cerrar);
+            document.addEventListener("keydown", alTeclear);
+
+            document.body.appendChild(fondo);
+            fondo.querySelector(".aviso-boton").focus();
+        });
+    }

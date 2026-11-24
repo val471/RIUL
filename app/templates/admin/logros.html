@@ -2,13 +2,20 @@
 
 <div class="page-heading">
     <div>
-        <h1>Validacion de logros</h1>
-        <p>Revisa los logros enviados por los estudiantes.</p>
+        <h1>Validación de logros</h1>
+        <p>Aprueba o rechaza los logros. Al aprobar se acreditan los puntos de experiencia (XP).</p>
     </div>
 </div>
 
-<div class="admin-card card-heading">
-    <h2>Logros pendientes de validar</h2>
-    <p>Actualmente hay 2 logros por revisar (dato de demostracion).</p>
-    <button class="btn btn-red" onclick="alert('Validacion de logros de demostracion')">Revisar logros</button>
+<div class="admin-card">
+    <div class="card-heading">
+        <h2>Logros pendientes de validar</h2>
+        <p>Calificados por el docente líder o sin semillero asignado.</p>
+    </div>
+
+    <p class="aviso-solicitudes" id="avisoLogros" hidden></p>
+
+    <div class="request-list" id="listaLogrosAdmin">
+        <p>Cargando logros...</p>
+    </div>
 </div>

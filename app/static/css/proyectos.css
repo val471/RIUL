@@ -192,3 +192,93 @@
         padding: 14px;
     }
 }
+
+.proyectos-formulario {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 25px;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #ececef;
+    border-radius: 14px;
+}
+
+.proyectos-formulario[hidden] { display: none; }
+
+.proyectos-formulario h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #15151a;
+}
+
+.proyectos-campo { display: grid; gap: 6px; }
+
+.proyectos-campo label {
+    color: #3b3e49;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.proyectos-campo input,
+.proyectos-campo textarea {
+    width: 100%;
+    padding: 11px 13px;
+    box-sizing: border-box;
+    border: 1px solid #dcdce1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #15151a;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.proyectos-campo textarea { resize: vertical; min-height: 80px; }
+
+.proyectos-campo input:focus,
+.proyectos-campo textarea:focus {
+    outline: none;
+    border-color: #c8102e;
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+
+.proyectos-campo-fecha input { max-width: 240px; }
+
+.proyectos-form-acciones { display: flex; gap: 10px; }
+
+.btn-cancelar-proyecto {
+    padding: 11px 17px;
+    border: 1px solid #dcdce1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #3b3e49;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancelar-proyecto:hover { background: #f6f6f7; }
+
+.btn-cargar-proyecto:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.proyectos-mensaje {
+    margin: 0;
+    padding: 10px 13px;
+    border-radius: 8px;
+    background: #e8f5ed;
+    color: #25834b;
+    font-size: 13px;
+}
+
+.proyectos-mensaje.error { background: #fdecee; color: #c8102e; }
+.proyectos-mensaje[hidden] { display: none; }
+
+.proyectos-tabla td small {
+    display: block;
+    margin-top: 4px;
+    color: #6b6f7b;
+    font-size: 12px;
+}
+
+.proyectos-tabla td strong { color: #15151a; font-size: 14px; }
+
+.proyectos-estado.otro { background: #f1f1f3; color: #6b6f7b; }

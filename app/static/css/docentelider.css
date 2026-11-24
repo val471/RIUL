@@ -563,3 +563,112 @@ textarea {
         flex-direction: column;
     }
 }
+
+/* NOTIFICACIONES: lista */
+.badge[hidden] { display: none !important; }
+
+#listaNotificaciones {
+    max-height: 360px;
+    overflow-y: auto;
+    margin: 0 -17px -17px;
+}
+
+.notif-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    width: 100%;
+    padding: 12px 17px;
+    border: none;
+    border-top: 1px solid #f1f1f1;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.notif-item.nueva { background: #fffafb; }
+.notif-item:hover { background: #fdecef; }
+
+.notif-icono { font-size: 19px; line-height: 1.2; }
+.notif-item strong { display: block; font-size: 12px; color: #111827; }
+.notif-item p { margin: 2px 0; font-size: 12px; color: #475569; }
+.notif-item small { font-size: 10px; color: #94a3b8; }
+
+.notif-vacio {
+    padding: 22px 17px;
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+}
+.aviso-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(21, 21, 26, 0.55);
+}
+
+.aviso-caja {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px 26px 22px;
+    border-radius: 16px;
+    background: #ffffff;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.aviso-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.aviso-caja.exito .aviso-icono {
+    background: #e8f5ed;
+    color: #25834b;
+}
+
+.aviso-caja.error .aviso-icono {
+    background: #fdecee;
+    color: #c8102e;
+}
+
+.aviso-caja h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #15151a;
+}
+
+.aviso-caja p {
+    margin: 0 0 20px;
+    color: #6b6f7b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.aviso-boton {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: #c8102e;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.aviso-boton:hover {
+    background: #a50d26;
+}

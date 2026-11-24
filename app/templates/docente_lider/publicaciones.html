@@ -4,49 +4,43 @@
     <!-- ENCABEZADO -->
     <div class="publicaciones-encabezado">
         <div>
-            <span class="publicaciones-etiqueta">COMUNIDAD INVESTIGATIVA</span>
+            <span class="publicaciones-etiqueta">MI EXPERIENCIA RIUL</span>
             <h2>Publicaciones</h2>
-            <p>Comparte ideas, conocimientos y avances de investigación.</p>
+            <p>Comparte avances, archivos y contenido académico.</p>
         </div>
+
+        <button type="button" id="btnAbrirPublicar" class="publicaciones-btn-nuevo">
+            + Publicar
+        </button>
     </div>
 
-    <!-- FORMULARIO PARA PUBLICAR -->
-    <div class="publicaciones-formulario">
-        <h3>Crear publicación</h3>
+    <!-- FORMULARIO (oculto hasta pulsar Publicar) -->
+    <div class="publicaciones-formulario" id="cajaFormulario" hidden>
+        <h3>Nueva publicación</h3>
 
         <form id="formPublicacion">
 
             <textarea
                 id="contenidoPublicacion"
-                placeholder="¿Qué deseas compartir con la comunidad?"
+                placeholder="Comparte tus avances o contenido académico..."
                 required
             ></textarea>
 
             <div class="publicaciones-opciones">
                 <label class="publicaciones-adjunto">
-                    <span>Adjuntar archivo</span>
-                    <input
-                        type="file"
-                        id="archivoPublicacion"
-                        accept="image/*,.pdf"
-                    >
+                    <span>Adjuntar archivo (opcional)</span>
+                    <input type="file" id="archivoPublicacion" accept="image/*,.pdf">
                 </label>
 
                 <label class="publicaciones-academica">
-                    <input
-                        type="checkbox"
-                        id="publicacionAcademica"
-                    >
+                    <input type="checkbox" id="publicacionAcademica">
                     Publicación académica
                 </label>
 
-                <button type="submit" id="btnPublicar">
-                    Publicar
-                </button>
+                <button type="submit" id="btnPublicar">Publicar contenido</button>
             </div>
 
-            <p id="nombreArchivoPublicacion"></p>
-
+            <p id="nombreArchivoPublicacion"></p> 
         </form>
     </div>
 
@@ -63,22 +57,19 @@
         </div>
     </div>
 
-    <!-- MURO DE PUBLICACIONES -->
-    <div class="publicaciones-muro">
-        <div class="publicaciones-titulo-seccion">
-            <div>
-                <h3>Muro de publicaciones</h3>
-                <p>Conoce lo que comparte la comunidad investigativa.</p>
-            </div>
-        </div>
+    <!-- BUSCADOR -->
+    <div class="publicaciones-buscador">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.3-4.3"></path>
+        </svg>
+        <input type="text" id="buscarPublicacion" placeholder="Buscar publicaciones...">
+    </div>
 
-        <div id="listaPublicaciones">
-
-            <div class="publicaciones-vacio">
-                Todavía no hay publicaciones disponibles.
-            </div>
-
-        </div>
+    <!-- LISTA -->
+    <div id="listaPublicaciones">
+        <div class="publicaciones-vacio">Todavía no hay publicaciones disponibles.</div>
     </div>
 
 </section>

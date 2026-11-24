@@ -89,6 +89,7 @@ def obtener_perfil():
     for s in historial:
         if s.campo_modificado not in solicitudes:
             solicitudes[s.campo_modificado] = {
+                "id": s.id_solicitud_act,
                 "estado": s.estado,
                 "valor_nuevo": s.valor_nuevo,
                 "motivo_rechazo": s.motivo_rechazo
@@ -377,7 +378,44 @@ def obtener_semillero():
         "integrantes": s["integrantes"],
         "proyectos": s["proyectos"],
     })
+def obtener_resumen_inicio():
+    id_semillero = _obtener_semillero_del_docente()
 
+    if not id_semillero:
+        return jsonify({
+            "asignado": False,
+            "semilleros": 0,
+            "integrantes": 0,
+            "solicitudes": 0,
+            "proyectos": 0,
+        })
+
+    def contar(sql):
+        return db.session.execute(
+            text(sql), {"semillero": id_semillero}
+        ).scalar() or 0
+
+    return jsonify({
+        "asignado": True,
+        "semilleros": 1,
+        "integrantes": contar("""
+            SELECT COUNT(*)
+            FROM membresiasemillero
+            WHERE id_semillero = :semillero
+              AND fecha_salida IS NULL
+        """),
+        "solicitudes": contar("""
+            SELECT COUNT(*)
+            FROM solicitudvinculacion
+            WHERE id_semillero = :semillero
+              AND estado = 'PENDIENTE'
+        """),
+        "proyectos": contar("""
+            SELECT COUNT(*)
+            FROM proyecto
+            WHERE id_semillero = :semillero
+        """),
+    })
 
 def obtener_integrantes():
     id_semillero = _obtener_semillero_del_docente()
@@ -1089,6 +1127,28 @@ def obtener_publicaciones():
         "SELECT COUNT(*) FROM publicacion WHERE tipo_publicacion = 'ACADEMICA'"
     )).scalar()
 
+    # Archivos adjuntos de las publicaciones listadas
+    archivos = {}
+    ids = [f["id_publicacion"] for f in filas]
+
+    if ids:
+        marcadores = ", ".join(f":p{i}" for i in range(len(ids)))
+        parametros = {f"p{i}": valor for i, valor in enumerate(ids)}
+
+        filas_archivo = db.session.execute(text(f"""
+            SELECT id_publicacion, nombre_original, ruta, tipo_archivo
+            FROM archivo
+            WHERE id_publicacion IN ({marcadores})
+            ORDER BY id_archivo ASC
+        """), parametros).mappings().all()
+
+        for a in filas_archivo:
+            archivos.setdefault(a["id_publicacion"], {
+                "nombre": a["nombre_original"],
+                "ruta": a["ruta"],
+                "tipo": a["tipo_archivo"],
+            })
+
     return jsonify({
         "total": total,
         "academicas": academicas,
@@ -1104,13 +1164,15 @@ def obtener_publicaciones():
             "comentarios": f["comentarios"],
             "reacciones": f["reacciones"],
             "yo_reaccione": bool(f["yo_reaccione"]),
+            "archivo": archivos.get(f["id_publicacion"]),
         } for f in filas],
     })
 
 def crear_publicacion():
-    datos = request.get_json(silent=True) or {}
-    contenido = (datos.get("contenido") or "").strip()
-    academica = bool(datos.get("academica"))
+    # Llega como FormData (con archivo opcional)
+    contenido = (request.form.get("contenido") or "").strip()
+    academica = (request.form.get("academica") or "").lower() in {"true", "1", "on"}
+    archivo = request.files.get("archivo")
 
     if not contenido:
         return jsonify({"mensaje": "Escribe algo para publicar."}), 400
@@ -1120,8 +1182,32 @@ def crear_publicacion():
             "mensaje": "La publicación no puede pasar de 3000 caracteres."
         }), 400
 
+    # Validar el archivo (si lo hay) antes de tocar la base de datos
+    extension = ""
+    peso = 0
+
+    if archivo and archivo.filename:
+        if "." in archivo.filename:
+            extension = archivo.filename.rsplit(".", 1)[-1].lower()
+
+        if extension not in {"pdf", "png", "jpg", "jpeg", "webp"}:
+            return jsonify({
+                "mensaje": "Formato no permitido. Usa PDF, PNG, JPG o WEBP."
+            }), 400
+
+        archivo.seek(0, os.SEEK_END)
+        peso = archivo.tell()
+        archivo.seek(0)
+
+        if peso > 5 * 1024 * 1024:
+            return jsonify({
+                "mensaje": "El archivo no debe superar 5 MB."
+            }), 400
+
+    ruta_disco = None
+
     try:
-        db.session.execute(text("""
+        resultado = db.session.execute(text("""
             INSERT INTO publicacion
                 (id_usuario, id_semillero, contenido, tipo_publicacion,
                  vistas, fecha_publicacion, fecha_actualizacion)
@@ -1135,6 +1221,37 @@ def crear_publicacion():
             "tipo": "ACADEMICA" if academica else "GENERAL",
         })
 
+        id_publicacion = resultado.lastrowid
+
+        if archivo and archivo.filename:
+            carpeta = os.path.join(
+                current_app.static_folder, "uploads", "publicaciones"
+            )
+            os.makedirs(carpeta, exist_ok=True)
+
+            nombre_final = (
+                f"pub_{id_publicacion}_{int(time.time())}.{extension}"
+            )
+            ruta_disco = os.path.join(carpeta, nombre_final)
+            archivo.save(ruta_disco)
+
+            db.session.execute(text("""
+                INSERT INTO archivo
+                    (id_usuario, id_publicacion, nombre_original, ruta,
+                     tipo_archivo, peso_archivo, fecha_carga,
+                     fecha_actualizacion)
+                VALUES
+                    (:usuario, :publicacion, :nombre, :ruta,
+                     :tipo, :peso, NOW(), NOW())
+            """), {
+                "usuario": session.get("id_usuario"),
+                "publicacion": id_publicacion,
+                "nombre": archivo.filename[:150],
+                "ruta": f"/static/uploads/publicaciones/{nombre_final}",
+                "tipo": extension,
+                "peso": peso,
+            })
+
         db.session.commit()
 
         return jsonify({"mensaje": "Publicación creada."}), 201
@@ -1143,8 +1260,71 @@ def crear_publicacion():
         db.session.rollback()
         print("ERROR CREAR PUBLICACION:", repr(error))
 
+        if ruta_disco and os.path.exists(ruta_disco):
+            os.remove(ruta_disco)
+
         return jsonify({
             "mensaje": "No fue posible guardar la publicación."
+        }), 500
+
+def eliminar_publicacion(id_publicacion):
+    yo = session.get("id_usuario")
+
+    publicacion = db.session.execute(text("""
+        SELECT id_usuario FROM publicacion
+        WHERE id_publicacion = :id
+    """), {"id": id_publicacion}).mappings().first()
+
+    if not publicacion:
+        return jsonify({"mensaje": "La publicación no existe."}), 404
+
+    if publicacion["id_usuario"] != yo:
+        return jsonify({
+            "mensaje": "Solo puedes eliminar tus propias publicaciones."
+        }), 403
+
+    try:
+        rutas = [
+            fila["ruta"] for fila in db.session.execute(text("""
+                SELECT ruta FROM archivo WHERE id_publicacion = :id
+            """), {"id": id_publicacion}).mappings().all()
+        ]
+
+        parametros = {"id": id_publicacion}
+
+        db.session.execute(text(
+            "DELETE FROM archivo WHERE id_publicacion = :id"), parametros)
+        db.session.execute(text(
+            "DELETE FROM reaccion WHERE id_publicacion = :id"), parametros)
+        db.session.execute(text(
+            "DELETE FROM comentario WHERE id_publicacion = :id"), parametros)
+        db.session.execute(text(
+            "DELETE FROM compartido WHERE id_publicacion = :id"), parametros)
+        db.session.execute(text(
+            "DELETE FROM publicacion WHERE id_publicacion = :id"), parametros)
+
+        db.session.commit()
+
+        # Ya con la base limpia, se borran los archivos del disco
+        for ruta in rutas:
+            if ruta.startswith("/static/uploads/publicaciones/"):
+                ruta_disco = os.path.join(
+                    current_app.static_folder,
+                    "uploads",
+                    "publicaciones",
+                    os.path.basename(ruta)
+                )
+                if os.path.exists(ruta_disco):
+                    os.remove(ruta_disco)
+
+        return jsonify({"mensaje": "Publicación eliminada."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR ELIMINAR PUBLICACION:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible eliminar la publicación."
         }), 500
 
 def reaccionar_publicacion(id_publicacion):
@@ -1257,6 +1437,201 @@ def crear_comentario(id_publicacion):
         return jsonify({
             "mensaje": "No fue posible guardar el comentario."
         }), 500
+        
+def obtener_notificaciones():
+    """Notificaciones del docente líder: lo que espera su decisión,
+    lo que pasó en su semillero y los avisos guardados para él."""
+    yo = session.get("id_usuario")
+    id_semillero = _obtener_semillero_del_docente()
+
+    consultas = []
+
+    if id_semillero:
+        consultas += [
+            ("VINCULACION", "solicitudes", True, """
+                SELECT CONCAT(u.nombre_institucional,
+                              ' solicita vincularse a tu semillero') AS mensaje,
+                       TIMESTAMPDIFF(MINUTE, sv.fecha_solicitud, NOW()) AS minutos
+                FROM solicitudvinculacion sv
+                JOIN usuario u ON u.id_usuario = sv.id_estudiante
+                WHERE sv.id_semillero = :semillero
+                  AND sv.estado = 'PENDIENTE'
+                ORDER BY sv.fecha_solicitud DESC
+                LIMIT 10"""),
+            ("LOGRO", "logros", True, """
+                SELECT CONCAT(u.nombre_institucional, ' registró un logro: ',
+                              COALESCE(l.titulo, tl.nombre, 'Logro'),
+                              '. Califícalo para enviarlo a validación') AS mensaje,
+                       TIMESTAMPDIFF(MINUTE, l.fecha_registro, NOW()) AS minutos
+                FROM logro l
+                JOIN membresiasemillero m
+                  ON m.id_estudiante = l.id_estudiante
+                 AND m.id_semillero = :semillero
+                 AND m.fecha_salida IS NULL
+                JOIN usuario u ON u.id_usuario = l.id_estudiante
+                LEFT JOIN tipologro tl ON tl.id_tipo_logro = l.id_tipo_logro
+                WHERE l.estado = 'PENDIENTE'
+                ORDER BY l.fecha_registro DESC
+                LIMIT 10"""),
+            ("LOGRO_RESUELTO", "logros", True, """
+                SELECT CONCAT('El logro «', COALESCE(l.titulo, tl.nombre, 'Logro'),
+                              '» de ', u.nombre_institucional, ' fue ',
+                              IF(l.estado = 'APROBADO', 'aprobado', 'rechazado')) AS mensaje,
+                       TIMESTAMPDIFF(MINUTE, l.fecha_validacion, NOW()) AS minutos
+                FROM logro l
+                JOIN membresiasemillero m
+                  ON m.id_estudiante = l.id_estudiante
+                 AND m.id_semillero = :semillero
+                 AND m.fecha_salida IS NULL
+                JOIN usuario u ON u.id_usuario = l.id_estudiante
+                LEFT JOIN tipologro tl ON tl.id_tipo_logro = l.id_tipo_logro
+                WHERE l.estado IN ('APROBADO', 'RECHAZADO')
+                  AND l.fecha_validacion >= NOW() - INTERVAL 14 DAY
+                ORDER BY l.fecha_validacion DESC
+                LIMIT 5"""),
+            ("CONVOCATORIA", "convocatorias", True, """
+                SELECT CONCAT('Convocatoria abierta: ', c.titulo, ' (cierra ',
+                              DATE_FORMAT(c.fecha_cierre, '%d/%m/%Y'), ')') AS mensaje,
+                       TIMESTAMPDIFF(MINUTE, c.fecha_inicio, NOW()) AS minutos
+                FROM convocatoria c
+                WHERE c.estado = 'ACTIVA'
+                  AND c.fecha_inicio <= CURDATE()
+                  AND c.fecha_cierre >= CURDATE()
+                  AND c.modalidad IN ('semillero', 'ambas')
+                  AND NOT EXISTS (
+                      SELECT 1 FROM inscripcionconvocatoria i
+                      WHERE i.id_convocatoria = c.id_convocatoria
+                        AND i.id_semillero = :semillero
+                  )
+                ORDER BY c.fecha_inicio DESC
+                LIMIT 5"""),
+            ("EVENTO", "eventos", True, """
+                SELECT CONCAT('Próximo evento: ', e.nombre, ' (',
+                              DATE_FORMAT(e.fecha, '%d/%m/%Y %H:%i'), ')') AS mensaje,
+                       NULL AS minutos
+                FROM evento e
+                WHERE e.fecha >= NOW()
+                  AND e.fecha <= NOW() + INTERVAL 14 DAY
+                  AND e.modalidad IN ('semillero', 'ambas')
+                ORDER BY e.fecha ASC
+                LIMIT 5"""),
+        ]
+
+    consultas += [
+        ("REACCION", "publicaciones", True, """
+            SELECT CONCAT(u.nombre_institucional,
+                          ' reaccionó a tu publicación') AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, r.fecha, NOW()) AS minutos
+            FROM reaccion r
+            JOIN publicacion p ON p.id_publicacion = r.id_publicacion
+            JOIN usuario u ON u.id_usuario = r.id_usuario
+            WHERE p.id_usuario = :yo
+              AND r.id_usuario <> :yo
+              AND r.fecha >= NOW() - INTERVAL 7 DAY
+            ORDER BY r.fecha DESC
+            LIMIT 5"""),
+        ("COMENTARIO", "publicaciones", True, """
+            SELECT CONCAT(u.nombre_institucional,
+                          ' comentó tu publicación') AS mensaje,
+                   TIMESTAMPDIFF(MINUTE, c.fecha, NOW()) AS minutos
+            FROM comentario c
+            JOIN publicacion p ON p.id_publicacion = c.id_publicacion
+            JOIN usuario u ON u.id_usuario = c.id_usuario
+            WHERE p.id_usuario = :yo
+              AND c.id_usuario <> :yo
+              AND c.fecha >= NOW() - INTERVAL 7 DAY
+            ORDER BY c.fecha DESC
+            LIMIT 5"""),
+    ]
+
+    items = []
+    errores = []
+    pendientes = 0
+
+    for tipo, destino, cuenta, sql in consultas:
+        try:
+            filas = db.session.execute(
+                text(sql), {"semillero": id_semillero, "yo": yo}
+            ).mappings().all()
+
+            for fila in filas:
+                items.append({
+                    "tipo": tipo,
+                    "destino": destino,
+                    "mensaje": fila["mensaje"],
+                    "minutos": (max(fila["minutos"], 0)
+                                if fila["minutos"] is not None else None),
+                    "nueva": cuenta,
+                })
+
+            if cuenta:
+                pendientes += len(filas)
+
+        except Exception as error:
+            db.session.rollback()
+            print("ERROR NOTIFICACIONES DOCENTE (" + tipo + "):", repr(error))
+            errores.append(tipo)
+
+    # Avisos guardados para este usuario (por ejemplo, la respuesta del
+    # administrador a una solicitud de cambio de perfil)
+    try:
+        guardadas = db.session.execute(text("""
+            SELECT mensaje, tipo, estado,
+                   TIMESTAMPDIFF(MINUTE, fecha, NOW()) AS minutos
+            FROM notificacion
+            WHERE id_usuario = :yo
+            ORDER BY fecha DESC, id_notificacion DESC
+            LIMIT 10
+        """), {"yo": yo}).mappings().all()
+
+        for fila in guardadas:
+            sin_leer = not fila["estado"]
+
+            items.append({
+                "tipo": "GUARDADA",
+                "destino": "perfil" if fila["tipo"] == "ACTUALIZACION" else "inicio",
+                "mensaje": fila["mensaje"],
+                "minutos": max(fila["minutos"] or 0, 0),
+                "nueva": sin_leer,
+            })
+
+            if sin_leer:
+                pendientes += 1
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR NOTIFICACIONES DOCENTE (GUARDADA):", repr(error))
+        errores.append("GUARDADA")
+
+    # Lo más reciente primero; lo que no tiene hora (eventos) al final
+    items.sort(key=lambda n: (n["minutos"] is None, n["minutos"] or 0))
+
+    return jsonify({
+        "total": pendientes,
+        "notificaciones": items[:20],
+        "errores": errores,
+    })
+
+
+def marcar_notificaciones_leidas():
+    try:
+        db.session.execute(text("""
+            UPDATE notificacion
+            SET estado = 1
+            WHERE id_usuario = :id AND estado = 0
+        """), {"id": session.get("id_usuario")})
+
+        db.session.commit()
+
+        return jsonify({"mensaje": "Notificaciones marcadas como leídas."})
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR MARCAR NOTIFICACIONES DOCENTE:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible actualizar las notificaciones."
+        }), 500
 
 def obtener_ranking():
     id_semillero = _obtener_semillero_del_docente()
@@ -1323,3 +1698,75 @@ def obtener_ranking():
         "mi_posicion": mio["posicion"] if mio else None,
         "mi_xp": mio["xp_total"] if mio else 0,
     })
+    
+    
+def calificar_logro(id_logro):
+    id_semillero = _obtener_semillero_del_docente()
+
+    if not id_semillero:
+        return jsonify({"mensaje": "No tienes un semillero asignado."}), 400
+
+    datos = request.get_json(silent=True) or {}
+
+    try:
+        porcentaje = int(datos.get("porcentaje"))
+    except (TypeError, ValueError):
+        porcentaje = None
+
+    if porcentaje not in (50, 75, 100):
+        return jsonify({"mensaje": "La calidad debe ser 50, 75 o 100 %."}), 400
+
+    try:
+        logro = db.session.execute(text("""
+            SELECT l.id_logro, l.estado
+            FROM logro l
+            INNER JOIN membresiasemillero m
+                ON m.id_estudiante = l.id_estudiante
+               AND m.id_semillero = :semillero
+               AND m.fecha_salida IS NULL
+            WHERE l.id_logro = :id
+            FOR UPDATE
+        """), {"semillero": id_semillero, "id": id_logro}).mappings().first()
+
+        if not logro:
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "El logro no existe o no es de tu semillero."
+            }), 404
+
+        if logro["estado"] != "PENDIENTE":
+            db.session.rollback()
+            return jsonify({
+                "mensaje": "Este logro ya fue enviado a validación."
+            }), 409
+
+        db.session.execute(text("""
+            UPDATE logro
+            SET porcentaje_calidad = :porcentaje,
+                estado = 'EN_VALIDACION'
+            WHERE id_logro = :id
+        """), {"porcentaje": porcentaje, "id": id_logro})
+
+        db.session.execute(text("""
+            INSERT INTO historial
+                (id_usuario, accion, tabla_afectada, id_registro,
+                 valor_anterior, valor_nuevo, fecha)
+            VALUES
+                (:usuario, 'CALIFICAR_LOGRO', 'logro', :registro,
+                 'PENDIENTE', :nuevo, NOW())
+        """), {
+            "usuario": session.get("id_usuario"),
+            "registro": id_logro,
+            "nuevo": "EN_VALIDACION (" + str(porcentaje) + "%)"
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Logro calificado y enviado al Administrador."
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR CALIFICAR LOGRO:", repr(error))
+        return jsonify({"mensaje": "No fue posible calificar el logro."}), 500

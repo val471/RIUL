@@ -148,6 +148,11 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
         if (page === 'solicitudes') {
             await cargarSolicitudes(section);
         }
+
+        // CARGAR VALIDACION DE LOGROS (se recarga cada vez que se abre)
+        if (page === 'logros') {
+            await cargarLogrosAdmin(section);
+        }
     }); 
 }); 
 
@@ -1481,6 +1486,143 @@ document.getElementById('confirmarCerrarSesion')?.addEventListener('click', func
 });
 
 
+// ==============================
+// VALIDACION DE LOGROS (RF-07)
+// ==============================
 
+function escLogro(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;',
+        '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function mostrarAvisoLogros(texto, tipo) {
+    const aviso = document.getElementById('avisoLogros');
+
+    if (!aviso) {
+        return;
+    }
+
+    aviso.textContent = texto;
+    aviso.className = 'aviso-solicitudes ' + tipo;
+    aviso.hidden = false;
+}
+
+async function cargarLogrosAdmin(section) {
+    section = section || document.getElementById('page-logros');
+
+    if (section.dataset.loaded !== 'true') {
+        try {
+            const r = await fetch('/admin/logros');
+
+            if (!r.ok) {
+                throw new Error('Error ' + r.status);
+            }
+
+            section.innerHTML = await r.text();
+            section.dataset.loaded = 'true';
+
+        } catch (error) {
+            console.error('Error al cargar logros:', error);
+            section.innerHTML = '<p>No se pudo cargar la validación de logros.</p>';
+            return;
+        }
+    }
+
+    const lista = document.getElementById('listaLogrosAdmin');
+
+    try {
+        const r = await fetch('/admin/api/logros');
+
+        if (!r.ok) {
+            throw new Error('Error ' + r.status);
+        }
+
+        const logros = await r.json();
+
+        if (logros.length === 0) {
+            lista.innerHTML = '<p>No hay logros pendientes de validar.</p>';
+            return;
+        }
+
+        lista.innerHTML = logros.map(l => `
+            <article class="request-item">
+
+                <div class="admin-avatar">
+                    ${escLogro(l.estudiante).slice(0, 2).toUpperCase()}
+                </div>
+
+                <div class="request-info">
+                    <strong>${escLogro(l.titulo)}</strong>
+                    <small>${escLogro(l.estudiante)} · ${escLogro(l.semillero)}</small>
+                    <small>
+                        Tipo: ${escLogro(l.tipo)} ·
+                        XP base: ${escLogro(l.xp_base)} ·
+                        Calidad: ${l.calidad === null ? 'sin calificar' : escLogro(l.calidad) + '%'} ·
+                        XP a acreditar: ${escLogro(l.xp_final)}
+                    </small>
+                    <small>${escLogro(l.descripcion)}</small>
+                    <small>Fecha: ${escLogro(l.fecha)}</small>
+                </div>
+
+                <span class="status pendiente">
+                    ${l.estado === 'EN_VALIDACION' ? 'En validación' : 'Pendiente'}
+                </span>
+
+                <div class="request-actions">
+                    <button type="button" class="btn btn-red"
+                            data-id="${l.id}"
+                            onclick="resolverLogro(this, 'aprobar')">Aprobar</button>
+                    <button type="button" class="btn"
+                            data-id="${l.id}"
+                            onclick="resolverLogro(this, 'rechazar')">Rechazar</button>
+                </div>
+
+            </article>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error al cargar logros:', error);
+        lista.innerHTML = '<p>No se pudieron cargar los logros.</p>';
+    }
+}
+
+async function resolverLogro(boton, accion) {
+    const confirmado = await confirmarAccion({
+        titulo: accion === 'aprobar' ? 'Aprobar logro' : 'Rechazar logro',
+        mensaje: accion === 'aprobar'
+            ? 'Se acreditarán los puntos de experiencia al estudiante. ¿Deseas aprobar el logro?'
+            : 'El logro se rechazará y no se otorgará XP. ¿Deseas continuar?',
+        aceptar: accion === 'aprobar' ? 'Sí, aprobar' : 'Sí, rechazar'
+    });
+
+    if (!confirmado) {
+        return;
+    }
+
+    boton.closest('.request-item')
+        .querySelectorAll('button').forEach(b => b.disabled = true);
+
+    try {
+        const r = await fetch(
+            '/admin/api/logros/' + boton.dataset.id + '/' + accion,
+            { method: 'POST' }
+        );
+
+        const resultado = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+            throw new Error(resultado.mensaje || 'No fue posible completar la acción.');
+        }
+
+        await cargarLogrosAdmin();
+        mostrarAvisoLogros(resultado.mensaje, 'exito');
+
+    } catch (error) {
+        await cargarLogrosAdmin();
+        mostrarAvisoLogros(error.message, 'error');
+    }
+}
 
 

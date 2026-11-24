@@ -136,6 +136,24 @@ def estudiante_logros():
 def registrar_logro():
     return estudiante_controller.registrar_logro()
 
+@web.route("/admin/api/logros")
+def admin_api_logros():
+    return admin_controller.obtener_logros_validacion()
+
+
+@web.route("/admin/api/logros/<int:id_logro>/aprobar", methods=["POST"])
+def admin_aprobar_logro(id_logro):
+    return admin_controller.aprobar_logro(id_logro)
+
+
+@web.route("/admin/api/logros/<int:id_logro>/rechazar", methods=["POST"])
+def admin_rechazar_logro(id_logro):
+    return admin_controller.rechazar_logro(id_logro)
+
+@web.route("/docentelider/api/logros/<int:id_logro>/calificar", methods=["POST"])
+def docente_calificar_logro(id_logro):
+    return docentelider_controller.calificar_logro(id_logro)
+
 #CONVOCATORIAS
 
 @web.route("/estudiante/convocatorias")
@@ -1215,6 +1233,10 @@ def docente_cambiar_contrasena():
 def docente_cambiar_foto():
     return docentelider_controller.cambiar_foto()
 
+@web.route("/docentelider/api/inicio")
+def docente_api_inicio():
+    return docentelider_controller.obtener_resumen_inicio()
+
 @web.route("/docentelider/api/semillero")
 def docente_api_semillero():
     return docentelider_controller.obtener_semillero()
@@ -1289,6 +1311,20 @@ def docente_api_comentarios(id_publicacion):
            methods=["POST"])
 def docente_api_comentarios_crear(id_publicacion):
     return docentelider_controller.crear_comentario(id_publicacion)
+
+@web.route("/docentelider/api/publicaciones/<int:id_publicacion>",
+           methods=["DELETE"])
+def docente_api_publicaciones_eliminar(id_publicacion):
+    return docentelider_controller.eliminar_publicacion(id_publicacion)
+
+@web.route("/docentelider/api/notificaciones")
+def docente_api_notificaciones():
+    return docentelider_controller.obtener_notificaciones()
+
+
+@web.route("/docentelider/api/notificaciones/leidas", methods=["POST"])
+def docente_api_notificaciones_leidas():
+    return docentelider_controller.marcar_notificaciones_leidas()
 
 @web.route("/docentelider/api/ranking")
 def docente_api_ranking():
