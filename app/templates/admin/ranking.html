@@ -2,15 +2,24 @@
 
 <div class="page-heading">
     <div>
-        <h1>Top 10 de clasificacion</h1>
-        <p>Participación investigativa (datos de demostracion).</p>
+        <h1>Top 10 de clasificación</h1>
+        <p>Participación investigativa según los puntos de experiencia (XP).</p>
     </div>
 </div>
 
-<div class="admin-card card-heading">
-    <ol>
-        <li>Laura Gómez</li>
-        <li>Andrés Martínez</li>
-        <li>Sofía Restrepo</li>
+<div class="admin-card">
+
+    <div class="ranking-tabs">
+        <button type="button" class="ranking-tab active" data-tab="estudiantes">
+            Estudiantes
+        </button>
+        <button type="button" class="ranking-tab" data-tab="semilleros">
+            Semilleros
+        </button>
+    </div>
+
+    <ol class="ranking-lista" id="listaRankingAdmin">
+        <li class="ranking-vacio">Cargando ranking...</li>
     </ol>
+
 </div>

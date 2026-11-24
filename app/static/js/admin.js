@@ -143,15 +143,46 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
             }
         }
 
+
+        // CARGAR MODULO DE REPORTES
+        if (page === 'reportes' && section.dataset.loaded !== 'true') {
+           section.innerHTML = '<p>Cargando reportes...</p>';
+
+           try {
+              const response = await fetch('/admin/reportes');
+
+             if (!response.ok) {
+             throw new Error('Error ' + response.status);
+             }
+
+             section.innerHTML = await response.text();
+             section.dataset.loaded = 'true';
+
+            } catch (error) {
+             console.error('Error al cargar reportes:', error);
+             section.innerHTML = '<p>No se pudieron cargar los reportes.</p>';
+            }
+        }
+
         // CARGAR SOLICITUDES
         // Se recargan cada vez que se abre el modulo
         if (page === 'solicitudes') {
             await cargarSolicitudes(section);
-        }
 
+        }
+        // CARGAR RANKING
+        // Se recarga cada vez que se abre el modulo
+        if (page === 'ranking') {
+            await cargarRankingAdmin(section);
+        }
+        
         // CARGAR VALIDACION DE LOGROS (se recarga cada vez que se abre)
         if (page === 'logros') {
             await cargarLogrosAdmin(section);
+        }
+
+        if (id === "reportes") {
+          cargarHistorialReportes();
         }
     }); 
 }); 
@@ -504,18 +535,32 @@ async function toggleUser(button) {
 }
 
 // GENERAR reporte
-function generateReport() {
-    const output = document.getElementById('reportOutput');
+async function generateReport() {
+    try {
+        const respuesta = await fetch("/admin/api/reportes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
 
-    output.textContent =
-        'reporte demostrativo RIUL\n' +
-        'Usuarios mostrados: ' +
-        document.querySelectorAll('#usersTable tr').length +
-        '\nFecha: ' +
-        new Date().toLocaleDateString('es-CO') +
-        '\n\nLos datos no provienen de la base de datos.';
+        const datos = await respuesta.json();
 
-    output.hidden = false;
+        if (!respuesta.ok) {
+            throw new Error(datos.mensaje || "No fue posible guardar el reporte.");
+        }
+
+        await cargarHistorialReportes();
+
+        await verReporte(datos.id_reporte);
+
+    } catch (error) {
+        console.error("Error al generar reporte:", error);
+
+        const output = document.getElementById("reportOutput");
+        output.hidden = false;
+        output.textContent = error.message;
+    }
 }
 
 // ==============================
@@ -1198,6 +1243,7 @@ document.getElementById('cancelarConvocatoria')?.addEventListener('click', funct
 });
 
 formConvocatoria?.addEventListener('submit', async function (e) {
+    e.preventDefault(); 
  mensajeConvocatoria.textContent = 'Guardando...';
 
     const datos = {
@@ -1513,6 +1559,8 @@ async function cargarLogrosAdmin(section) {
     section = section || document.getElementById('page-logros');
 
     if (section.dataset.loaded !== 'true') {
+        section.innerHTML = '<p>Cargando logros...</p>';
+
         try {
             const r = await fetch('/admin/logros');
 
@@ -1623,6 +1671,223 @@ async function resolverLogro(boton, accion) {
         await cargarLogrosAdmin();
         mostrarAvisoLogros(error.message, 'error');
     }
+} 
+
+
+// ==============================
+// RANKING DEL ADMINISTRADOR
+// ==============================
+
+let rankingAdminDatos = { estudiantes: [], semilleros: [] };
+
+function escRanking(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;',
+        '"': '&quot;', "'": '&#39;'
+    }[c]));
 }
 
+function pintarRankingAdmin(tipo) {
+    const lista = document.getElementById('listaRankingAdmin');
 
+    if (!lista) {
+        return;
+    }
+
+    const filas = rankingAdminDatos[tipo] || [];
+
+    if (filas.length === 0) {
+        lista.innerHTML = '<li class="ranking-vacio">Todavía no hay datos.</li>';
+        return;
+    }
+
+    const maxXp = Math.max(...filas.map(f => f.xp), 1);
+
+    lista.innerHTML = filas.map(f => {
+        const estrellas = Math.min(f.estrellas, 5);
+        const clase = f.posicion <= 3 ? f.posicion : 'otro';
+
+        return `
+            <li class="ranking-fila puesto-${clase}">
+
+                <span class="ranking-posicion">${escRanking(f.posicion)}</span>
+
+                <div class="ranking-datos">
+                    <strong>${escRanking(f.nombre)}</strong>
+                    <small>
+                        ${escRanking(f.nivel)}
+                        <span class="ranking-estrellas">${'★'.repeat(estrellas)}${'☆'.repeat(5 - estrellas)}</span>
+                        · ${escRanking(f.insignias)} insignias
+                    </small>
+                    <div class="ranking-barra">
+                        <span style="width:${Math.round((f.xp / maxXp) * 100)}%"></span>
+                    </div>
+                </div>
+
+                <span class="ranking-xp">${escRanking(f.xp)}<small>XP</small></span>
+
+            </li>
+        `;
+    }).join('');
+}
+
+async function cargarRankingAdmin(section) {
+    section = section || document.getElementById('page-ranking');
+
+    if (section.dataset.loaded !== 'true') {
+        section.innerHTML = '<p>Cargando ranking...</p>';
+
+        try {
+            const r = await fetch('/admin/ranking');
+
+            if (!r.ok) {
+                throw new Error('Error ' + r.status);
+            }
+
+            section.innerHTML = await r.text();
+            section.dataset.loaded = 'true';
+
+            section.querySelectorAll('.ranking-tab').forEach(boton => {
+                boton.addEventListener('click', () => {
+                    section.querySelectorAll('.ranking-tab').forEach(b =>
+                        b.classList.toggle('active', b === boton)
+                    );
+                    pintarRankingAdmin(boton.dataset.tab);
+                });
+            });
+
+        } catch (error) {
+            console.error('Error al cargar ranking:', error);
+            section.innerHTML = '<p>No se pudo cargar el ranking.</p>';
+            return;
+        }
+    }
+
+    try {
+        const r = await fetch('/admin/api/ranking');
+
+        if (!r.ok) {
+            throw new Error('Error ' + r.status);
+        }
+
+        rankingAdminDatos = await r.json();
+
+        const activa = section.querySelector('.ranking-tab.active');
+        pintarRankingAdmin(activa ? activa.dataset.tab : 'estudiantes');
+
+    } catch (error) {
+        console.error('Error al cargar ranking:', error);
+
+        const lista = document.getElementById('listaRankingAdmin');
+
+        if (lista) {
+            lista.innerHTML =
+                '<li class="ranking-vacio">No se pudo cargar el ranking.</li>';
+        }
+    }
+}
+
+async function cargarHistorialReportes() {
+    const tbody = document.getElementById("listaReportes");
+
+    if (!tbody) return;
+
+    try {
+        const respuesta = await fetch("/admin/api/reportes/historial");
+
+        if (!respuesta.ok) {
+            throw new Error("Error al consultar el historial");
+        }
+
+        const reportes = await respuesta.json();
+
+        if (reportes.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4">Todavía no hay reportes generados.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = reportes.map(reporte => `
+            <tr onclick="verReporte(${reporte.id_reporte})"
+                style="cursor: pointer;">
+                <td>${reporte.nombre_reporte}</td>
+                <td>${reporte.periodo}</td>
+                <td>${reporte.formato}</td>
+                <td>${reporte.estado}</td>
+            </tr>
+        `).join("");
+
+    } catch (error) {
+        console.error("Error al cargar reportes:", error);
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4">No fue posible cargar el historial.</td>
+            </tr>
+        `;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("listaReportes")) {
+        cargarHistorialReportes();
+    }
+});
+
+async function verReporte(id) {
+    const output = document.getElementById("reportOutput");
+
+    output.hidden = false;
+    output.textContent = "Cargando reporte...";
+
+    try {
+        const respuesta = await fetch(`/admin/api/reportes/${id}`);
+
+        if (!respuesta.ok) {
+            throw new Error("No fue posible abrir el reporte.");
+        }
+
+        const reporte = await respuesta.json();
+        reporteSeleccionado = id;
+        document.getElementById("accionesReporte").hidden = false;
+        const d = reporte.contenido;
+        
+
+        const lista = arr => arr.map(x =>
+            "  - " + (x.rol || x.facultad || x.estado) + ": " + x.total
+        ).join("\n") || "  (sin datos)";
+
+        output.textContent =
+            reporte.nombre_reporte + "\n" +
+            "Periodo: " + reporte.periodo + "\n" +
+            "Generado: " + reporte.fecha_generacion + "\n\n" +
+            "USUARIOS\n" +
+            "Total: " + d.usuarios.total +
+            " (activos: " + d.usuarios.activos + ")\n" +
+            lista(d.usuarios.por_rol) + "\n\n" +
+            "SEMILLEROS\n" +
+            "Total: " + d.semilleros.total +
+            " (activos: " + d.semilleros.activos + ")\n\n" +
+            "PROYECTOS POR FACULTAD\n" +
+            lista(d.proyectos_por_facultad) + "\n\n" +
+            "LOGROS POR ESTADO\n" +
+            lista(d.logros) + "\n\n" +
+            "XP ACREDITADO: " + d.xp_acreditado;
+
+    } catch (error) {
+        console.error("Error al abrir reporte:", error);
+        output.textContent = "No fue posible abrir el reporte.";
+    }
+}
+
+let reporteSeleccionado = null;
+
+function descargarReporte(formato) {
+    if (!reporteSeleccionado) return;
+
+    window.location.href =
+        `/admin/api/reportes/${reporteSeleccionado}/${formato}`;
+}

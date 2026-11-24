@@ -136,25 +136,7 @@ def estudiante_logros():
 def registrar_logro():
     return estudiante_controller.registrar_logro()
 
-@web.route("/admin/api/logros")
-def admin_api_logros():
-    return admin_controller.obtener_logros_validacion()
-
-
-@web.route("/admin/api/logros/<int:id_logro>/aprobar", methods=["POST"])
-def admin_aprobar_logro(id_logro):
-    return admin_controller.aprobar_logro(id_logro)
-
-
-@web.route("/admin/api/logros/<int:id_logro>/rechazar", methods=["POST"])
-def admin_rechazar_logro(id_logro):
-    return admin_controller.rechazar_logro(id_logro)
-
-@web.route("/docentelider/api/logros/<int:id_logro>/calificar", methods=["POST"])
-def docente_calificar_logro(id_logro):
-    return docentelider_controller.calificar_logro(id_logro)
-
-#CONVOCATORIAS
+#CONVOCATORIAS 
 
 @web.route("/estudiante/convocatorias")
 def estudiante_convocatorias():
@@ -267,10 +249,38 @@ def proteger_panel_admin():
 def panel_administrador():
     return admin_controller.mostrar_panel()
 
+@web.route("/admin/api/reportes/resumen")
+def admin_api_reportes_resumen():
+    return admin_controller.obtener_resumen_reportes()
+
+@web.route("/admin/api/reportes", methods=["POST"])
+def admin_api_guardar_reporte():
+    return admin_controller.guardar_reporte()
+
+@web.route("/admin/api/reportes/historial")
+def admin_api_historial_reportes():
+    return admin_controller.listar_reportes()
+
+@web.route("/admin/api/reportes/<int:id_reporte>")
+def admin_api_obtener_reporte(id_reporte):
+    return admin_controller.obtener_reporte(id_reporte)
+
+@web.route("/admin/api/reportes/<int:id_reporte>/pdf")
+def admin_api_descargar_pdf(id_reporte):
+    return admin_controller.descargar_reporte_pdf(id_reporte)
+
+@web.route("/admin/api/reportes/<int:id_reporte>/excel")
+def admin_api_descargar_excel(id_reporte):
+    return admin_controller.descargar_reporte_excel(id_reporte)
+
 
 @web.route("/admin/usuarios")
 def admin_usuarios():
     return admin_controller.mostrar_usuarios()
+
+@web.route("/admin/api/usuarios/<int:id_usuario>/estado", methods=["POST"])
+def admin_cambiar_estado_usuario(id_usuario):
+    return admin_controller.cambiar_estado_usuario(id_usuario)
 
 
 @web.route("/admin/facultades")
@@ -1371,3 +1381,21 @@ def admin_asignar_docente_lider(id_semillero):
 )
 def admin_docentes_disponibles(id_semillero):
     return admin_controller.obtener_docentes_disponibles(id_semillero)
+
+@web.route("/admin/api/logros")
+def admin_api_logros():
+    return admin_controller.obtener_logros_validacion()
+
+
+@web.route("/admin/api/logros/<int:id_logro>/aprobar", methods=["POST"])
+def admin_aprobar_logro(id_logro):
+    return admin_controller.aprobar_logro(id_logro)
+
+
+@web.route("/admin/api/logros/<int:id_logro>/rechazar", methods=["POST"])
+def admin_rechazar_logro(id_logro):
+    return admin_controller.rechazar_logro(id_logro)
+
+@web.route("/docentelider/api/logros/<int:id_logro>/calificar", methods=["POST"])
+def docente_calificar_logro(id_logro):
+    return docentelider_controller.calificar_logro(id_logro)

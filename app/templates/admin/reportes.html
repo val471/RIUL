@@ -24,43 +24,36 @@
             >
         </div>
 
-        <div class="reportes-tabla-scroll">
-            <table class="reportes-tabla" id="tablaReportes">
-                <thead>
-                    <tr>
-                        <th>REPORTE</th>
-                        <th>PERIODO</th>
-                        <th>FORMATO</th>
-                        <th>ESTADO</th>
-                    </tr>
-                </thead>
+            <div class="reportes-tabla-scroll">
+        <table class="reportes-tabla" id="tablaReportes">
+            <thead>
+                <tr>
+                    <th>REPORTE</th>
+                    <th>PERIODO</th>
+                    <th>FORMATO</th>
+                    <th>ESTADO</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    <tr>
-                        <td>Actividad de usuarios</td>
-                        <td>Agosto 2024</td>
-                        <td>PDF</td>
-                        <td>Disponible</td>
-                    </tr>
+            <tbody id="listaReportes">
+                <tr>
+                    <td colspan="4">Cargando reportes...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-                    <tr>
-                        <td>Proyectos por facultad</td>
-                        <td>2024-II</td>
-                        <td>Excel</td>
-                        <td>Disponible</td>
-                    </tr>
+    <pre id="reportOutput" class="reportes-salida" hidden></pre>
 
-                    <tr>
-                        <td>Logros y gamificación</td>
-                        <td>Agosto 2024</td>
-                        <td>PDF</td>
-                        <td>Disponible</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div id="accionesReporte" hidden>
+    <button type="button" onclick="descargarReporte('pdf')">
+        Descargar PDF
+    </button>
 
-        <pre id="reportOutput" class="reportes-salida" hidden></pre>
+    <button type="button" onclick="descargarReporte('excel')">
+        Descargar Excel
+    </button>
+    
 
     </div>
 </div>

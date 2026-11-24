@@ -15,3 +15,5 @@ gunicorn==23.0.0
 Werkzeug==3.1.3
 #Para generar el PDF de la hoja de vida
 reportlab==4.2.5
+#Para generar archivos Excel
+openpyxl

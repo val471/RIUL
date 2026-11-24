@@ -1,0 +1,156 @@
+/* ==============================
+   RANKING (ADMIN)
+================================ */
+
+.ranking-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 20px 28px 0;
+}
+
+.ranking-tab {
+    padding: 9px 18px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--blanco);
+    color: var(--gris);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ranking-tab:hover {
+    background: #f6f6f7;
+}
+
+.ranking-tab.active {
+    border-color: var(--rojo);
+    background: var(--rojo);
+    color: #ffffff;
+}
+
+.ranking-lista {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 20px 28px 28px;
+    list-style: none;
+}
+
+.ranking-fila {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    background: var(--blanco);
+}
+
+.ranking-posicion {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f1f1f3;
+    color: var(--gris);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.puesto-1 { border-color: #f0d98a; background: #fffbea; }
+.puesto-1 .ranking-posicion { background: #f4c542; color: #ffffff; }
+
+.puesto-2 { border-color: #d9dbe0; background: #fafafb; }
+.puesto-2 .ranking-posicion { background: #a8adb8; color: #ffffff; }
+
+.puesto-3 { border-color: #ecc9a8; background: #fff8f2; }
+.puesto-3 .ranking-posicion { background: #cd8a4a; color: #ffffff; }
+
+.ranking-datos {
+    flex: 1;
+    min-width: 0;
+}
+
+.ranking-datos strong {
+    display: block;
+    overflow: hidden;
+    color: var(--texto);
+    font-size: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ranking-datos small {
+    display: block;
+    margin-top: 3px;
+    color: var(--gris);
+    font-size: 12px;
+}
+
+.ranking-estrellas {
+    margin: 0 2px;
+    color: #f4c542;
+    letter-spacing: 1px;
+}
+
+.ranking-barra {
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #f1f1f3;
+}
+
+.ranking-barra span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--rojo);
+}
+
+.ranking-xp {
+    flex-shrink: 0;
+    color: var(--texto);
+    font-size: 20px;
+    font-weight: 800;
+    text-align: right;
+}
+
+.ranking-xp small {
+    display: block;
+    color: var(--gris);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ranking-vacio {
+    padding: 28px;
+    color: var(--gris);
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+
+    .ranking-tabs {
+        padding: 16px 16px 0;
+    }
+
+    .ranking-lista {
+        padding: 16px;
+    }
+
+    .ranking-fila {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .ranking-xp {
+        font-size: 17px;
+    }
+}

@@ -1,0 +1,128 @@
+/* ==============================
+   VALIDACION DE LOGROS (ADMIN)
+================================ */
+
+#listaLogrosAdmin {
+    padding: 0;
+}
+
+#listaLogrosAdmin > p {
+    margin: 0;
+    padding: 28px;
+    color: var(--gris);
+    font-size: 14px;
+    text-align: center;
+}
+
+#listaLogrosAdmin .request-item {
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 28px;
+    transition: background 0.15s ease;
+}
+
+#listaLogrosAdmin .request-item:hover {
+    background: #fafafb;
+}
+
+#listaLogrosAdmin .admin-avatar {
+    flex-shrink: 0;
+}
+
+/* Textos del logro */
+#listaLogrosAdmin .request-info strong {
+    margin-bottom: 4px;
+    font-size: 15px;
+    color: var(--texto);
+}
+
+#listaLogrosAdmin .request-info small {
+    display: block;
+    margin-top: 3px;
+    color: var(--gris);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Estado */
+#listaLogrosAdmin .status {
+    flex-shrink: 0;
+    align-self: center;
+    white-space: nowrap;
+}
+
+/* Botones */
+#listaLogrosAdmin .request-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-self: center;
+    gap: 8px;
+}
+
+#listaLogrosAdmin .request-actions .btn {
+    min-width: 92px;
+    padding: 9px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--blanco);
+    color: var(--texto);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+#listaLogrosAdmin .request-actions .btn:hover {
+    background: #f6f6f7;
+}
+
+#listaLogrosAdmin .request-actions .btn.btn-red {
+    border-color: var(--rojo);
+    background: var(--rojo);
+    color: #ffffff;
+}
+
+#listaLogrosAdmin .request-actions .btn.btn-red:hover {
+    border-color: var(--rojo-osc);
+    background: var(--rojo-osc);
+}
+
+#listaLogrosAdmin .request-actions .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Aviso de resultado */
+#avisoLogros {
+    margin: 16px 28px 0;
+}
+
+/* Celular */
+@media (max-width: 760px) {
+
+    #listaLogrosAdmin .request-item {
+        flex-wrap: wrap;
+        padding: 18px 16px;
+    }
+
+    #listaLogrosAdmin .request-info {
+        flex-basis: calc(100% - 60px);
+    }
+
+    #listaLogrosAdmin .status {
+        margin-left: 54px;
+    }
+
+    #listaLogrosAdmin .request-actions {
+        width: 100%;
+        margin-left: 54px;
+    }
+
+    #listaLogrosAdmin .request-actions .btn {
+        flex: 1;
+    }
+
+    #avisoLogros {
+        margin: 14px 16px 0;
+    }
+}

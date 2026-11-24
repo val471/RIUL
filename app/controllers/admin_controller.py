@@ -4,7 +4,11 @@ from sqlalchemy import text
 from app.extensions import db
 import secrets
 from datetime import datetime
-
+import json
+from flask import send_file
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from openpyxl import Workbook
 
 def _contar(sql):
     """Ejecuta un COUNT y devuelve 0 si la consulta falla."""
@@ -1535,3 +1539,424 @@ def rechazar_logro(id_logro):
         db.session.rollback()
         print("ERROR RECHAZAR LOGRO:", repr(error))
         return jsonify({"mensaje": "No fue posible rechazar el logro."}), 500
+
+def obtener_ranking_admin():
+    estudiantes = db.session.execute(text("""
+        SELECT
+            RANK() OVER (ORDER BY e.xp_total DESC) AS posicion,
+            u.nombre_institucional AS nombre,
+            e.xp_total,
+            n.nombre AS nivel,
+            n.estrellas,
+            (
+                SELECT COUNT(*) FROM insigniaotorgada io
+                WHERE io.id_usuario = e.id_usuario
+            ) AS insignias
+        FROM estudianteinvestigador e
+        INNER JOIN usuario u ON u.id_usuario = e.id_usuario
+        LEFT JOIN nivel n ON n.id_nivel = e.id_nivel_actual
+        ORDER BY posicion, u.nombre_institucional
+        LIMIT 10
+    """)).mappings().all()
+
+    semilleros = db.session.execute(text("""
+        SELECT
+            RANK() OVER (ORDER BY s.xp_total DESC) AS posicion,
+            s.nombre,
+            s.xp_total,
+            n.nombre AS nivel,
+            n.estrellas,
+            (
+                SELECT COUNT(*) FROM insigniaotorgada io
+                WHERE io.id_semillero = s.id_semillero
+            ) AS insignias
+        FROM semillero s
+        LEFT JOIN nivel n ON n.id_nivel = s.id_nivel_actual
+        WHERE s.estado = 'ACTIVO'
+        ORDER BY posicion, s.nombre
+        LIMIT 10
+    """)).mappings().all()
+
+    def fila(f):
+        return {
+            "posicion": f["posicion"],
+            "nombre": f["nombre"],
+            "xp": f["xp_total"] or 0,
+            "nivel": f["nivel"] or "Sin nivel",
+            "estrellas": f["estrellas"] or 0,
+            "insignias": f["insignias"],
+        }
+
+    return jsonify({
+        "estudiantes": [fila(f) for f in estudiantes],
+        "semilleros": [fila(f) for f in semilleros],
+    })
+
+def obtener_datos_resumen_reportes():
+    def uno(sql):
+        return db.session.execute(text(sql)).scalar() or 0
+
+    def filas(sql):
+        return [
+            dict(f)
+            for f in db.session.execute(text(sql)).mappings().all()
+        ]
+
+    return {
+        "usuarios": {
+            "total": uno("SELECT COUNT(*) FROM usuario"),
+            "activos": uno(
+                "SELECT COUNT(*) FROM usuario WHERE estado='ACTIVO'"
+            ),
+            "por_rol": filas("""
+                SELECT rol, COUNT(*) AS total
+                FROM usuario
+                GROUP BY rol
+                ORDER BY total DESC
+            """)
+        },
+        "semilleros": {
+            "total": uno("SELECT COUNT(*) FROM semillero"),
+            "activos": uno(
+                "SELECT COUNT(*) FROM semillero WHERE estado='ACTIVO'"
+            )
+        },
+        "proyectos_por_facultad": filas("""
+            SELECT f.nombre AS facultad,
+                   COUNT(p.id_proyecto) AS total
+            FROM facultad f
+            LEFT JOIN semillero s
+                ON s.id_facultad = f.id_facultad
+            LEFT JOIN proyecto p
+                ON p.id_semillero = s.id_semillero
+            GROUP BY f.id_facultad, f.nombre
+            ORDER BY total DESC
+        """),
+        "logros": filas("""
+            SELECT estado, COUNT(*) AS total
+            FROM logro
+            GROUP BY estado
+        """),
+        "xp_acreditado": uno("""
+            SELECT COALESCE(SUM(cantidad_xp), 0)
+            FROM historialxp
+        """)
+    }
+
+
+def obtener_resumen_reportes():
+    try:
+        return jsonify(obtener_datos_resumen_reportes())
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR REPORTES:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible generar el reporte."
+        }), 500
+def guardar_reporte():
+    try:
+        datos = obtener_datos_resumen_reportes()
+
+        id_admin = session.get("id_usuario")
+
+        if not id_admin:
+            return jsonify({
+                "mensaje": "Debes iniciar sesión como administrador."
+            }), 401
+
+        nombre = "Reporte general RIUL"
+        periodo = datetime.now().strftime("%B %Y")
+
+        resultado = db.session.execute(text("""
+            INSERT INTO reportegenerado (
+                id_admin,
+                nombre_reporte,
+                periodo,
+                contenido,
+                fecha_generacion
+            )
+            VALUES (
+                :admin,
+                :nombre,
+                :periodo,
+                :contenido,
+                NOW()
+            )
+        """), {
+            "admin": id_admin,
+            "nombre": nombre,
+            "periodo": periodo,
+            "contenido": json.dumps(datos, ensure_ascii=False)
+        })
+
+        db.session.commit()
+
+        return jsonify({
+            "mensaje": "Reporte guardado correctamente.",
+            "id_reporte": resultado.lastrowid
+        }), 201
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL GUARDAR REPORTE:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible guardar el reporte."
+        }), 500
+
+def listar_reportes():
+    try:
+        id_admin = session.get("id_usuario")
+
+        if not id_admin:
+            return jsonify({
+                "mensaje": "Debes iniciar sesión como administrador."
+            }), 401
+
+        reportes = db.session.execute(text("""
+            SELECT
+                id_reporte,
+                nombre_reporte,
+                periodo,
+                fecha_generacion
+            FROM reportegenerado
+            WHERE id_admin = :admin
+            ORDER BY fecha_generacion DESC
+        """), {
+            "admin": id_admin
+        }).mappings().all()
+
+        return jsonify([
+            {
+                "id_reporte": r["id_reporte"],
+                "nombre_reporte": r["nombre_reporte"],
+                "periodo": r["periodo"],
+                "formato": "PDF / Excel",
+                "estado": "Disponible",
+                "fecha_generacion": r["fecha_generacion"].strftime("%d/%m/%Y %H:%M")
+            }
+            for r in reportes
+        ])
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR HISTORIAL REPORTES:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible consultar el historial."
+        }), 500
+def obtener_reporte(id_reporte):
+    try:
+        id_admin = session.get("id_usuario")
+
+        if not id_admin:
+            return jsonify({
+                "mensaje": "Debes iniciar sesión como administrador."
+            }), 401
+
+        reporte = db.session.execute(text("""
+            SELECT
+                id_reporte,
+                nombre_reporte,
+                periodo,
+                contenido,
+                fecha_generacion
+            FROM reportegenerado
+            WHERE id_reporte = :id
+              AND id_admin = :admin
+        """), {
+            "id": id_reporte,
+            "admin": id_admin
+        }).mappings().first()
+
+        if not reporte:
+            return jsonify({
+                "mensaje": "No se encontró el reporte."
+            }), 404
+
+        contenido = reporte["contenido"]
+
+        if isinstance(contenido, str):
+            contenido = json.loads(contenido)
+
+        return jsonify({
+            "id_reporte": reporte["id_reporte"],
+            "nombre_reporte": reporte["nombre_reporte"],
+            "periodo": reporte["periodo"],
+            "fecha_generacion": reporte["fecha_generacion"].strftime(
+                "%d/%m/%Y %H:%M"
+            ),
+            "contenido": contenido
+        })
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR AL CONSULTAR REPORTE:", repr(error))
+
+        return jsonify({
+            "mensaje": "No fue posible abrir el reporte."
+        }), 500
+def descargar_reporte_pdf(id_reporte):
+    try:
+        id_admin = session.get("id_usuario")
+
+        if not id_admin:
+            return jsonify({"mensaje": "Sesión no válida."}), 401
+
+        reporte = db.session.execute(text("""
+            SELECT nombre_reporte, periodo, contenido
+            FROM reportegenerado
+            WHERE id_reporte = :id AND id_admin = :admin
+        """), {
+            "id": id_reporte,
+            "admin": id_admin
+        }).mappings().first()
+
+        if not reporte:
+            return jsonify({"mensaje": "Reporte no encontrado."}), 404
+
+        datos = reporte["contenido"]
+
+        if isinstance(datos, str):
+            datos = json.loads(datos)
+
+        archivo = BytesIO()
+        pdf = canvas.Canvas(archivo, pagesize=(612, 792))
+
+        ancho, alto = 612, 792
+        y = alto - 50
+
+        def escribir(texto):
+            nonlocal y
+
+            if y < 50:
+                pdf.showPage()
+                y = alto - 50
+
+            pdf.drawString(50, y, str(texto)[:100])
+            y -= 22
+
+        escribir("REPORTE RIUL")
+        escribir(reporte["nombre_reporte"])
+        escribir("Periodo: " + str(reporte["periodo"]))
+        escribir("")
+
+        escribir("USUARIOS")
+        escribir("Total: " + str(datos["usuarios"]["total"]))
+        escribir("Activos: " + str(datos["usuarios"]["activos"]))
+
+        for item in datos["usuarios"]["por_rol"]:
+            escribir(str(item["rol"]) + ": " + str(item["total"]))
+
+        escribir("")
+        escribir("SEMILLEROS")
+        escribir("Total: " + str(datos["semilleros"]["total"]))
+        escribir("Activos: " + str(datos["semilleros"]["activos"]))
+
+        escribir("")
+        escribir("PROYECTOS POR FACULTAD")
+
+        for item in datos["proyectos_por_facultad"]:
+            escribir(str(item["facultad"]) + ": " + str(item["total"]))
+
+        escribir("")
+        escribir("LOGROS POR ESTADO")
+
+        for item in datos["logros"]:
+            escribir(str(item["estado"]) + ": " + str(item["total"]))
+
+        escribir("")
+        escribir("XP ACREDITADO: " + str(datos["xp_acreditado"]))
+
+        pdf.save()
+        archivo.seek(0)
+
+        return send_file(
+            archivo,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"reporte_RIUL_{id_reporte}.pdf"
+        )
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR PDF:", repr(error))
+        return jsonify({"mensaje": "No fue posible generar el PDF."}), 500
+
+def descargar_reporte_excel(id_reporte):
+    try:
+        id_admin = session.get("id_usuario")
+
+        if not id_admin:
+            return jsonify({"mensaje": "Sesión no válida."}), 401
+
+        reporte = db.session.execute(text("""
+            SELECT nombre_reporte, periodo, contenido
+            FROM reportegenerado
+            WHERE id_reporte = :id AND id_admin = :admin
+        """), {
+            "id": id_reporte,
+            "admin": id_admin
+        }).mappings().first()
+
+        if not reporte:
+            return jsonify({"mensaje": "Reporte no encontrado."}), 404
+
+        datos = reporte["contenido"]
+        if isinstance(datos, str):
+            datos = json.loads(datos)
+
+        libro = Workbook()
+        hoja = libro.active
+        hoja.title = "Reporte RIUL"
+
+        hoja.append([reporte["nombre_reporte"]])
+        hoja.append(["Periodo", reporte["periodo"]])
+        hoja.append([])
+        hoja.append(["USUARIOS"])
+        hoja.append(["Total", datos["usuarios"]["total"]])
+        hoja.append(["Activos", datos["usuarios"]["activos"]])
+        hoja.append(["Rol", "Cantidad"])
+
+        for item in datos["usuarios"]["por_rol"]:
+            hoja.append([item["rol"], item["total"]])
+
+        hoja.append([])
+        hoja.append(["SEMILLEROS"])
+        hoja.append(["Total", datos["semilleros"]["total"]])
+        hoja.append(["Activos", datos["semilleros"]["activos"]])
+
+        hoja.append([])
+        hoja.append(["PROYECTOS POR FACULTAD"])
+        hoja.append(["Facultad", "Cantidad"])
+
+        for item in datos["proyectos_por_facultad"]:
+            hoja.append([item["facultad"], item["total"]])
+
+        hoja.append([])
+        hoja.append(["LOGROS POR ESTADO"])
+        hoja.append(["Estado", "Cantidad"])
+
+        for item in datos["logros"]:
+            hoja.append([item["estado"], item["total"]])
+
+        hoja.append([])
+        hoja.append(["XP ACREDITADO", datos["xp_acreditado"]])
+
+        archivo = BytesIO()
+        libro.save(archivo)
+        archivo.seek(0)
+
+        return send_file(
+            archivo,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            as_attachment=True,
+            download_name=f"reporte_RIUL_{id_reporte}.xlsx"
+        )
+
+    except Exception as error:
+        db.session.rollback()
+        print("ERROR EXCEL:", repr(error))
+        return jsonify({"mensaje": "No fue posible generar Excel."}), 500
