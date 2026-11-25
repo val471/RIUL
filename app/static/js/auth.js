@@ -38,10 +38,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!respuesta.ok) {
                 mensaje.hidden = false;
                 mensaje.textContent =
-                 resultado.mensaje ||
-                 resultado.error ||
-                 "Correo o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.";
-            return;
+                    resultado.mensaje || resultado.error ||
+                    "Correo o contraseña incorrectos. Verifica tus credenciales e intenta nuevamente.";
+            return false;
             }
 
             mensaje.textContent =
@@ -50,12 +49,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (resultado.redirect) {
                 window.location.href = resultado.redirect;
             }
+            return false;
 
         } catch (error) {
             console.error("ERROR:", error);
 
             mensaje.textContent = error.message ||
                 "No fue posible conectar con el servidor.";
+            return false;
         }
     }
 
@@ -187,6 +188,7 @@ function actualizarCamposRegistro() {
             rol: rol,
 
             id_facultad: facultadRegistro.value,
+            id_programa: programaRegistro.value,
 
             id_programa: rol === "ESTUDIANTE"
                 ? programaRegistro.value
@@ -195,6 +197,18 @@ function actualizarCamposRegistro() {
             contrasena: contrasena
 
         }, mensaje);
+
+
+        // LIMPIAR EL FORMULARIO SOLO SI SE ENVIÓ BIEN
+
+        if (enviado) {
+            formRegistro.reset();
+            campoPrograma.hidden = true;
+            programaRegistro.required = false;
+            Array.from(programaRegistro.options)
+                .forEach(opcion => opcion.hidden = false);
+        }
+
 
     });
 
